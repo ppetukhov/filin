@@ -1,0 +1,193 @@
+<Project>
+  <PropertyGroup>
+    <!-- For non-SDK projects that import this file and then import Microsoft.Common.props,
+         tell Microsoft.Common.props not to import Directory.Build.props again. -->
+    <ImportDirectoryBuildProps>false</ImportDirectoryBuildProps>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <NetCoreAppCurrentVersion>9.0</NetCoreAppCurrentVersion>
+    <NetCoreAppCurrentIdentifier>.NETCoreApp</NetCoreAppCurrentIdentifier>
+    <NetCurrent>net$(NetCoreAppCurrentVersion)</NetCurrent>
+
+    <!-- The previous supported .NET version. -->
+    <NetPrevious>net9.0</NetPrevious>
+    <NetPrevious Condition="'$(BuildSourceOnly)' == 'true'">$(NetCurrent)</NetPrevious>
+
+    <!-- The minimum supported .NET version. -->
+    <NetMinimum>net9.0</NetMinimum>
+    <NetMinimum Condition="'$(BuildSourceOnly)' == 'true'">$(NetCurrent)</NetMinimum>
+  </PropertyGroup>
+ 
+  <PropertyGroup>
+    <!-- Set OutDirName to change the BaseOutputPath and BaseIntermediateOutputPath properties to include the ref subfolder. -->
+    <IsReferenceAssemblyProject Condition="$([System.IO.Path]::GetFileName('$(MSBuildProjectDirectory)')) == 'ref'">true</IsReferenceAssemblyProject>
+    <OutDirName Condition="'$(IsReferenceAssemblyProject)' == 'true'">$(MSBuildProjectName)$([System.IO.Path]::DirectorySeparatorChar)ref</OutDirName>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <RepositoryEngineeringDir Condition="'$(RepositoryEngineeringDir)' == ''">$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', 'eng'))</RepositoryEngineeringDir>
+
+    <!-- Set the repository root into a variable -->
+    <SourceRoot>$(MSBuildThisFileDirectory)</SourceRoot>
+
+    <LibrariesProjectRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', 'src', 'libraries'))</LibrariesProjectRoot>
+    <WorkloadsProjectRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', 'src', 'workloads'))</WorkloadsProjectRoot>
+    <ToolsProjectRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', 'src', 'tools'))</ToolsProjectRoot>
+    <RepoTasksDir>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', 'src', 'tasks'))</RepoTasksDir>
+    <DocsDir>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', 'docs'))</DocsDir>
+  </PropertyGroup>
+
+    <!-- Packaging -->
+  <PropertyGroup>
+    <GitHubRepositoryName>filin</GitHubRepositoryName>
+    <RepositoryUrl>https://github.com/ppetukhov/$(GitHubRepositoryName)</RepositoryUrl>
+    
+    <Authors>Pavel Petukhov</Authors>
+   
+    <!--
+    <PackageProjectUrl></PackageProjectUrl>
+    <PackageIcon>logo_128.png</PackageIcon>
+    -->
+    
+    <!-- TODO^ set owners account in nuget.org!
+    <Owners>FilinFramework</Owners>-->
+    <IncludeSymbols>true</IncludeSymbols>
+    <LicenseFile>$(MSBuildThisFileDirectory)LICENSE.TXT</LicenseFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <Copyright>© $([System.DateTime]::Now.ToString('yyyy')) Pavel Petukhov. All rights reserved.</Copyright>
+    <PackageThirdPartyNoticesFile>$(MSBuildThisFileDirectory)THIRD-PARTY-NOTICES.TXT</PackageThirdPartyNoticesFile>
+    <PackageReleaseNotes></PackageReleaseNotes>
+    <IsPrivateAssembly>$(MSBuildProjectName.Contains('Private'))</IsPrivateAssembly>
+    <!-- Private packages should not be stable -->
+    <SuppressFinalPackageVersion Condition="'$(SuppressFinalPackageVersion)' == '' and $(IsPrivateAssembly)">true</SuppressFinalPackageVersion>
+    <!-- We don't want Private packages to be shipped to NuGet.org -->
+    <IsShippingPackage Condition="$(IsPrivateAssembly)">false</IsShippingPackage>
+    <PlaceholderFile>$(RepositoryEngineeringDir)_._</PlaceholderFile>
+
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <!-- Set output folder for created NuGet packages -->
+    <PackageOutputPath Condition=" '$(PackageOutputPath)'=='' ">$(SourceRoot)/artifacts/$(Configuration)</PackageOutputPath>
+  </PropertyGroup>
+
+  <!--<None Include="$(SourceRoot)assets/logo_128.png" Pack="true" Visible="false" PackagePath="/" />-->
+
+  <!-- Flow these properties to consuming projects. -->
+  <ItemDefinitionGroup>
+    <TargetPathWithTargetPlatformMoniker>
+      <IsPrivateAssembly>$(IsPrivateAssembly.ToLowerInvariant())</IsPrivateAssembly>
+    </TargetPathWithTargetPlatformMoniker>
+  </ItemDefinitionGroup>
+
+  <!-- Language configuration -->
+  <PropertyGroup>
+    <!-- default to allowing all language features -->
+    <LangVersion>preview</LangVersion>
+    <!-- default to max warnlevel -->
+    <AnalysisLevel Condition="'$(MSBuildProjectExtension)' == '.csproj'">preview</AnalysisLevel>
+    <!-- Enables Strict mode for Roslyn compiler -->
+    <Features>strict;nullablePublicOnly</Features>
+    <TreatWarningsAsErrors Condition="'$(TreatWarningsAsErrors)' == ''">true</TreatWarningsAsErrors>
+    <!-- Only upgrade NuGetAudit warnings to errors for official builds. -->
+    <WarningsNotAsErrors Condition="'$(OfficialBuild)' != 'true' OR '$(NuGetAuditWarnNotError)' == 'true'">$(WarningsNotAsErrors);NU1901;NU1902;NU1903;NU1904</WarningsNotAsErrors>
+    <!-- Warnings to always disable -->
+    <NoWarn>$(NoWarn);CS8500;CS8969</NoWarn>
+    <!-- Suppress "CS1591 - Missing XML comment for publicly visible type or member" compiler errors for private assemblies. -->
+    <NoWarn Condition="'$(IsPrivateAssembly)' == 'true'">$(NoWarn);CS1591</NoWarn>
+    <!-- Always pass portable to override arcade sdk which uses embedded for local builds -->
+    <DebugType>portable</DebugType>
+    <KeepNativeSymbols Condition="'$(KeepNativeSymbols)' == '' and '$(BuildSourceOnly)' == 'true'">true</KeepNativeSymbols>
+    <KeepNativeSymbols Condition="'$(KeepNativeSymbols)' == ''">false</KeepNativeSymbols>
+    <!-- Used for launchSettings.json and runtime config files. -->
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <!-- By default the SDK produces ref assembly for 5.0 or later -->
+    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+  </PropertyGroup>
+
+  <!-- Define test projects and companions -->
+  <PropertyGroup Condition="$(MSBuildProjectFullPath.Contains('$([System.IO.Path]::DirectorySeparatorChar)tests$([System.IO.Path]::DirectorySeparatorChar)'))">
+    <IsTestProject Condition="$(MSBuildProjectName.EndsWith('.UnitTests')) or $(MSBuildProjectName.EndsWith('.Tests'))">true</IsTestProject>
+    <IsTestSupportProject Condition="'$(IsTestProject)' != 'true'">true</IsTestSupportProject>
+
+    <!-- Treat test assemblies as non-shipping (do not publish or sign them). -->
+    <IsShipping Condition="'$(IsTestProject)' == 'true' or '$(IsTestSupportProject)' == 'true'">false</IsShipping>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Treat as a generator project if either the parent or the parent parent directory is named gen. -->
+    <IsGeneratorProject Condition="$([System.IO.Path]::GetFileName('$(MSBuildProjectDirectory)')) == 'gen' or
+                                   $([System.IO.Path]::GetFileName('$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\..'))')) == 'gen'">true</IsGeneratorProject>
+    <IsSourceProject Condition="'$(IsSourceProject)' == '' and
+                                '$(IsReferenceAssemblyProject)' != 'true' and
+                                '$(IsGeneratorProject)' != 'true' and
+                                '$(IsTestProject)' != 'true' and
+                                '$(IsTestSupportProject)' != 'true'">true</IsSourceProject>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(IsReferenceAssemblyProject)' == 'true'">
+    <!-- Reference assemblies are special and don't initialize fields or have empty finalizers, etc. -->
+    <RunAnalyzers>false</RunAnalyzers>
+    <!-- disable warnings about unused fields -->
+    <NoWarn>$(NoWarn);CS0169;CS0649;CS8618</NoWarn>
+    <!-- disable CS8597 because we throw null on reference assemblies. -->
+    <NoWarn>$(NoWarn);CS8597</NoWarn>
+    <!-- We base calls from constructors with null literals. -->
+    <NoWarn>$(NoWarn);CS8625</NoWarn>
+    <!-- We dont need to add null annotation within the ref for explicit interface methods. -->
+    <NoWarn>$(NoWarn);CS8617</NoWarn>
+    <!-- don't warn about explicit ctors in classes with [EventSource] -->
+    <NoWarn>$(NoWarn);ESGEN001;ESGEN002</NoWarn>
+    <!-- No symbols are produced for ref assemblies, but some parts of the SDK still expect pdbs, so we explicitly tell it there are none. -->
+    <!-- Must be set after importing Arcade to override its defaults. -->
+    <DebugType>none</DebugType>
+    <!-- Don't try to publish PDBs for ref assemblies that have none. -->
+    <PublishWindowsPdb>false</PublishWindowsPdb>
+  </PropertyGroup>
+
+  <!-- All reference assemblies should have a ReferenceAssemblyAttribute and the 0x70 flag which prevents them from loading. -->
+  <ItemGroup Condition="'$(IsReferenceAssemblyProject)' == 'true'">
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.ReferenceAssemblyAttribute" />
+    <AssemblyAttribute Include="System.Reflection.AssemblyFlags">
+      <_Parameter1>(System.Reflection.AssemblyNameFlags)0x70</_Parameter1>
+      <_Parameter1_IsLiteral>true</_Parameter1_IsLiteral>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(IsSourceProject)' == 'true'">
+    <!-- Must be defined in a props file as imports in Microsoft.DotNet.ApiCompat.Task.targets depend on it. -->
+    <ApiCompatValidateAssemblies>true</ApiCompatValidateAssemblies>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(IsGeneratorProject)' == 'true'">
+    <!-- Unique assembly versions increases(3x) the compiler throughput during reference package updates. -->
+    <AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
+    <!-- To suppress warnings about resetting the assembly version.-->
+    <AssemblyVersion />
+    <!-- Enforce extended rules around API usages in analyzers and generators to ensure our generators follow best practices. -->
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+  </PropertyGroup>
+
+  <!-- Warnings that should be disabled in our test projects. -->
+  <PropertyGroup Condition="'$(IsTestProject)' == 'true' or '$(IsTestSupportProject)' == 'true'">
+    <!-- allow nullable annotated files to be incorporated into tests without warning -->
+    <Nullable Condition="'$(Nullable)' == ''">annotations</Nullable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <CustomBeforeNoTargets>$(RepositoryEngineeringDir)NoTargetsSdk.BeforeTargets.targets</CustomBeforeNoTargets>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <AnalysisMode>All</AnalysisMode>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>4487cd1f-9634-4052-b57c-0ad3b43f7bab</UserSecretsId>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(TF_BUILD)' == 'true'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+</Project>

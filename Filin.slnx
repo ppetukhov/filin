@@ -1,0 +1,104 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/playground/" />
+  <Folder Name="/playground/Education/">
+    <Project Path="playground/Education/Edu.App/Edu.App.csproj" Id="52698aac-1988-4001-be45-65ad8a617283" />
+    <Project Path="playground/Education/Edu.Contract/Edu.Contract.csproj" />
+    <Project Path="playground/Education/Edu/Edu.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Build.targets" />
+    <File Path="Directory.Packages.props" />
+    <File Path="global.json" />
+    <File Path="LICENSE.TXT" />
+    <File Path="nuget.config" />
+  </Folder>
+  <Folder Name="/eng/">
+    <File Path="eng/Analyzers.targets" />
+    <File Path="eng/CodeAnalysis.src.globalconfig" />
+    <File Path="eng/CodeAnalysis.test.globalconfig" />
+    <File Path="eng/GeneratorProjects.targets" />
+    <File Path="eng/NoTargetsSdk.BeforeTargets.targets" />
+    <File Path="eng/OuterBuild.targets" />
+    <File Path="eng/ResolveContract.targets" />
+    <File Path="eng/Resources.targets" />
+	<File Path="eng/Slngen.targets" />
+    <File Path="eng/Versioning.targets" />
+    <File Path="eng/Version.Details.props" />
+    <File Path="eng/Versions.props" />
+  </Folder>
+  <Folder Name="/src/" />
+  <Folder Name="/src/libraries/">
+    <File Path="src/libraries/Directory.Build.props" />
+    <File Path="src/libraries/Directory.Build.targets" />
+  </Folder>
+  <Folder Name="/src/libraries/Common/" />
+  <Folder Name="/src/libraries/Common/src/" />
+  <Folder Name="/src/libraries/Common/src/AdoNet/">
+    <File Path="src/libraries/Common/src/AdoNet/DbExtensions.cs" />
+  </Folder>
+  <Folder Name="/src/libraries/Common/src/Configuration/">
+    <File Path="src/libraries/Common/src/Configuration/FromExistingServiceCollectionExtensions.cs" />
+  </Folder>
+  <Folder Name="/src/libraries/Common/src/Hosting/">
+    <File Path="src/libraries/Common/src/Hosting/ReferencedAssemblyProvider.cs" />
+  </Folder>
+  <Folder Name="/src/libraries/Common/src/Roslyn/">
+    <File Path="src/libraries/Common/src/Roslyn/GetBestTypeByMetadataName.cs" />
+  </Folder>
+  <Folder Name="/src/libraries/Common/src/SourceGenerators/">
+    <File Path="src/libraries/Common/src/SourceGenerators/CSharpSyntaxUtilities.cs" />
+    <File Path="src/libraries/Common/src/SourceGenerators/DiagnosticInfo.cs" />
+    <File Path="src/libraries/Common/src/SourceGenerators/TypeRef.cs" />
+  </Folder>
+  <Folder Name="/src/libraries/Common/src/Text/">
+    <File Path="src/libraries/Common/src/Text/ValueStringBuilder.cs" />
+  </Folder>
+  <Folder Name="/src/libraries/Filin.Abstractions/" />
+  <Folder Name="/src/libraries/Filin.Abstractions/gen/">
+    <Project Path="src/libraries/Filin.Abstractions/gen/Filin.Generators.csproj" Id="b5cb9853-24b6-4813-99f9-f38489eafb7c" />
+  </Folder>
+  <Folder Name="/src/libraries/Filin.Abstractions/ref/">
+    <Project Path="src/libraries/Filin.Abstractions/ref/Filin.Abstractions.csproj" />
+  </Folder>
+  <Folder Name="/src/libraries/Filin.Abstractions/src/">
+    <Project Path="src/libraries/Filin.Abstractions/src/Filin.Abstractions.csproj" Id="b0a37696-6e5c-4928-8270-439c12d7d5bf" />
+  </Folder>
+  <Folder Name="/src/libraries/Filin.Abstractions/tests/">
+    <Project Path="src/libraries/Filin.Abstractions/tests/Filin.Abstractions.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/libraries/Filin.Compliance.Classification/" />
+  <Folder Name="/src/libraries/Filin.Compliance.Classification/ref/">
+    <Project Path="src/libraries/Filin.Compliance.Classification/ref/Filin.Compliance.Classification.csproj" />
+  </Folder>
+  <Folder Name="/src/libraries/Filin.Compliance.Classification/src/">
+    <Project Path="src/libraries/Filin.Compliance.Classification/src/Filin.Compliance.Classification.csproj" Id="f250fc49-1a6e-454f-82c5-48c7b0c1c7b5" />
+  </Folder>
+  <Folder Name="/src/libraries/Filin.EventStore.Postgres/" />
+  <Folder Name="/src/libraries/Filin.EventStore.Postgres/src/">
+    <Project Path="src/libraries/Filin.EventStore.Postgres/src/Filin.EventStore.Postgres.csproj" Id="06d0752e-79be-472c-b5cb-1276e049cb17" />
+  </Folder>
+  <Folder Name="/src/libraries/Filin.Executor/" />
+  <Folder Name="/src/libraries/Filin.Executor/src/">
+    <Project Path="src/libraries/Filin.Executor/src/Filin.Executor.csproj" Id="92eef5fd-5217-4fba-a2c6-0172833d0b49" />
+  </Folder>
+  <Folder Name="/src/libraries/Filin.Hosting/" />
+  <Folder Name="/src/libraries/Filin.Hosting/src/">
+    <Project Path="src/libraries/Filin.Hosting/src/Filin.Hosting.csproj" Id="54ed932d-7300-4753-89a4-b86a244954c4" />
+  </Folder>
+  <Folder Name="/src/libraries/Filin.ProjectionStore.AdoNet/" />
+  <Folder Name="/src/libraries/Filin.ProjectionStore.AdoNet/src/">
+    <Project Path="src/libraries/Filin.ProjectionStore.AdoNet/src/Filin.ProjectionStore.AdoNet.csproj" Id="eb354ac5-8c05-4759-b971-90ef55dfb599" />
+  </Folder>
+  <Folder Name="/src/libraries/Filin.Serialization/" />
+  <Folder Name="/src/libraries/Filin.Serialization/src/">
+    <Project Path="src/libraries/Filin.Serialization/src/Filin.Serialization.csproj" />
+  </Folder>
+</Solution>

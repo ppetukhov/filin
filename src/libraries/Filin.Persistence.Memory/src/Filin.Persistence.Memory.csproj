@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(NetCurrent);$(NetPrevious);$(NetMinimum)</TargetFrameworks>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(LibrariesProjectRoot)\Filin.Abstractions\src\Filin.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>

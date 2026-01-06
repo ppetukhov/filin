@@ -1,0 +1,34 @@
+<Project>
+  <PropertyGroup>
+    <!-- Disable analyzers in sourcebuild -->
+    <RunAnalyzers Condition="'$(BuildSourceOnly)' == 'true'">false</RunAnalyzers>
+    <EnableNETAnalyzers Condition="'$(EnableNETAnalyzers)' == ''">$(RunAnalyzers)</EnableNETAnalyzers>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(RunAnalyzers)' != 'false'">
+    <EnableSingleFileAnalyzer Condition="
+      '$(EnableSingleFileAnalyzer)' == '' and
+      '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and
+      '$(IsSourceProject)' == 'true'">true</EnableSingleFileAnalyzer>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(RunAnalyzers)' != 'false'">
+    <EditorConfigFiles Include="$(MSBuildThisFileDirectory)CodeAnalysis.src.globalconfig" />
+
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="all" />
+
+    <!--
+    <PackageReference Include="Microsoft.DotNet.CodeAnalysis" PrivateAssets="all" IsImplicitlyDefined="true" />
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeStyle" PrivateAssets="all" />
+    <PackageReference Include="StyleCop.Analyzers" PrivateAssets="all" />
+    -->
+  </ItemGroup>
+
+  <!--<ItemGroup Condition="'$(IsTestProject)' == 'true'">
+    <EditorConfigFiles Remove="$(RepositoryEngineeringDir)CodeAnalysis.src.globalconfig" />
+    <EditorConfigFiles Include="$(RepositoryEngineeringDir)CodeAnalysis.test.globalconfig" />
+  </ItemGroup>-->
+</Project>

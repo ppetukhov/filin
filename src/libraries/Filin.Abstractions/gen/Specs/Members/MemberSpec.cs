@@ -1,0 +1,28 @@
+using System.Diagnostics;
+
+using Microsoft.CodeAnalysis;
+
+using Filin.Generators.Extensions;
+
+using SourceGenerators;
+
+namespace Filin.Generators.Specs.Members;
+
+abstract record MemberSpec
+{
+    public MemberSpec(ISymbol member, TypeRef typeRef)
+    {
+        Debug.Assert(member is IPropertySymbol or IParameterSymbol);
+        Accessibility = member.GetGlobalAccessibility();
+        Name = member.Name;
+        TypeRef = typeRef;
+    }
+
+    public Accessibility Accessibility { get; }
+
+    public string Name { get; }
+
+    public TypeRef TypeRef { get; }
+
+    public abstract bool CanGet { get; }
+}

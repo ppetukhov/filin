@@ -1,0 +1,41 @@
+<Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" Condition="'' != $([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+ 
+  <!-- Language configuration -->
+  <PropertyGroup>
+    <!--<GenFacadesIgnoreBuildAndRevisionMismatch>true</GenFacadesIgnoreBuildAndRevisionMismatch>-->
+    <!-- Disable analyzers for tests and unsupported projects -->
+    <RunAnalyzers Condition="'$(IsTestProject)' != 'true' and '$(IsSourceProject)' != 'true' and '$(IsGeneratorProject)' != 'true'">false</RunAnalyzers>
+    <!-- Enable documentation file generation by the compiler for all libraries except for vbproj. -->
+    <GenerateDocumentationFile Condition="'$(IsSourceProject)' == 'true'">true</GenerateDocumentationFile>
+
+    <!--<CLSCompliant Condition="'$(CLSCompliant)' == '' and '$(IsTestProject)' != 'true' and '$(IsTestSupportProject)' != 'true'">true</CLSCompliant>-->
+    
+    <!-- Nullability is enabled by default except for test projects, which instead default to annotations. -->
+    <Nullable Condition="'$(Nullable)' == '' and '$(IsTestProject)' != 'true'">enable</Nullable>
+    <Nullable Condition="'$(Nullable)' == '' and '$(IsTestProject)' == 'true'">annotations</Nullable>
+    <!-- AOT compatibility is enabled by default for src/ref projects. -->
+    <IsAotCompatible Condition="'$(IsAotCompatible)' == '' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0')) and ('$(IsSourceProject)' == 'true' or '$(IsReferenceAssemblyProject)' == 'true')">true</IsAotCompatible>
+  </PropertyGroup>
+
+  <!-- Set up common paths -->
+  <PropertyGroup>
+    <CommonPathRoot>$([MSBuild]::NormalizeDirectory('$(LibrariesProjectRoot)', 'Common'))</CommonPathRoot>
+    <CommonPath>$([MSBuild]::NormalizeDirectory('$(CommonPathRoot)', 'src'))</CommonPath>
+    <CommonTestPath>$([MSBuild]::NormalizeDirectory('$(CommonPathRoot)', 'tests'))</CommonTestPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
+    <EnableTestSupport>true</EnableTestSupport>
+    <!-- TODO: Remove these conditions when VSTest is used in CI. -->
+    <EnableRunSettingsSupport Condition="'$(ContinuousIntegrationBuild)' != 'true'">true</EnableRunSettingsSupport>
+    <EnableCoverageSupport Condition="'$(ContinuousIntegrationBuild)' != 'true'">true</EnableCoverageSupport>
+  </PropertyGroup>
+
+  <!--<Import Project="$(RepositoryEngineeringDir)testing\tests.props" Condition="'$(EnableTestSupport)' == 'true'" />-->
+  
+  <!-- Use msbuild path functions as that property is used in bash scripts. -->
+  <ItemGroup>
+    <CoverageExcludeByFile Include="$([MSBuild]::NormalizePath('$(LibrariesProjectRoot)', 'Common', 'src', 'Filin', 'SR.*'))" />
+  </ItemGroup>
+</Project>

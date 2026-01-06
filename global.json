@@ -1,0 +1,10 @@
+{
+  "sdk": {
+    "rollForward": "major",
+    "version": "9.0.201"
+  },
+  "msbuild-sdks": {
+    "Microsoft.Build.NoTargets": "3.7.0",
+    "Microsoft.Build.Traversal": "3.4.0"
+  }
+}

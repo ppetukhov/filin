@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AnalyzerRoslynVersion>4.4</AnalyzerRoslynVersion>
+    <AssemblyName>$(MSBuildThisFileName)</AssemblyName>
+    <RootNamespace>$(MSBuildThisFileName)</RootNamespace>
+    <StringResourcesClassName>SR</StringResourcesClassName>
+    <StringResourcesName>FxResources.$(RootNamespace).$(StringResourcesClassName)</StringResourcesName>
+    <EnableDefaultItems>true</EnableDefaultItems>
+    <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    <UsingToolXliff>true</UsingToolXliff>
+    <CLSCompliant>false</CLSCompliant>
+    <AnalyzerLanguage>cs</AnalyzerLanguage>
+    <LangVersion>preview</LangVersion>
+    <DefineConstants Condition="'$(LaunchDebugger)' == 'true'">$(DefineConstants);LAUNCH_DEBUGGER</DefineConstants>
+
+    <!-- https://learn.microsoft.com/en-us/nuget/reference/nuspec?WT.mc_id=DT-MVP-5003978#developmentdependency -->
+    <developmentDependency>true</developmentDependency>
+
+    <!-- Do not include the dll into the NuGet package, we'll add it manually at the right location -->
+    <IncludeBuildOutput>true</IncludeBuildOutput>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(CommonPath)\Roslyn\GetBestTypeByMetadataName.cs" Link="Common\Roslyn\GetBestTypeByMetadataName.cs" />
+    <Compile Include="$(CommonPath)\SourceGenerators\TypeModelHelper.cs" Link="Common\SourceGenerators\TypeModelHelper.cs" />
+    <Compile Include="$(CommonPath)\SourceGenerators\TypeRef.cs" Link="Common\SourceGenerators\TypeRef.cs" />
+  </ItemGroup>
+
+  <ItemGroup Label="Package">
+    <!-- Include the custom .targets file to check the source generator -->
+    <None Include="Filin.Generators.targets" PackagePath="buildTransitive\" Pack="true" />
+    <None Include="Filin.Generators.targets" PackagePath="build\" Pack="true" />
+  
+    <!-- Pack the source generator binary -->
+    <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+  </ItemGroup>
+  
+</Project>

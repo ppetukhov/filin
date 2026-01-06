@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Edu</RootNamespace>
+    <Nullable>enable</Nullable>
+    <TargetFramework>$(NetCurrent)</TargetFramework>
+    <LaunchDebugger>true</LaunchDebugger>
+    <DefineConstants>$(DefineConstants);LAUNCH_DEBUGGER</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(LibrariesProjectRoot)\Filin.Abstractions\gen\Filin.Generators.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <OutputItemType>Analyzer</OutputItemType>
+    </ProjectReference>
+    <ProjectReference Include="..\Edu.Contract\Edu.Contract.csproj" />
+  </ItemGroup>
+
+</Project>

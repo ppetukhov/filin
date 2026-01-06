@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(NetCurrent);$(NetPrevious);$(NetMinimum)</TargetFrameworks>
+    <IsPackable>true</IsPackable>
+    <DefineConstants>$(DefineConstants);EVENTSTORE_POSTGRES</DefineConstants>
+    <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
+  </PropertyGroup>
+ 
+  <ItemGroup>
+    <PackageReference Include="Npgsql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(CommonPath)\AdoNet\DbExtensions.cs" />
+    <Compile Include="$(CommonPath)\Text\ValueStringBuilder.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(LibrariesProjectRoot)\Filin.Compliance.Classification\src\Filin.Compliance.Classification.csproj" />
+    <ProjectReference Include="$(LibrariesProjectRoot)\Filin.Executor\src\Filin.Executor.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Filin</RootNamespace>
+    <IsPackable>true</IsPackable>
+    <TargetFrameworks>$(NetCurrent);$(NetPrevious);$(NetMinimum)</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.IO.Hashing" />
+  </ItemGroup>
+ 
+  <ItemGroup>
+    <ProjectReference Include="..\gen\Filin.Generators.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+ 
+  <ItemGroup Label="Package">
+    <!-- Include the custom .targets file to check the source generator -->
+    <None Include="..\gen\Filin.Generators.targets" PackagePath="build\Filin.Abstractions.targets" Pack="true" Visible="false" />
+    <None Include="..\gen\Filin.Generators.targets" PackagePath="buildTransitive\Filin.Abstractions.targets" Pack="true" Visible="false" />
+
+    <!-- Pack the source generator binary -->
+    <None Include="..\gen\bin\$(Configuration)\netstandard2.0\Filin.Generators.dll" PackagePath="analyzers\dotnet\cs" Pack="true" Visible="false" />
+  </ItemGroup>
+  
+</Project>
