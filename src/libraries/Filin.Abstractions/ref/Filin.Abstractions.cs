@@ -13,15 +13,6 @@ namespace Filin
         public string AssemblyName { get { throw null; } }
     }
 
-    public sealed partial class DcbConflictException : DcbException
-    {
-        public DcbConflictException() { }
-
-        public DcbConflictException(string? message, System.Exception? innerException) { }
-
-        public DcbConflictException(string? message) { }
-    }
-
     public ref struct Enumerator<T> where T : notnull
     {
         public bool MoveNext() { throw null; }
