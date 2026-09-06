@@ -142,7 +142,7 @@ sealed partial class EventStore
 
                 var dcbEvent = new DcbEvent { EventType = eventType, Tags = tags, Timestamp = timestamp, Data = data };
 
-                Current = new DcbEventSequenced(dcbEvent, position);
+                Current = new DcbEventSequenced(position, dcbEvent);
             }
             catch (OperationCanceledException)
             {

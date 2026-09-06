@@ -52,7 +52,7 @@ namespace Filin
         public override string ToString() { throw null; }
     }
 
-    public readonly partial record struct DcbEventSequenced(DcbEvent Event, EventPosition Position)
+    public readonly partial record struct DcbEventSequenced(EventPosition Position, DcbEvent Event)
     {
     }
 

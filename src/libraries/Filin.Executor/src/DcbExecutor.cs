@@ -67,7 +67,7 @@ sealed class DcbExecutor(
                 {
                     var dcbEvent = decideResult[0];
                     position = await eventStore.AppendAsync(dcbEvent, query, position, cancellationToken).ConfigureAwait(false);
-                    lastAppliedEvent = new DcbEventSequenced(dcbEvent, position);
+                    lastAppliedEvent = new DcbEventSequenced(position, dcbEvent);
 
                     state = state is not null ? projectorInvoker.Project(state, lastAppliedEvent) : projectorInvoker.Project(lastAppliedEvent);
                 }
@@ -96,7 +96,7 @@ sealed class DcbExecutor(
                     {
                         Debug.Assert(i < events.Count);
 
-                        lastAppliedEvent = new DcbEventSequenced(events[i++], pos);
+                        lastAppliedEvent = new DcbEventSequenced(pos, events[i++]);
 
                         state = state is not null ? projectorInvoker.Project(state, lastAppliedEvent) : projectorInvoker.Project(lastAppliedEvent);
                         position = pos;

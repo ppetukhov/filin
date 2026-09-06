@@ -53,7 +53,7 @@ sealed record PgEventPayload
             tags = null;
         }
 
-        return new DcbEventSequenced(new DcbEvent { EventType = eventType, Timestamp = timestamp, Tags = tags, Data = NullData }, position);
+        return new DcbEventSequenced(position, new DcbEvent { EventType = eventType, Timestamp = timestamp, Tags = tags, Data = NullData });
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static byte[]? ToValueBytes(string? id) => string.IsNullOrEmpty(id) ? null : Encoding.UTF8.GetBytes(id);

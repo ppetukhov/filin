@@ -497,12 +497,12 @@ sealed partial class EventStore(
         sbNames.Dispose();
     }
 
-    static DcbEventSequenced InitialEnumeratorEvent(EventPosition afterPosition) => new(new DcbEvent
+    static DcbEventSequenced InitialEnumeratorEvent(EventPosition afterPosition) => new(afterPosition, new DcbEvent
     {
         EventType = default,
         Timestamp = default,
         Data = new object()
-    }, afterPosition);
+    });
 
     [DoesNotReturn]
     static void ThrowConflictException() => throw new DcbConflictException();
