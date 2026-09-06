@@ -33,10 +33,9 @@ sealed partial class EventStore(
     readonly ILogger _logger = loggerFactory.CreateLogger("Filin.EventStore.Postgres");
 
     /// <inheritdoc/>
-    public async Task<EventPosition> AppendAsync(DcbEvent @event, DcbQuery failIfEventsMatch, EventPosition after, CancellationToken cancellationToken = default)
+    public async Task<AppendResult> AppendAsync(DcbEvent @event, AppendCondition appendCondition, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(@event);
-        ArgumentNullException.ThrowIfNull(failIfEventsMatch);
 
         try
         {
@@ -46,7 +45,7 @@ sealed partial class EventStore(
             }
 
             using var connection = CreateConnection();
-            using var command = CreateAppendEventCommand(connection, @event, failIfEventsMatch, after, options.Value.StorageSerializer);
+            using var command = CreateAppendEventCommand(connection, @event, ref appendCondition, options.Value.StorageSerializer);
 
             var lockTimeoutRetries = 0;
 
@@ -62,7 +61,7 @@ sealed partial class EventStore(
                     {
                         _logger.ConflictAppendingEvents();
 
-                        ThrowConflictException();
+                        return AppendResult.Conflict;
                     }
 
                     var pos = new EventPosition((ulong)reader.GetInt64(reader.GetOrdinal(ColumnNames.Position)));
@@ -72,7 +71,7 @@ sealed partial class EventStore(
                         _logger.EventsAppended();
                     }
 
-                    return pos;
+                    return new(new DcbEventSequenced(pos, @event));
                 }
                 catch (DbException dbex) when (dbex.SqlState is "DCB01") // lock timeout in the event store.
                 {
@@ -101,15 +100,25 @@ sealed partial class EventStore(
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<EventPosition>> AppendAsync(IEnumerable<DcbEvent> events, DcbQuery failIfEventsMatch, EventPosition after, CancellationToken cancellationToken = default)
+    public Task<AppendResult> AppendAsync(IEnumerable<DcbEvent> events, AppendCondition appendCondition, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(events);
-        ArgumentNullException.ThrowIfNull(failIfEventsMatch);
 
-        var count = events.TryGetNonEnumeratedCount(out var cnt) ? cnt : events.Count();
+        if (events is not ICollection<DcbEvent> collection)
+        {
+            collection = [.. events];
+        }
 
-        ArgumentOutOfRangeException.ThrowIfZero(count, nameof(events));
+        return collection.Count switch
+        {
+            0 => Task.FromResult(AppendResult.Empty),
+            1 => AppendAsync(collection.First(), appendCondition, cancellationToken),
+            _ => AppendAsync(collection, appendCondition, cancellationToken),
+        };
+    }
 
+    async Task<AppendResult> AppendAsync(ICollection<DcbEvent> events, AppendCondition appendCondition, CancellationToken cancellationToken)
+    {
         try
         {
             if (_logger.IsEnabled(LogLevel.Debug))
@@ -117,8 +126,10 @@ sealed partial class EventStore(
                 _logger.AppendingEvents();
             }
 
+            var count = events.Count;
+
             using var connection = CreateConnection();
-            using var command = CreateAppendEventsCommand(connection, events, failIfEventsMatch, after, options.Value.StorageSerializer);
+            using var command = CreateAppendEventsCommand(connection, events, ref appendCondition, options.Value.StorageSerializer);
 
             if (command.Connection is { } conn && conn.State != ConnectionState.Open)
             {
@@ -156,23 +167,28 @@ sealed partial class EventStore(
                         _logger.EventsAppended();
                     }
 
-                    return positions;
+                    var items = new DcbEventSequenced[count];
+
+                    var i = 0;
+
+                    foreach (var evt in events)
+                    {
+                        var pos = positions[i];
+
+                        items[i] = new(pos, evt);
+                        i++;
+                    }
+
+                    return new(items);
                 }
                 else if (positions.Count == 0)
                 {
                     _logger.ConflictAppendingEvents();
 
-                    ThrowConflictException();
+                    return AppendResult.Conflict;
                 }
 
-                var ex = new InvalidOperationException("Unexpected rows count");
-
-                ex.Data["Count"] = positions.Count;
-                ex.Data["ExpectedCount"] = count;
-                ex.Data["FailIfEventsMatch"] = failIfEventsMatch;
-                ex.Data["After"] = after;
-
-                throw ex;
+                ThrowUnexpectedRowsCount(ref appendCondition, count, positions.Count);
             }
 
             throw new InvalidOperationException("Max retries was reached");
@@ -192,6 +208,19 @@ sealed partial class EventStore(
 
             throw EventStoreException(ex);
         }
+    }
+
+    [DoesNotReturn]
+    static void ThrowUnexpectedRowsCount(ref AppendCondition appendCondition, int expectedCount, int count)
+    {
+        var ex = new InvalidOperationException("Unexpected rows count");
+
+        ex.Data["Count"] = count;
+        ex.Data["ExpectedCount"] = expectedCount;
+        ex.Data["FailIfEventsMatch"] = appendCondition.FailIfEventsMatch;
+        ex.Data["After"] = appendCondition.After;
+
+        throw ex;
     }
 
     /// <inheritdoc/>
@@ -241,8 +270,7 @@ sealed partial class EventStore(
     static NpgsqlCommand CreateAppendEventCommand(
         NpgsqlConnection connection,
         DcbEvent @event,
-        DcbQuery failIfEventsMatch,
-        EventPosition after,
+        ref AppendCondition appendCondition,
         IStorageSerializer serializer)
     {
         var command = connection.CreateCommand();
@@ -253,9 +281,9 @@ sealed partial class EventStore(
         sb.Append("SELECT * from append_event(");
         AppendEvent(ref sb, @event, null, command, serializer);
         sb.Append(", ");
-        AppendAfterPosition(ref sb, after, command);
+        AppendAfterPosition(ref sb, appendCondition.After, command);
         sb.Append(", ");
-        AppendQuery(ref sb, failIfEventsMatch, command);
+        AppendQuery(ref sb, appendCondition.FailIfEventsMatch, command);
         sb.Append(");");
 #pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
         command.CommandText = sb.ToString();
@@ -267,8 +295,7 @@ sealed partial class EventStore(
     static NpgsqlCommand CreateAppendEventsCommand(
         NpgsqlConnection connection,
         IEnumerable<DcbEvent> events,
-        DcbQuery failIfEventsMatch,
-        EventPosition after,
+        ref AppendCondition appendCondition,
         IStorageSerializer serializer)
     {
         var command = connection.CreateCommand();
@@ -289,9 +316,9 @@ sealed partial class EventStore(
         sb.Length -= 1; // drop last symbol ','
 
         sb.Append("]::dcb_event_raw[], ");
-        AppendAfterPosition(ref sb, after, command);
+        AppendAfterPosition(ref sb, appendCondition.After, command);
         sb.Append(", ");
-        AppendQuery(ref sb, failIfEventsMatch, command);
+        AppendQuery(ref sb, appendCondition.FailIfEventsMatch, command);
         sb.Append(");");
 #pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
         command.CommandText = sb.ToString();
@@ -503,9 +530,6 @@ sealed partial class EventStore(
         Timestamp = default,
         Data = new object()
     });
-
-    [DoesNotReturn]
-    static void ThrowConflictException() => throw new DcbConflictException();
 
     static DcbEventStoreException EventStoreException(Exception ex) => new(message: ex.Message, innerException: ex);
 

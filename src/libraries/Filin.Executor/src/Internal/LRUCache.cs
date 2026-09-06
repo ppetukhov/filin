@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace Filin;
+namespace Filin.Internal;
 
 /// <summary>
 /// A least-recently-used cache stored like a dictionary.
@@ -18,7 +18,7 @@ sealed class LRUCache<TKey, TValue>(int capacity, TimeSpan ttl)
     where TValue : class
 {
     readonly Lock _lockObj = new Lock();
-    readonly Dictionary<TKey, Entry> _cacheMap = new Dictionary<TKey, Entry>(capacity: capacity);
+    readonly Dictionary<TKey, Entry> _cacheMap = [with(capacity: capacity)];
     readonly LinkedList<TKey> _cacheList = new LinkedList<TKey>();
 
     /// <summary>

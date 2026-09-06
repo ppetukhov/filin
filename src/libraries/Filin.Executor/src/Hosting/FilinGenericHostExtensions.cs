@@ -3,6 +3,8 @@ using System.Diagnostics.CodeAnalysis;
 using Filin;
 using Filin.Configuration;
 using Filin.Hosting;
+using Filin.Internal;
+using Filin.Storage;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -185,7 +187,10 @@ public static class FilinGenericHostExtensions
             services.AddSingleton<IValidateOptions<ProjectionSaveOptions>, ProjectionSaveOptionsValidator>();
             services.AddHostedService<ProjectionSaveHostedService>();
 
-            services.AddSingleton<IDcbExecutor, DcbExecutor>();
+            services.TryAddSingleton(_ => new LRUCache<ProjectionId, Projection>(255, TimeSpan.FromMinutes(15)));
+
+            services.AddSingleton<HandlersFactory>();
+            services.AddSingleton<IMediator, Mediator>();
 
             services.ConfigureFormatter<ExecutorOptions>();
 

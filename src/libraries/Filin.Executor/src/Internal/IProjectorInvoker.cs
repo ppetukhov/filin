@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace Filin;
+namespace Filin.Internal;
 
 /// <inheritdoc cref="IProjector{TState}"/>
 interface IProjectorInvoker<TState> where TState : notnull

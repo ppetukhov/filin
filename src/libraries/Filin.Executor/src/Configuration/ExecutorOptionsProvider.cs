@@ -1,5 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 
+using Filin.Internal;
+
 using Microsoft.Extensions.Options;
 
 namespace Filin.Configuration;

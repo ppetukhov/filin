@@ -1,4 +1,4 @@
-namespace Filin;
+namespace Filin.Internal;
 
 /// <inheritdoc cref="IDecider{TCommand, TState}"/>
 interface IDeciderInvoker<TCommand, TState>

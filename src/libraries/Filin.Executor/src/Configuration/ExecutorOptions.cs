@@ -1,3 +1,5 @@
+using Filin.Internal;
+
 namespace Filin.Configuration;
 
 sealed class ExecutorOptions

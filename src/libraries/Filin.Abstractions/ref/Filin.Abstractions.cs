@@ -259,6 +259,28 @@ namespace Filin
         public uint Version { get { throw null; } }
     }
 
+    public readonly partial record struct ExecuteResult<TState> where TState : notnull
+    {
+        readonly TState? _state;
+
+        [System.Diagnostics.CodeAnalysis.MemberNotNullWhen(true, "_state")]
+        public bool IsSuccess { get { throw null; } }
+
+        [System.Diagnostics.CodeAnalysis.MemberNotNullWhen(false, "_state")]
+        public bool IsFailure { get { throw null; } }
+
+        public TState State { get { throw null; } }
+        public Error Error { get { throw null; } }
+
+        public static ExecuteResult<TState> Success(TState state) { throw null; }
+        public static ExecuteResult<TState> Failure(Error error) { throw null; }
+
+        public static implicit operator ExecuteResult<TState>(TState state) { throw null; }
+        public static implicit operator ExecuteResult<TState>(Error error) { throw null; }
+
+        public TOut Match<TOut>(Func<TState, TOut> onSuccess, Func<Error, TOut> onFailure) { throw null; }
+    }
+
     public partial interface ICommand<TState> : IWithQueryTags where TState : notnull
     {
     }
@@ -321,6 +343,17 @@ namespace Filin
         public readonly bool TryFormat(System.Span<char> destination, out int charsWritten) { throw null; }
 
         public static Identity UnsafeCreate(byte[]? value, int hashCode) { throw null; }
+    }
+
+    public partial interface IMediator
+    {
+        Task<ExecuteResult<TState>> ExecuteAsync<TCommand, TState>(TCommand command, CancellationToken cancellationToken)
+            where TState : notnull
+            where TCommand : notnull, ICommand<TState>;
+
+        Task<TProjection?> QueryAsync<TQuery, TProjection>(TQuery query, CancellationToken cancellationToken)
+            where TProjection : notnull
+            where TQuery : notnull, IQuery<TProjection>;
     }
 
     public partial interface IProjector<TState> where TState : notnull
@@ -685,9 +718,11 @@ namespace Filin.Storage
     {
         public static readonly AppendResult Conflict;
 
+        public static readonly AppendResult Empty;
+
         public AppendResult(DcbEventSequenced @event) { throw null; }
 
-        public AppendResult(DcbEventSequenced @event, params ReadOnlySpan<DcbEventSequenced> events) { throw null; }
+        public AppendResult(IReadOnlyList<DcbEventSequenced> events) { throw null; }
 
         public DcbEventSequenced this[int index] { get { throw null; } }
 
@@ -707,16 +742,14 @@ namespace Filin.Storage
         }
     }
 
+    public readonly record struct AppendCondition(DcbQuery FailIfEventsMatch, EventPosition After);
+
     public partial interface IEventStore
     {
-        System.Threading.Tasks.Task<EventPosition> AppendAsync(DcbEvent domainEvent, DcbQuery failIfEventsMatch, EventPosition after, System.Threading.CancellationToken cancellationToken = default);
-        System.Threading.Tasks.Task<EventPosition> AppendAsync(DcbEvent domainEvent, DcbQuery failIfEventsMatch, System.Threading.CancellationToken cancellationToken = default) => AppendAsync(domainEvent, failIfEventsMatch, default, cancellationToken);
-        System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<EventPosition>> AppendAsync(System.Collections.Generic.IEnumerable<DcbEvent> domainEvents, DcbQuery failIfEventsMatch, EventPosition after, System.Threading.CancellationToken cancellationToken = default);
-        System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<EventPosition>> AppendAsync(System.Collections.Generic.IEnumerable<DcbEvent> domainEvents, DcbQuery failIfEventsMatch, System.Threading.CancellationToken cancellationToken = default) => AppendAsync(domainEvents, failIfEventsMatch, default, cancellationToken);
-        System.Collections.Generic.IAsyncEnumerable<DcbEventSequenced> ReadAsync(DcbQuery query, EventPosition afterPosition);
-        System.Collections.Generic.IAsyncEnumerable<DcbEventSequenced> ReadAsync(DcbQuery query) => ReadAsync(query, default);
-        System.Collections.Generic.IAsyncEnumerable<DcbEventSequenced> Subscribe(DcbQuery query, EventPosition afterPosition);
-        System.Collections.Generic.IAsyncEnumerable<DcbEventSequenced> Subscribe(DcbQuery query);
+        System.Threading.Tasks.Task<AppendResult> AppendAsync(DcbEvent @event, AppendCondition appendCondition, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<AppendResult> AppendAsync(System.Collections.Generic.IEnumerable<DcbEvent> events, AppendCondition appendCondition, System.Threading.CancellationToken cancellationToken);
+        System.Collections.Generic.IAsyncEnumerable<DcbEventSequenced> ReadAsync(DcbQuery query, EventPosition after);
+        System.Collections.Generic.IAsyncEnumerable<DcbEventSequenced> Subscribe(DcbQuery query, EventPosition after);
     }
 
     public partial interface IProjectionStore

@@ -11,14 +11,14 @@ public readonly partial struct AppendResult
     public ref struct Enumerator
     {
         readonly DcbEventSequenced _single;
-        readonly ReadOnlySpan<DcbEventSequenced> _values;
+        readonly IReadOnlyList<DcbEventSequenced>? _values;
         int _index = -1;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal Enumerator(DcbEvent value, EventPosition pos) => _single = new(pos, value);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal Enumerator(ReadOnlySpan<DcbEventSequenced> values) => _values = values;
+        internal Enumerator(IReadOnlyList<DcbEventSequenced> values) => _values = values;
 
         /// <summary>
         /// Advances the enumerator to the next element of the collection.
@@ -52,7 +52,7 @@ public readonly partial struct AppendResult
                     ThrowInvalidOperationException();
                 }
 
-                return _single.Event is not null ? _single : _values[_index];
+                return _values is not null ? _values[_index] : _single;
             }
         }
 
@@ -61,6 +61,6 @@ public readonly partial struct AppendResult
         static void ThrowInvalidOperationException() => throw new InvalidOperationException("Enumerator.Current value has not been set.");
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        readonly int Count() => _single.Event is not null ? 1 : _values.Length;
+        readonly int Count() => _single.Event is not null ? 1 : _values is not null ? _values.Count : 0;
     }
 }

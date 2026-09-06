@@ -10,9 +10,14 @@ public readonly partial struct AppendResult
     /// <summary>
     /// Represents a pre-allocated failed result indicating that a business conflict occurred when appending events.
     /// </summary>
-    public static readonly AppendResult Conflict;
+    public static readonly AppendResult Conflict = new(true);
 
-    readonly object? _value; // Stores either a single DcbEvent or a DcbEventSequenced[] array.
+    /// <summary>
+    /// Represents a pre-allocated successful result for an empty event append operation.
+    /// </summary>
+    public static readonly AppendResult Empty = new(false);
+
+    readonly object? _value; // Stores either a single DcbEvent or a IReadOnlyList<DcbEventSequenced> list.
     readonly EventPosition _pos;
 
     /// <summary>
@@ -31,28 +36,31 @@ public readonly partial struct AppendResult
     /// <summary>
     /// Initializes a new instance of the <see cref="AppendResult"/> struct with multiple appended events stored in a array.
     /// </summary>
-    /// <param name="event">The first mandatory sequenced event.</param>
     /// <param name="events">The sequential block containing additional appended events.</param>
-    /// <exception cref="ArgumentNullException">Thrown if the underlying event payload is null.</exception>
-    public AppendResult(DcbEventSequenced @event, params ReadOnlySpan<DcbEventSequenced> events)
+    /// <exception cref="ArgumentNullException">Thrown if the <paramref name="events"/> is null.</exception>
+    public AppendResult(IReadOnlyList<DcbEventSequenced> events)
     {
-        ArgumentNullException.ThrowIfNull(@event.Event);
+        ArgumentNullException.ThrowIfNull(events);
 
-        if (events.IsEmpty)
+        if (events.Count == 0)
         {
+            _value = Empty._value;
+            _pos = Empty._pos;
+            return;
+        }
+
+        if (events.Count == 1)
+        {
+            var @event = events[0];
             _value = @event.Event;
             _pos = @event.Position;
             return;
         }
 
-        var arr = new DcbEventSequenced[1 + events.Length];
-
-        arr[0] = @event;
-
-        events.CopyTo(arr.AsSpan()[1..]);
-
-        _value = arr;
+        _value = events;
     }
+
+    AppendResult(bool hasConflict) => _value = hasConflict ? null : (IReadOnlyList<DcbEventSequenced>)Array.Empty<DcbEventSequenced>().AsReadOnly();
 
     /// <summary>
     /// Gets the committed event at the specified zero-based index.
@@ -71,7 +79,7 @@ public readonly partial struct AppendResult
             return _value switch
             {
                 DcbEvent evt => new(_pos, evt),
-                DcbEventSequenced[] evts => evts[index],
+                IReadOnlyList<DcbEventSequenced> evts => evts[index],
                 _ => throw InvalidStateException()
             };
         }
@@ -88,7 +96,7 @@ public readonly partial struct AppendResult
             return _value switch
             {
                 DcbEvent => 1,
-                DcbEventSequenced[] evts => evts.Length,
+                IReadOnlyList<DcbEventSequenced> evts => evts.Count,
                 _ => 0
             };
         }
@@ -110,7 +118,7 @@ public readonly partial struct AppendResult
         _value switch
         {
             DcbEvent evt => new(evt, _pos),
-            DcbEventSequenced[] evts => new(evts),
+            IReadOnlyList<DcbEventSequenced> evts => new(evts),
             _ => throw InvalidStateException()
         };
 
