@@ -683,7 +683,7 @@ namespace Filin.Storage
 {
     public partial struct AppendResult
     {
-        public static readonly AppendResult Faulted;
+        public static readonly AppendResult Conflict;
 
         public AppendResult(DcbEventSequenced @event) { throw null; }
 
@@ -695,7 +695,7 @@ namespace Filin.Storage
 
         public readonly bool IsSuccess { get { throw null; } }
 
-        public readonly bool IsFailure { get { throw null; } }
+        public readonly bool IsConflict { get { throw null; } }
 
         public readonly Enumerator GetEnumerator() { throw null; }
 
