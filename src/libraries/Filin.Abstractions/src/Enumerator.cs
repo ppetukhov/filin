@@ -9,15 +9,15 @@ namespace Filin;
 /// <typeparam name="T">The type of elements in the collection.</typeparam>
 public ref struct Enumerator<T> where T : notnull
 {
-    readonly T? _value;
-    readonly ReadOnlySpan<T> _values;
     readonly int _length;
     int _index;
+    readonly T? _single;
+    readonly ReadOnlySpan<T> _span;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal Enumerator(T value)
     {
-        _value = value;
+        _single = value;
         _length = 1;
         _index = -1;
     }
@@ -25,7 +25,7 @@ public ref struct Enumerator<T> where T : notnull
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal Enumerator(ReadOnlySpan<T> values)
     {
-        _values = values;
+        _span = values;
         _length = values.Length;
         _index = -1;
     }
@@ -62,7 +62,7 @@ public ref struct Enumerator<T> where T : notnull
                 ThrowInvalidOperationException();
             }
 
-            return _value is not null ? _value : _values[_index];
+            return _single is not null ? _single : _span[_index];
         }
     }
 
