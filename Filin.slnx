@@ -65,9 +65,7 @@
   <Folder Name="/src/libraries/Filin.Abstractions/gen/">
     <Project Path="src/libraries/Filin.Abstractions/gen/Filin.Generators.csproj" Id="b5cb9853-24b6-4813-99f9-f38489eafb7c" />
   </Folder>
-  <Folder Name="/src/libraries/Filin.Abstractions/ref/">
-    <Project Path="src/libraries/Filin.Abstractions/ref/Filin.Abstractions.csproj" />
-  </Folder>
+  <Folder Name="/src/libraries/Filin.Abstractions/ref/" />
   <Folder Name="/src/libraries/Filin.Abstractions/src/">
     <Project Path="src/libraries/Filin.Abstractions/src/Filin.Abstractions.csproj" Id="b0a37696-6e5c-4928-8270-439c12d7d5bf" />
   </Folder>
