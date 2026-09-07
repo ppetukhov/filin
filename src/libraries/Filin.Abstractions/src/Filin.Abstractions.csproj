@@ -22,5 +22,10 @@
     <!-- Pack the source generator binary -->
     <None Include="..\gen\bin\$(Configuration)\netstandard2.0\Filin.Generators.dll" PackagePath="analyzers\dotnet\cs" Pack="true" Visible="false" />
   </ItemGroup>
-  
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>Filin.Abstractions.Tests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
 </Project>

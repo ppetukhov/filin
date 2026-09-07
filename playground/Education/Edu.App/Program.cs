@@ -166,15 +166,7 @@ _ = Task.Run(async () =>
 
     void LogExeption(RenameCourse command, Exception ex)
     {
-        switch (ex)
-        {
-            case DcbConflictException conflict:
-                logger.LogWarning("DcbConflict.    Command: {Command}", command.NewName);
-                break;
-            default:
-                logger.LogError("Command: {Command}; Exception: {Ex}", command.NewName, ex.Message);
-                break;
-        }
+        logger.LogError("Command: {Command}; Exception: {Ex}", command.NewName, ex.Message);
     }
 });
 

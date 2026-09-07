@@ -4,38 +4,38 @@ namespace Filin.Abstractions.Tests;
 
 public sealed class EventTypeTests
 {
-    public static readonly TheoryData<string, int> StringWithExpectedHashCode = IdentityTests.StringWithExpectedHashCode;
+    const string Text1 = "Lorem Ipsum is simply dummy text of the printing and typesetting industry";
+    const string Text2 = "Contrary to popular belief, Lorem Ipsum is not simply random text.";
+    const string Text3 = "b0507063-77f0-48de-b005-88e35651ce30";
+    const string Text4 = @"!""#$%&'()*+,-./:;<=>?@[\]^_`~";
+
+    public static readonly TheoryData<string?, ulong, bool> StringWithExpectedHashes = new()
+    {
+        { null, StableHash.Hash32((string?)null), true },
+        { "", StableHash.Hash32(""), true },
+        { Text1, StableHash.Hash32(Text1), false },
+        { Text2, StableHash.Hash32(Text2), false },
+        { Text3, StableHash.Hash32(Text3), false },
+        { Text4, StableHash.Hash32(Text4), false },
+    };
 
     public static readonly TheoryData<string?, IFormatProvider, string> FormatWithFormatProviderAndExpectedString = IdentityTests.FormatWithFormatProviderAndExpectedString;
 
     [Theory]
-    [InlineData("")]
-    [InlineData(null)]
-    public void EventType_Constructor_From_Null_Or_EmptyString(string? name)
+    [MemberData(nameof(StringWithExpectedHashes))]
+    public void EventType_Constructor_From_String(string? name, ulong expectedHash, bool expectedIsDefault)
     {
+        var expectedSpan = name.AsSpan();
+
         var result = new EventType(name!);
 
-        result.IsDefault.Should().BeTrue();
-        result.AsSpan().Length.Should().Be(0);
-        result.GetHashCode().Should().Be(StableHashTests.HASHCODE_OF_EMPTY);
-    }
-
-    [Theory]
-    [MemberData(nameof(StringWithExpectedHashCode))]
-    public void EventType_Constructor_From_String(string name, int expectedHashCode)
-    {
-        var expectedSpan = Encoding.UTF8.GetBytes(name).AsSpan();
-
-        var result = new EventType(name);
-
-        result.IsDefault.Should().BeFalse();
+        result.IsDefault.Should().Be(expectedIsDefault);
         result.AsSpan().SequenceEqual(expectedSpan).Should().BeTrue();
-        result.GetHashCode().Should().Be(expectedHashCode);
+        result.Hash.Should().Be(expectedHash);
     }
 
     [Theory]
     [InlineData(null, null)]
-    [InlineData(null, "")]
     [InlineData("", "")]
     [InlineData("test-value", "test-value")]
     public void EventType_Equals_Return_True(string? nameX, string? nameY)
@@ -50,6 +50,9 @@ public sealed class EventTypeTests
 
     [Theory]
     [InlineData(null, "any-data")]
+    [InlineData(null, "")]
+    [InlineData("any-data", null)]
+    [InlineData("", null)]
     [InlineData("", "any-data")]
     [InlineData("test-value", "any-value")]
     public void EventType_Equals_Return_False(string? nameX, string? nameY)
@@ -64,12 +67,13 @@ public sealed class EventTypeTests
 
     [Theory]
     [InlineData(0, null, null)]
-    [InlineData(0, null, "")]
+    [InlineData(-1, null, "")]
+    [InlineData(1, "", null)]
     [InlineData(0, "", "")]
     [InlineData(-23, "abc", "abz")]
     [InlineData(23, "abz", "abc")]
-    [InlineData(-1, "abc", "abca")]
-    [InlineData(1, "abca", "abc")]
+    [InlineData(-97, "abc", "abca")]
+    [InlineData(97, "abca", "abc")]
     public void EventType_CompareTo(int expectedValue, string? nameX, string? nameY)
     {
         var identityX = new EventType(nameX!);
@@ -85,7 +89,7 @@ public sealed class EventTypeTests
     {
         EventType identity = default;
 
-        identity.ToString().Should().BeNull(because: "EventType is default");
+        identity.Value.Should().BeNull(because: "EventType is default");
     }
 
     [Fact]
@@ -95,7 +99,7 @@ public sealed class EventTypeTests
 
         var identity = new EventType(expectedString);
 
-        identity.ToString().Should().Be(expectedString);
+        identity.Value.Should().Be(expectedString);
     }
 
     [Theory]
@@ -140,7 +144,7 @@ public sealed class EventTypeTests
     {
         Span<char> destination = stackalloc char[8];
 
-        var identity = new EventType("Some text identity");
+        var identity = new EventType("Some text for event type");
 
         var result = identity.TryFormat(destination, out var charsWritten);
 
@@ -151,7 +155,7 @@ public sealed class EventTypeTests
     [Fact]
     public void EventType_ISpanFormattable_TryFormat()
     {
-        const string IdentityText = "Some text identity";
+        const string IdentityText = "Some text for event type";
         Span<char> destination = stackalloc char[64];
 
         var identity = new EventType(IdentityText);
@@ -171,7 +175,7 @@ public sealed class EventTypeTests
     {
         Span<char> destination = stackalloc char[64];
 
-        var identity = new EventType("Some text identity");
+        var identity = new EventType("Some text for event type");
 
         var result = identity.TryFormat(destination, out var charsWritten, format, formatProvider);
 
@@ -186,7 +190,7 @@ public sealed class EventTypeTests
     [InlineData("AnyFormat")]
     public void EventType_ISpanFormattable_TryFormat_Return_True_With_Format_Return_True(string? format)
     {
-        const string IdentityText = "Some text identity";
+        const string IdentityText = "Some text for event type";
         Span<char> destination = stackalloc char[64];
 
         var identity = new EventType(IdentityText);
@@ -206,7 +210,7 @@ public sealed class EventTypeTests
     {
         Span<char> destination = stackalloc char[8];
 
-        var identity = new EventType("Some text identity");
+        var identity = new EventType("Some text for event type");
 
         var result = identity.TryFormat(destination, out var charsWritten, format: format, provider: formatProvider);
 
@@ -223,7 +227,7 @@ public sealed class EventTypeTests
         Span<byte> utf8Destination = stackalloc byte[128];
         var expectedBytes = Encoding.UTF8.GetBytes(expectedString);
 
-        var identity = new EventType("Some text identity");
+        var identity = new EventType("Some text for event type");
 
         var result = identity.TryFormat(utf8Destination, out var bytesWritten, format, formatProvider);
 
@@ -252,7 +256,7 @@ public sealed class EventTypeTests
     {
         Span<byte> utf8Destination = stackalloc byte[8];
 
-        var identity = new EventType("Some text identity");
+        var identity = new EventType("Some text for event type");
 
         var result = identity.TryFormat(utf8Destination, out var bytesWritten);
 
@@ -263,43 +267,26 @@ public sealed class EventTypeTests
     [Fact]
     public void EventType_IUtf8SpanFormattable_TryFormat()
     {
+        Span<byte> expected = stackalloc byte[64];
+        Encoding.UTF8.TryGetBytes("Some text for event type".AsSpan(), expected, out var expBytes);
+
         Span<byte> utf8Destination = stackalloc byte[64];
 
-        var identity = new EventType("Some text identity");
+        var eventType = new EventType("Some text for event type");
 
-        var result = identity.TryFormat(utf8Destination, out var bytesWritten);
+        var result = eventType.TryFormat(utf8Destination, out var bytesWritten);
 
         result.Should().BeTrue();
-        bytesWritten.Should().Be(identity.AsSpan().Length);
-        utf8Destination[..bytesWritten].SequenceEqual(identity.AsSpan()).Should().BeTrue();
+        bytesWritten.Should().Be(eventType.AsSpan().Length);
+        utf8Destination[..bytesWritten].SequenceEqual(expected[..expBytes]).Should().BeTrue();
     }
 
     [Fact]
     public void EventType_FromString()
     {
-        var expected = new EventType("Some text identity");
+        var expected = new EventType("Some text for event type");
 
-        var result = EventType.FromString("Some text identity");
-
-        result.Should().BeEquivalentTo(expected);
-    }
-
-    [Fact]
-    public void EventType_FromIdentity()
-    {
-        var expected = new EventType("Some text identity");
-
-        var result = EventType.FromIdentity(new Identity("Some text identity"));
-
-        result.Should().BeEquivalentTo(expected);
-    }
-
-    [Fact]
-    public void EventType_ToIdentity()
-    {
-        var expected = new Identity("Some text identity");
-
-        var result = EventType.ToIdentity(new EventType("Some text identity"));
+        var result = EventType.FromString("Some text for event type");
 
         result.Should().BeEquivalentTo(expected);
     }

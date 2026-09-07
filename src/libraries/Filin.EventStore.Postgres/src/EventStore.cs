@@ -91,7 +91,7 @@ sealed partial class EventStore(
 
             throw;
         }
-        catch (Exception ex) when (ex is not DcbConflictException)
+        catch (Exception ex)
         {
             _logger.ErrorAppendEvents(ex);
 
@@ -202,7 +202,7 @@ sealed partial class EventStore(
 
             throw;
         }
-        catch (Exception ex) when (ex is not DcbConflictException)
+        catch (Exception ex)
         {
             _logger.ErrorAppendEvents(ex);
 
@@ -351,7 +351,7 @@ sealed partial class EventStore(
         pName = "@evn" + eventIndex;
         sb.Append(pName);
         sb.Append(',');
-        command.AddParameter(pName, @event.EventType.ToString() ?? string.Empty);
+        command.AddParameter(pName, @event.EventType.Value ?? string.Empty);
 
         var sbNames = new ValueStringBuilder(initialCapacity: 256);
 
@@ -441,7 +441,7 @@ sealed partial class EventStore(
                 pName = "@qev" + eventIndex + 'n' + suffix;
                 sbNames.Append(pName);
                 sbNames.Append(',');
-                command.AddParameter(pName, eventType.ToString() ?? string.Empty);
+                command.AddParameter(pName, eventType.Value ?? string.Empty);
             }
 
             if (eventTypes.Count != 0)

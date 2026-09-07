@@ -114,7 +114,7 @@ sealed partial class EventStore
                 }
 
                 var timestamp = new DateTime(reader.GetDateTime(ordinals.TimestampUtc).Ticks, DateTimeKind.Utc);
-                var eventType = (EventType)GetIdentity(ordinalHash: ordinals.TypeHash, ordinalValue: ordinals.TypeName, reader: reader);
+                var eventType = GetEventType(ordinalHash: ordinals.TypeHash, ordinalValue: ordinals.TypeName, reader: reader);
                 var tags = GetTags(reader, ordinals);
 
                 if (!options.EventTypes.TryGetValue(eventType, out var payloadType))
@@ -206,22 +206,14 @@ sealed partial class EventStore
             }
         }
 
-        static Identity GetIdentity(int ordinalHash, int ordinalValue, DbDataReader reader)
+        static EventType GetEventType(int ordinalHash, int ordinalValue, DbDataReader reader)
         {
-            var bytes = reader.GetBytes(ordinal: ordinalValue, dataOffset: 0, buffer: null, bufferOffset: 0, length: 0);
+            var name = reader.GetString(ordinalValue);
+            var hash = (uint)reader.GetInt32(ordinalHash);
 
-            if (bytes > 0)
-            {
-                var value = new byte[bytes];
-
-                var readed = reader.GetBytes(ordinal: ordinalValue, dataOffset: 0, buffer: value, bufferOffset: 0, length: (int)bytes);
-
-                Debug.Assert(readed == bytes);
-
-                return Identity.UnsafeCreate(value, hashCode: reader.GetInt32(ordinalHash));
-            }
-
-            return default;
+#pragma warning disable CS0618 // Type or member is obsolete
+            return EventType.UnsafeCreate(name, hash);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         static ImmutableHashSet<Tag>? GetTags(DbDataReader reader, Ordinals ordinals)
