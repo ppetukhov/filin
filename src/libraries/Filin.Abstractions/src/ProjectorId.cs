@@ -7,24 +7,28 @@ namespace Filin;
 /// </summary>
 public readonly struct ProjectorId : IEquatable<ProjectorId>, IComparable<ProjectorId>, ISpanFormattable, IUtf8SpanFormattable
 {
-    readonly Identity _value;
+    readonly IdSpan _value;
 
     /// <inheritdoc cref="ProjectorId"/>
     /// <param name="id">Идентификатор проектора.</param>
-    public ProjectorId(string id) : this(new Identity(id)) { }
+    public ProjectorId(string id) : this(new IdSpan(id)) { }
 
     /// <inheritdoc cref="ProjectorId"/>
     /// <param name="id">Идентификатор проектора.</param>
     /// <param name="version">Версия проектора.</param>
-    public ProjectorId(string id, uint version) : this(version != 0 ? new Identity($"{id}@{version}") : new Identity(id)) { }
+    public ProjectorId(string id, uint version) : this(version != 0 ? new IdSpan($"{id}@{version}") : new IdSpan(id)) { }
 
-    ProjectorId(Identity rawIdentity) => _value = rawIdentity;
+    ProjectorId(IdSpan rawIdSpan) => _value = rawIdSpan;
 
-    /// <inheritdoc cref="Identity.IsDefault"/>
+    /// <inheritdoc cref="IdSpan.IsDefault"/>
     public bool IsDefault => _value.IsDefault;
 
-    /// <inheritdoc cref="Identity.AsSpan()"/>
-    public ReadOnlySpan<byte> AsSpan() => _value.AsSpan();
+    public string? Value => _value.Value;
+
+    public ulong Hash => _value.Hash;
+
+    /// <inheritdoc cref="IdSpan.AsSpan()"/>
+    public ReadOnlySpan<char> AsSpan() => _value.AsSpan();
 
     /// <inheritdoc/>
     public override bool Equals(object? obj) => obj is ProjectorId evetType && Equals(evetType);
@@ -32,13 +36,13 @@ public readonly struct ProjectorId : IEquatable<ProjectorId>, IComparable<Projec
     /// <inheritdoc/>
     public bool Equals(ProjectorId obj) => _value.Equals(obj._value);
 
-    /// <inheritdoc cref="Identity.GetHashCode()"/>
+    /// <inheritdoc cref="IdSpan.GetHashCode()"/>
     public override int GetHashCode() => _value.GetHashCode();
 
     /// <inheritdoc/>
     public int CompareTo(ProjectorId other) => _value.CompareTo(other._value);
 
-    /// <inheritdoc cref="Identity.ToString()"/>
+    /// <inheritdoc cref="IdSpan.ToString()"/>
     public override string? ToString() => _value.ToString();
 
     /// <inheritdoc/>
@@ -117,11 +121,11 @@ public readonly struct ProjectorId : IEquatable<ProjectorId>, IComparable<Projec
     /// <inheritdoc cref="FromString(string)"/>
     public static implicit operator ProjectorId(string id) => new(id);
 
-    /// <inheritdoc cref="ToIdentity(ProjectorId)"/>
-    public static explicit operator Identity(ProjectorId projectorId) => projectorId._value;
+    /// <inheritdoc cref="ToIdSpan(ProjectorId)"/>
+    public static explicit operator IdSpan(ProjectorId projectorId) => projectorId._value;
 
-    /// <inheritdoc cref="FromIdentity(Identity)"/>
-    public static explicit operator ProjectorId(Identity id) => new(id);
+    /// <inheritdoc cref="FromIdSpan(IdSpan)"/>
+    public static explicit operator ProjectorId(IdSpan id) => new(id);
 
     /// <summary>
     /// Конвертирует <see cref="ProjectorId"/> в <see cref="ProjectorId"/>.
@@ -131,18 +135,18 @@ public readonly struct ProjectorId : IEquatable<ProjectorId>, IComparable<Projec
     public static ProjectorId FromString(string id) => new(id);
 
     /// <summary>
-    /// Конвертирует <see cref="ProjectorId"/> в <see cref="Identity"/>.
+    /// Конвертирует <see cref="ProjectorId"/> в <see cref="IdSpan"/>.
     /// </summary>
-    /// <param name="projectorId"><inheritdoc cref="ProjectorId(Identity)" path="/param[@rawIdentity]"/></param>
+    /// <param name="projectorId"><inheritdoc cref="ProjectorId(IdSpan)" path="/param[@rawIdSpan]"/></param>
     /// <returns>Соответствующий <see cref="ProjectorId"/>.</returns>
-    public static Identity ToIdentity(ProjectorId projectorId) => projectorId._value;
+    public static IdSpan ToIdSpan(ProjectorId projectorId) => projectorId._value;
 
     /// <summary>
-    /// Конвертирует <see cref="Identity"/> в <see cref="ProjectorId"/>.
+    /// Конвертирует <see cref="IdSpan"/> в <see cref="ProjectorId"/>.
     /// </summary>
-    /// <param name="rawIdentity"><inheritdoc cref="ProjectorId(Identity)" path="/param[@rawIdentity]"/></param>
+    /// <param name="rawIdSpan"><inheritdoc cref="ProjectorId(IdSpan)" path="/param[@rawIdSpan]"/></param>
     /// <returns>Соответствующий <see cref="ProjectorId"/>.</returns>
-    public static ProjectorId FromIdentity(Identity rawIdentity) => new(rawIdentity);
+    public static ProjectorId FromIdSpan(IdSpan rawIdSpan) => new(rawIdSpan);
 
     /// <summary>
     /// Сравнивает предоставленные операнды на равенство.

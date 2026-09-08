@@ -93,9 +93,9 @@ static class Constants
     public const string IDecider = "global::Filin.IDecider`2";
 
     /// <summary>
-    /// Value is <c>global::Filin.Identity</c>.
+    /// Value is <c>global::Filin.IdSpan</c>.
     /// </summary>
-    public const string IdentityTypeFullName = "global::Filin.Identity";
+    public const string IdSpanTypeFullName = "global::Filin.IdSpan";
 
     /// <summary>
     /// Value is <c>global::Filin.IWithQueryTags</c>.

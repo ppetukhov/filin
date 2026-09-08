@@ -26,7 +26,7 @@ public readonly struct EventType : IEquatable<EventType>, IComparable<EventType>
 
     internal EventType(string name, uint hash) => (_value, _hash) = (name, hash);
 
-    /// <inheritdoc cref="Identity.IsDefault"/>
+    /// <inheritdoc cref="IdSpan.IsDefault"/>
     [MemberNotNullWhen(false, nameof(_value))]
     public bool IsDefault => string.IsNullOrEmpty(_value);
 

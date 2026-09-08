@@ -53,7 +53,7 @@ public sealed class QueryEventTypesAttributeTests
     {
         var result = ProjectorWithoutQueryTags.GetProjectionId([]);
 
-        var defaultKey = (Identity)default;
+        var defaultKey = (IdSpan)default;
         var expected = new ProjectionId(new ProjectorId("projector-without-tags"), defaultKey);
 
         result.Should().Be(expected);
@@ -64,7 +64,7 @@ public sealed class QueryEventTypesAttributeTests
     {
         var result = ProjectorWithoutQueryTagsV1.GetProjectionId([]);
 
-        var defaultKey = (Identity)default;
+        var defaultKey = (IdSpan)default;
         var expected = new ProjectionId(new ProjectorId("projector-without-tags@1"), defaultKey);
 
         result.Should().Be(expected);
@@ -75,7 +75,7 @@ public sealed class QueryEventTypesAttributeTests
     {
         var result = TestDomainProjectors.V0.NestedProjectorWithoutQueryTags.GetProjectionId([]);
 
-        var defaultKey = (Identity)default;
+        var defaultKey = (IdSpan)default;
         var expected = new ProjectionId(new ProjectorId("nested-projector-without-tags"), defaultKey);
 
         result.Should().Be(expected);

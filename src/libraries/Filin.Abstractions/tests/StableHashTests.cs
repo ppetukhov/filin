@@ -1,34 +1,28 @@
-using System.Text;
-
 namespace Filin.Abstractions.Tests;
 
 public sealed class StableHashTests
 {
-    internal const int HASHCODE_OF_EMPTY = 90033154;
+    internal const ulong HASH64_OF_EMPTY = 17241709254077376921UL;
 
-    public static readonly TheoryData<byte[], int> ByteArrayWithExpectedHash = new()
+    public static readonly TheoryData<string, ulong> TextWithExpectedHash = new()
     {
-        { Encoding.UTF8.GetBytes("Lorem Ipsum is simply dummy text of the printing and typesetting industry"), 2087748517 },
-        { Encoding.UTF8.GetBytes("Contrary to popular belief, Lorem Ipsum is not simply random text."), 332455997 },
-        { Encoding.UTF8.GetBytes(@"!""#$%&'()*+,-./0123456789:;<=>?@[\]^_`~"), -1068000349 },
-        { [0], 1051747791 },
-        { [0, 0], -177558859 },
-        { [0, 0, 0, 0], 1775883784 },
-        { [0, 0, 0, 0, 0, 0, 0, 0], 328578014 },
+        { "Lorem Ipsum is simply dummy text of the printing and typesetting industry", 12843400592381000807UL },
+        { "Contrary to popular belief, Lorem Ipsum is not simply random text.", 6378906660793192535UL },
+        { @"!""#$%&'()*+,-./0123456789:;<=>?@[\]^_`~", 13634593389276835636UL },
     };
 
-    public static readonly TheoryData<byte[]?, int> NullOrEmptyByteArraysWithExpectedHash = new()
+    public static readonly TheoryData<string?, ulong> NullOrEmptyStringWithExpectedHash = new()
     {
-        { [], HASHCODE_OF_EMPTY },
-        { null, HASHCODE_OF_EMPTY }
+        { "", HASH64_OF_EMPTY },
+        { null, HASH64_OF_EMPTY }
     };
 
     [Theory]
-    [MemberData(nameof(ByteArrayWithExpectedHash))]
-    [MemberData(nameof(NullOrEmptyByteArraysWithExpectedHash))]
-    public void StableHash_ComputeHash_From_Bytes(byte[]? bytes, int expectedHash)
+    [MemberData(nameof(TextWithExpectedHash))]
+    [MemberData(nameof(NullOrEmptyStringWithExpectedHash))]
+    public void StableHash_ComputeHash_From_Bytes(string? value, ulong expectedHash)
     {
-        var result = StableHash.ComputeHash(bytes);
+        var result = StableHash.Hash64(value);
 
         result.Should().Be(expectedHash);
     }

@@ -2,7 +2,6 @@ using System.Collections.Immutable;
 using System.Data;
 using System.Data.Common;
 using System.Diagnostics;
-using System.Text;
 
 using Filin.AdoNet;
 using Filin.Configuration;
@@ -225,15 +224,15 @@ sealed partial class EventStore
                 return null;
             }
 
-            var tag_hashes = reader.GetFieldValue<int[]>(ordinals.TagHashes);
+            var tag_hashes = reader.GetFieldValue<long[]>(ordinals.TagHashes);
 
             var hashSet = ImmutableHashSet.CreateBuilder<Tag>();
 
             for (int i = 0; i < tag_values.Length; i++)
             {
-                var value = Encoding.UTF8.GetBytes(tag_values[i]);
-
-                var tag = Tag.FromIdentity(Identity.UnsafeCreate(value: value, hashCode: tag_hashes[i]));
+#pragma warning disable CS0618 // Type or member is obsolete
+                var tag = Tag.FromIdSpan(IdSpan.UnsafeCreate(tag_values[i], (ulong)tag_hashes[i]));
+#pragma warning restore CS0618 // Type or member is obsolete
 
                 hashSet.Add(tag);
             }

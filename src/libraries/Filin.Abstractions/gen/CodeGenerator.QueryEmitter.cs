@@ -2,13 +2,13 @@ using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using System.Text;
 
+using Filin.Generators.Extensions;
+using Filin.Generators.Specs.Types;
+
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
-
-using Filin.Generators.Extensions;
-using Filin.Generators.Specs.Types;
 
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
@@ -20,7 +20,7 @@ partial class CodeGenerator
     {
         static readonly TypeSyntax ProjectionIdTypeSyntax = ParseTypeName(Constants.ProjectionIdTypeFullName);
         static readonly TypeSyntax ImmutableHashSetTagsTypeSyntax = ParseTypeName($"global::System.Collections.Immutable.ImmutableHashSet<{Constants.TagTypeFullName}>");
-        static readonly TypeSyntax ImmutableArrayTagParameterTypeSyntax = ParseTypeName($"global::System.Collections.Immutable.ImmutableArray<({Constants.IdentityTypeFullName}, global::System.Collections.Immutable.ImmutableArray<int>)>");
+        static readonly TypeSyntax ImmutableArrayTagParameterTypeSyntax = ParseTypeName($"global::System.Collections.Immutable.ImmutableArray<({Constants.IdSpanTypeFullName}, global::System.Collections.Immutable.ImmutableArray<int>)>");
         static readonly SyntaxToken IsMatchTagParamToken = Identifier("IsMatchTagParam");
         static readonly SyntaxToken CreateQueryCoreToken = Identifier("CreateQueryCore");
         static readonly SyntaxToken CreateProjectionIdCoreToken = Identifier("CreateProjectionIdCore");
@@ -187,7 +187,7 @@ partial class CodeGenerator
                 constraintClauses: default,
                 parameterList: ParameterList(
                     SeparatedList([
-                        Parameter(attributeLists: default, modifiers: default, ParseTypeName(Constants.IdentityTypeFullName), Identifier("tagParam"), null),
+                        Parameter(attributeLists: default, modifiers: default, ParseTypeName(Constants.IdSpanTypeFullName), Identifier("tagParam"), null),
                         Parameter(attributeLists: default, modifiers: default, ParseTypeName(Constants.TagTypeFullName), Identifier("tag"), null)]
                     )),
                 body: null,
@@ -401,11 +401,11 @@ partial class CodeGenerator
                     )
                 ),
 
-                // var buf = global::System.Buffers.ArrayPool<byte>.Shared.Rent(minimumLength);
+                // var buf = global::System.Buffers.ArrayPool<char>.Shared.Rent(minimumLength);
                 LocalDeclarationStatement(VariableDeclaration(IdentifierName("var")))
                     .AddDeclarationVariables(
                         VariableDeclarator(Identifier("buf"), null,
-                            EqualsValueClause(InvocationExpression(ParseTypeName("global::System.Buffers.ArrayPool<byte>").Member("Shared").Member("Rent"),
+                            EqualsValueClause(InvocationExpression(ParseTypeName("global::System.Buffers.ArrayPool<char>").Member("Shared").Member("Rent"),
                                 ArgumentList(SingletonSeparatedList(Argument(IdentifierName(Identifier("minimumLength"))))))))),
 
                 // var writtenBytes = 0;
@@ -417,11 +417,11 @@ partial class CodeGenerator
                 // try {} finaly{}
                 TryStatement(
                     block: Block(
-                        // var span = new Span<byte>(buf);
+                        // var span = new Span<char>(buf);
                         LocalDeclarationStatement(VariableDeclaration(IdentifierName("var")))
                             .AddDeclarationVariables(
                                 VariableDeclarator(Identifier("span"), null,
-                                    EqualsValueClause(ObjectCreationExpression(ParseTypeName("global::System.Span<byte>"),
+                                    EqualsValueClause(ObjectCreationExpression(ParseTypeName("global::System.Span<char>"),
                                         ArgumentList(SingletonSeparatedList(Argument(IdentifierName(Identifier("buf"))))), null)))),
 
                         // foreach (var (tagParam, _) in queryTagParams)
@@ -464,14 +464,14 @@ partial class CodeGenerator
                                                     ExpressionStatement(InvocationExpression(IdentifierName(Identifier("tagSpan")).Member("CopyTo"),
                                                                             ArgumentList(SingletonSeparatedList(Argument(IdentifierName(Identifier("span"))))))),
 
-                                                    // span[tagSpan.Length] = (byte)'&';
+                                                    // span[tagSpan.Length] = '&';
                                                     ExpressionStatement(
                                                         AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
                                                             ElementAccessExpression(
                                                                 IdentifierName(Identifier("span")),
                                                                 BracketedArgumentList([Argument(IdentifierName(Identifier("tagSpan")).Member("Length"))])
                                                             ),
-                                                            CastExpression(ParseTypeName("byte"), LiteralExpression(SyntaxKind.CharacterLiteralExpression, Literal('&')))
+                                                            LiteralExpression(SyntaxKind.CharacterLiteralExpression, Literal('&'))
                                                         )
                                                     ),
 
@@ -587,32 +587,30 @@ partial class CodeGenerator
                             )
                         ),
 
-                        // var raw = new byte[writtenBytes];
+                        // var raw = new string(buf, 0, writtenBytes);
                         LocalDeclarationStatement(VariableDeclaration(IdentifierName("var")))
                             .AddDeclarationVariables(
                                 VariableDeclarator(Identifier("raw"), null,
-                                    EqualsValueClause(ArrayCreationExpression(ArrayType(ParseTypeName("byte"),
-                                            SingletonList(
-                                                ArrayRankSpecifier(SingletonSeparatedList<ExpressionSyntax>(IdentifierName(Identifier("writtenBytes"))))
-                                            )
-                                        ))
+                                    EqualsValueClause(
+                                        ObjectCreationExpression(
+                                            ParseTypeName("string"),
+                                            ArgumentList()
+                                                .AddArguments(
+                                                    Argument(IdentifierName(Identifier("buf"))),
+                                                    Argument(LiteralExpression(SyntaxKind.NumericLiteralExpression, Literal(0))),
+                                                    Argument(IdentifierName(Identifier("writtenBytes")))
+                                            ),
+                                            null
+                                        )
                                     )
                                 )
                             ),
-
-                        //Array.Copy(buf, raw, writtenBytes);
-                        ExpressionStatement(InvocationExpression(ParseTypeName("global::System.Array").Member("Copy"),
-                            ArgumentList().AddArguments(
-                                Argument(IdentifierName(Identifier("buf"))),
-                                Argument(IdentifierName(Identifier("raw"))),
-                                Argument(IdentifierName(Identifier("writtenBytes")))
-                            ))),
 
                         // return new ProjectionId(projectorId, new Identity(raw));
                         ReturnStatement(ObjectCreationExpression(ProjectionIdTypeSyntax, ArgumentList()
                             .AddArguments(
                                 Argument(IdentifierName(Identifier("projectorId"))),
-                                Argument(ObjectCreationExpression(ParseTypeName(Constants.IdentityTypeFullName),
+                                Argument(ObjectCreationExpression(ParseTypeName(Constants.IdSpanTypeFullName),
                                     ArgumentList(SingletonSeparatedList(Argument(IdentifierName(Identifier("raw"))))), null))
                             ), null)
                         )
@@ -621,7 +619,7 @@ partial class CodeGenerator
                     @finally: FinallyClause(
                         Block(
                             ExpressionStatement(
-                                InvocationExpression(ParseTypeName("global::System.Buffers.ArrayPool<byte>").Member("Shared").Member("Return"),
+                                InvocationExpression(ParseTypeName("global::System.Buffers.ArrayPool<char>").Member("Shared").Member("Return"),
                                     ArgumentList(SingletonSeparatedList(Argument(IdentifierName(Identifier("buf"))))))
                                 )
                         )
@@ -696,7 +694,7 @@ partial class CodeGenerator
                     : ArrowExpressionClause(ObjectCreationExpression(ProjectionIdTypeSyntax, ArgumentList()
                             .AddArguments(
                                 Argument(IdentifierName(ProjectorIdIdentifier)),
-                                Argument(DefaultExpression(ParseTypeName(Constants.IdentityTypeFullName)))
+                                Argument(DefaultExpression(ParseTypeName(Constants.IdSpanTypeFullName)))
                             ), null)),
                 semicolonToken: Token(SyntaxKind.SemicolonToken));
 

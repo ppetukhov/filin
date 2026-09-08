@@ -14,7 +14,7 @@ public sealed class TypeManifestProviderAttribute : Attribute
     /// Initializes a new instance of the <see cref="TypeManifestProviderAttribute"/> class.
     /// </summary>
     /// <param name="providerType">The metadata provider type.</param>
-    public TypeManifestProviderAttribute(Type providerType)
+    public TypeManifestProviderAttribute([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type providerType)
     {
         ArgumentNullException.ThrowIfNull(providerType);
 

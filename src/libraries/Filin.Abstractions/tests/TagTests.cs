@@ -4,9 +4,9 @@ namespace Filin.Abstractions.Tests;
 
 public sealed class TagTests
 {
-    public static readonly TheoryData<string, int> StringWithExpectedHashCode = IdentityTests.StringWithExpectedHashCode;
+    public static readonly TheoryData<string, ulong> StringWithExpectedHashCode = IdSpanTests.StringWithExpectedHashCode;
 
-    public static readonly TheoryData<string?, IFormatProvider, string> FormatWithFormatProviderAndExpectedString = IdentityTests.FormatWithFormatProviderAndExpectedString;
+    public static readonly TheoryData<string?, IFormatProvider, string> FormatWithFormatProviderAndExpectedString = IdSpanTests.FormatWithFormatProviderAndExpectedString;
 
     [Theory]
     [InlineData("")]
@@ -16,66 +16,66 @@ public sealed class TagTests
         var result = new Tag(name!);
 
         result.IsDefault.Should().BeTrue();
+        result.Value.Should().BeSameAs(name);
         result.AsSpan().Length.Should().Be(0);
-        result.GetHashCode().Should().Be(StableHashTests.HASHCODE_OF_EMPTY);
+        result.Hash.Should().Be(StableHashTests.HASH64_OF_EMPTY);
     }
 
     [Theory]
     [MemberData(nameof(StringWithExpectedHashCode))]
-    public void Tag_Constructor_From_String(string name, int expectedHashCode)
+    public void Tag_Constructor_From_String(string name, ulong expectedHash)
     {
-        var expectedSpan = Encoding.UTF8.GetBytes(name).AsSpan();
-
         var result = new Tag(name);
 
         result.IsDefault.Should().BeFalse();
-        result.AsSpan().SequenceEqual(expectedSpan).Should().BeTrue();
-        result.GetHashCode().Should().Be(expectedHashCode);
+        result.Value.Should().BeSameAs(name);
+        result.AsSpan().SequenceEqual(name.AsSpan()).Should().BeTrue();
+        result.Hash.Should().Be(expectedHash);
     }
 
     [Theory]
     [InlineData(null, null)]
-    [InlineData(null, "")]
     [InlineData("", "")]
     [InlineData("test-value", "test-value")]
     public void Tag_Equals_Return_True(string? nameX, string? nameY)
     {
-        var identityX = new Tag(nameX!);
-        var identityY = new Tag(nameY!);
+        var IdSpanX = new Tag(nameX!);
+        var IdSpanY = new Tag(nameY!);
 
-        var result = identityX.Equals(identityY);
+        var result = IdSpanX.Equals(IdSpanY);
 
         result.Should().BeTrue();
     }
 
     [Theory]
     [InlineData(null, "any-data")]
+    [InlineData(null, "")]
     [InlineData("", "any-data")]
     [InlineData("test-value", "any-value")]
     public void Tag_Equals_Return_False(string? nameX, string? nameY)
     {
-        var identityX = new Tag(nameX!);
-        var identityY = new Tag(nameY!);
+        var IdSpanX = new Tag(nameX!);
+        var IdSpanY = new Tag(nameY!);
 
-        var result = identityX.Equals(identityY);
+        var result = IdSpanX.Equals(IdSpanY);
 
         result.Should().BeFalse();
     }
 
     [Theory]
     [InlineData(0, null, null)]
-    [InlineData(0, null, "")]
+    [InlineData(-1, null, "")]
     [InlineData(0, "", "")]
     [InlineData(-23, "abc", "abz")]
     [InlineData(23, "abz", "abc")]
-    [InlineData(-1, "abc", "abca")]
-    [InlineData(1, "abca", "abc")]
+    [InlineData(-97, "abc", "abca")]
+    [InlineData(97, "abca", "abc")]
     public void Tag_CompareTo(int expectedValue, string? nameX, string? nameY)
     {
-        var identityX = new Tag(nameX!);
-        var identityY = new Tag(nameY!);
+        var IdSpanX = new Tag(nameX!);
+        var IdSpanY = new Tag(nameY!);
 
-        var result = identityX.CompareTo(identityY);
+        var result = IdSpanX.CompareTo(IdSpanY);
 
         result.Should().Be(expectedValue);
     }
@@ -83,9 +83,9 @@ public sealed class TagTests
     [Fact]
     public void Tag_ToString_Return_Null_When_IsDefault()
     {
-        Tag identity = default;
+        Tag IdSpan = default;
 
-        identity.ToString().Should().BeNull(because: "Tag is default");
+        IdSpan.ToString().Should().BeNull(because: "Tag is default");
     }
 
     [Fact]
@@ -93,9 +93,9 @@ public sealed class TagTests
     {
         var expectedString = "Some text";
 
-        var identity = new Tag(expectedString);
+        var IdSpan = new Tag(expectedString);
 
-        identity.ToString().Should().Be(expectedString);
+        IdSpan.ToString().Should().Be(expectedString);
     }
 
     [Theory]
@@ -104,9 +104,9 @@ public sealed class TagTests
 #pragma warning restore xUnit1045 // Avoid using TheoryData type arguments that might not be serializable
     public void Tag_ToString_With_FormatProvider(string? format, IFormatProvider formatProvider, string expectedString)
     {
-        var identity = new Tag("Some text");
+        var IdSpan = new Tag("Some text");
 
-        identity.ToString(format: format, formatProvider: formatProvider).Should().Be(expectedString);
+        IdSpan.ToString(format: format, formatProvider: formatProvider).Should().Be(expectedString);
     }
 
     [Theory]
@@ -115,9 +115,9 @@ public sealed class TagTests
     [InlineData("AnyFomat")]
     public void Tag_ToString_With_Format_Return_EmptyString_When_EventType_IsDefault(string? format)
     {
-        Tag identity = default;
+        Tag IdSpan = default;
 
-        identity.ToString(format: format, formatProvider: null).Should().BeEmpty();
+        IdSpan.ToString(format: format, formatProvider: null).Should().BeEmpty();
     }
 
     [Theory]
@@ -127,9 +127,9 @@ public sealed class TagTests
     {
         Span<char> destination = stackalloc char[destinationCharsCount];
 
-        Tag identity = default;
+        Tag IdSpan = default;
 
-        var result = identity.TryFormat(destination, out var charsWritten);
+        var result = IdSpan.TryFormat(destination, out var charsWritten);
 
         result.Should().BeTrue();
         charsWritten.Should().Be(0);
@@ -140,9 +140,9 @@ public sealed class TagTests
     {
         Span<char> destination = stackalloc char[8];
 
-        var identity = new Tag("Some text identity");
+        var IdSpan = new Tag("Some text IdSpan");
 
-        var result = identity.TryFormat(destination, out var charsWritten);
+        var result = IdSpan.TryFormat(destination, out var charsWritten);
 
         result.Should().BeFalse();
         charsWritten.Should().Be(0);
@@ -151,16 +151,16 @@ public sealed class TagTests
     [Fact]
     public void Tag_ISpanFormattable_TryFormat()
     {
-        const string IdentityText = "Some text identity";
+        const string IdSpanText = "Some text IdSpan";
         Span<char> destination = stackalloc char[64];
 
-        var identity = new Tag(IdentityText);
+        var IdSpan = new Tag(IdSpanText);
 
-        var result = identity.TryFormat(destination, out var charsWritten);
+        var result = IdSpan.TryFormat(destination, out var charsWritten);
 
         result.Should().BeTrue();
-        charsWritten.Should().Be(IdentityText.Length);
-        destination[..charsWritten].SequenceEqual(IdentityText).Should().BeTrue();
+        charsWritten.Should().Be(IdSpanText.Length);
+        destination[..charsWritten].SequenceEqual(IdSpanText).Should().BeTrue();
     }
 
     [Theory]
@@ -171,9 +171,9 @@ public sealed class TagTests
     {
         Span<char> destination = stackalloc char[64];
 
-        var identity = new Tag("Some text identity");
+        var IdSpan = new Tag("Some text IdSpan");
 
-        var result = identity.TryFormat(destination, out var charsWritten, format, formatProvider);
+        var result = IdSpan.TryFormat(destination, out var charsWritten, format, formatProvider);
 
         result.Should().BeTrue();
         charsWritten.Should().Be(expectedString.Length);
@@ -186,16 +186,16 @@ public sealed class TagTests
     [InlineData("AnyFormat")]
     public void Tag_ISpanFormattable_TryFormat_Return_True_With_Format_Return_True(string? format)
     {
-        const string IdentityText = "Some text identity";
+        const string IdSpanText = "Some text IdSpan";
         Span<char> destination = stackalloc char[64];
 
-        var identity = new Tag(IdentityText);
+        var IdSpan = new Tag(IdSpanText);
 
-        var result = identity.TryFormat(destination, out var charsWritten, format: format, provider: null);
+        var result = IdSpan.TryFormat(destination, out var charsWritten, format: format, provider: null);
 
         result.Should().BeTrue();
-        charsWritten.Should().Be(IdentityText.Length);
-        destination[..charsWritten].SequenceEqual(IdentityText).Should().BeTrue();
+        charsWritten.Should().Be(IdSpanText.Length);
+        destination[..charsWritten].SequenceEqual(IdSpanText).Should().BeTrue();
     }
 
     [Theory]
@@ -206,9 +206,9 @@ public sealed class TagTests
     {
         Span<char> destination = stackalloc char[8];
 
-        var identity = new Tag("Some text identity");
+        var IdSpan = new Tag("Some text IdSpan");
 
-        var result = identity.TryFormat(destination, out var charsWritten, format: format, provider: formatProvider);
+        var result = IdSpan.TryFormat(destination, out var charsWritten, format: format, provider: formatProvider);
 
         result.Should().BeFalse();
         charsWritten.Should().Be(0);
@@ -223,9 +223,9 @@ public sealed class TagTests
         Span<byte> utf8Destination = stackalloc byte[128];
         var expectedBytes = Encoding.UTF8.GetBytes(expectedString);
 
-        var identity = new Tag("Some text identity");
+        var IdSpan = new Tag("Some text IdSpan");
 
-        var result = identity.TryFormat(utf8Destination, out var bytesWritten, format, formatProvider);
+        var result = IdSpan.TryFormat(utf8Destination, out var bytesWritten, format, formatProvider);
 
         result.Should().BeTrue();
         bytesWritten.Should().Be(expectedBytes.Length);
@@ -239,9 +239,9 @@ public sealed class TagTests
     {
         Span<byte> utf8Destination = stackalloc byte[destinationCharsCount];
 
-        Tag identity = default;
+        Tag IdSpan = default;
 
-        var result = identity.TryFormat(utf8Destination, out var bytesWritten);
+        var result = IdSpan.TryFormat(utf8Destination, out var bytesWritten);
 
         result.Should().BeTrue();
         bytesWritten.Should().Be(0);
@@ -252,9 +252,9 @@ public sealed class TagTests
     {
         Span<byte> utf8Destination = stackalloc byte[8];
 
-        var identity = new Tag("Some text identity");
+        var IdSpan = new Tag("Some text IdSpan");
 
-        var result = identity.TryFormat(utf8Destination, out var bytesWritten);
+        var result = IdSpan.TryFormat(utf8Destination, out var bytesWritten);
 
         result.Should().BeFalse();
         bytesWritten.Should().Be(0);
@@ -263,43 +263,44 @@ public sealed class TagTests
     [Fact]
     public void Tag_IUtf8SpanFormattable_TryFormat()
     {
+        var expected = Encoding.UTF8.GetBytes("Some text IdSpan").AsSpan();
         Span<byte> utf8Destination = stackalloc byte[64];
 
-        var identity = new Tag("Some text identity");
+        var IdSpan = new Tag("Some text IdSpan");
 
-        var result = identity.TryFormat(utf8Destination, out var bytesWritten);
+        var result = IdSpan.TryFormat(utf8Destination, out var bytesWritten);
 
         result.Should().BeTrue();
-        bytesWritten.Should().Be(identity.AsSpan().Length);
-        utf8Destination[..bytesWritten].SequenceEqual(identity.AsSpan()).Should().BeTrue();
+        bytesWritten.Should().Be(IdSpan.AsSpan().Length);
+        utf8Destination[..bytesWritten].SequenceEqual(expected).Should().BeTrue();
     }
 
     [Fact]
     public void Tag_FromString()
     {
-        var expected = new Tag("Some text identity");
+        var expected = new Tag("Some text IdSpan");
 
-        var result = Tag.FromString("Some text identity");
-
-        result.Should().BeEquivalentTo(expected);
-    }
-
-    [Fact]
-    public void Tag_FromIdentity()
-    {
-        var expected = new Tag("Some text identity");
-
-        var result = Tag.FromIdentity(new Identity("Some text identity"));
+        var result = Tag.FromString("Some text IdSpan");
 
         result.Should().BeEquivalentTo(expected);
     }
 
     [Fact]
-    public void Tag_ToIdentity()
+    public void Tag_FromIdSpan()
     {
-        var expected = new Identity("Some text identity");
+        var expected = new Tag("Some text IdSpan");
 
-        var result = Tag.ToIdentity(new Tag("Some text identity"));
+        var result = Tag.FromIdSpan(new IdSpan("Some text IdSpan"));
+
+        result.Should().BeEquivalentTo(expected);
+    }
+
+    [Fact]
+    public void Tag_ToIdSpan()
+    {
+        var expected = new IdSpan("Some text IdSpan");
+
+        var result = Tag.ToIdSpan(new Tag("Some text IdSpan"));
 
         result.Should().BeEquivalentTo(expected);
     }

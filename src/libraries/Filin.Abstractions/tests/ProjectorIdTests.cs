@@ -4,9 +4,9 @@ namespace Filin.Abstractions.Tests;
 
 public sealed class ProjectorIdTests
 {
-    public static readonly TheoryData<string, int> StringWithExpectedHashCode = IdentityTests.StringWithExpectedHashCode;
+    public static readonly TheoryData<string, ulong> StringWithExpectedHashCode = IdSpanTests.StringWithExpectedHashCode;
 
-    public static readonly TheoryData<string?, IFormatProvider, string> FormatWithFormatProviderAndExpectedString = IdentityTests.FormatWithFormatProviderAndExpectedString;
+    public static readonly TheoryData<string?, IFormatProvider, string> FormatWithFormatProviderAndExpectedString = IdSpanTests.FormatWithFormatProviderAndExpectedString;
 
     [Theory]
     [InlineData("")]
@@ -17,7 +17,7 @@ public sealed class ProjectorIdTests
 
         result.IsDefault.Should().BeTrue();
         result.AsSpan().Length.Should().Be(0);
-        result.GetHashCode().Should().Be(StableHashTests.HASHCODE_OF_EMPTY);
+        result.Hash.Should().Be(StableHashTests.HASH64_OF_EMPTY);
     }
 
     [Theory]
@@ -29,20 +29,18 @@ public sealed class ProjectorIdTests
 
         result.IsDefault.Should().BeTrue();
         result.AsSpan().Length.Should().Be(0);
-        result.GetHashCode().Should().Be(StableHashTests.HASHCODE_OF_EMPTY);
+        result.Hash.Should().Be(StableHashTests.HASH64_OF_EMPTY);
     }
 
     [Theory]
     [MemberData(nameof(StringWithExpectedHashCode))]
-    public void ProjectorId_Constructor_From_String(string id, int expectedHashCode)
+    public void ProjectorId_Constructor_From_String(string id, ulong expectedHash)
     {
-        var expectedSpan = Encoding.UTF8.GetBytes(id).AsSpan();
-
         var result = new ProjectorId(id: id);
 
         result.IsDefault.Should().BeFalse();
-        result.AsSpan().SequenceEqual(expectedSpan).Should().BeTrue();
-        result.GetHashCode().Should().Be(expectedHashCode);
+        result.Value.Should().Be(id);
+        result.Hash.Should().Be(expectedHash);
     }
 
     [Theory]
@@ -53,13 +51,12 @@ public sealed class ProjectorIdTests
     public void ProjectorId_Constructor_From_String_With_Version(string id, uint version)
     {
         var txt = version is 0 ? id : $"{id}@{version}";
-        var expectedSpan = Encoding.UTF8.GetBytes(txt).AsSpan();
-        var expectedHashCode = StableHash.ComputeHash(expectedSpan);
+        var expectedHashCode = StableHash.Hash64(txt);
 
         var result = new ProjectorId(id: id, version: version);
 
-        result.AsSpan().SequenceEqual(expectedSpan).Should().BeTrue();
-        result.GetHashCode().Should().Be(expectedHashCode);
+        result.Value.Should().Be(txt);
+        result.Hash.Should().Be(expectedHashCode);
         result.IsDefault.Should().Be(string.IsNullOrEmpty(txt));
     }
 
@@ -122,11 +119,11 @@ public sealed class ProjectorIdTests
     [InlineData(0, "abc", "abc")]
     [InlineData(-23, "abc", "abz")]
     [InlineData(23, "abz", "abc")]
-    [InlineData(-1, "abc", "abca")]
-    [InlineData(1, "abca", "abc")]
-    [InlineData(-2, "abc", "abc@2")]
+    [InlineData(-97, "abc", "abca")]
+    [InlineData(97, "abca", "abc")]
+    [InlineData(-64, "abc", "abc@2")]
     [InlineData(-1, "abc@1", "abc@20")]
-    [InlineData(2, "abc@2", "abc")]
+    [InlineData(64, "abc@2", "abc")]
     [InlineData(1, "abc@20", "abc@1")]
     public void ProjectorId_CompareTo(int expectedValue, string valueX, string valueY)
     {
@@ -321,6 +318,7 @@ public sealed class ProjectorIdTests
     [Fact]
     public void ProjectorId_IUtf8SpanFormattable_TryFormat()
     {
+        var expected = Encoding.UTF8.GetBytes("Some text identity").AsSpan();
         Span<byte> utf8Destination = stackalloc byte[64];
 
         var identity = new ProjectorId(id: "Some text identity");
@@ -329,7 +327,7 @@ public sealed class ProjectorIdTests
 
         result.Should().BeTrue();
         bytesWritten.Should().Be(identity.AsSpan().Length);
-        utf8Destination[..bytesWritten].SequenceEqual(identity.AsSpan()).Should().BeTrue();
+        utf8Destination[..bytesWritten].SequenceEqual(expected).Should().BeTrue();
     }
 
     [Fact]
@@ -347,7 +345,7 @@ public sealed class ProjectorIdTests
     {
         var expected = new ProjectorId(id: "Some text identity");
 
-        var result = ProjectorId.FromIdentity(new Identity("Some text identity"));
+        var result = ProjectorId.FromIdSpan(new IdSpan("Some text identity"));
 
         result.Should().BeEquivalentTo(expected);
     }
@@ -355,9 +353,9 @@ public sealed class ProjectorIdTests
     [Fact]
     public void ProjectorId_ToIdentity()
     {
-        var expected = new Identity("Some text identity");
+        var expected = new IdSpan("Some text identity");
 
-        var result = ProjectorId.ToIdentity(new ProjectorId(id: "Some text identity"));
+        var result = ProjectorId.ToIdSpan(new ProjectorId(id: "Some text identity"));
 
         result.Should().BeEquivalentTo(expected);
     }

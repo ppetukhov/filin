@@ -7,7 +7,7 @@ namespace Filin;
 /// </summary>
 public readonly struct Tag : IEquatable<Tag>, IComparable<Tag>, ISpanFormattable, IUtf8SpanFormattable
 {
-    readonly Identity _value;
+    readonly IdSpan _value;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Tag"/> struct. 
@@ -19,13 +19,17 @@ public readonly struct Tag : IEquatable<Tag>, IComparable<Tag>, ISpanFormattable
     /// Initializes a new instance of the <see cref="Tag"/> struct.
     /// </summary>
     /// <param name="value">Идентификатор тэга.</param>
-    Tag(Identity value) => _value = value;
+    Tag(IdSpan value) => _value = value;
 
-    /// <inheritdoc cref="Identity.IsDefault"/>
+    /// <inheritdoc cref="IdSpan.IsDefault"/>
     public bool IsDefault => _value.IsDefault;
 
-    /// <inheritdoc cref="Identity.AsSpan()"/>
-    public ReadOnlySpan<byte> AsSpan() => _value.AsSpan();
+    public string? Value => _value.Value;
+
+    public ulong Hash => _value.Hash;
+
+    /// <inheritdoc cref="IdSpan.AsSpan()"/>
+    public ReadOnlySpan<char> AsSpan() => _value.AsSpan();
 
     /// <inheritdoc/>
     public override bool Equals(object? obj) => obj is Tag tag && Equals(tag);
@@ -33,13 +37,13 @@ public readonly struct Tag : IEquatable<Tag>, IComparable<Tag>, ISpanFormattable
     /// <inheritdoc/>
     public bool Equals(Tag obj) => _value.Equals(obj._value);
 
-    /// <inheritdoc cref="Identity.GetHashCode()"/>
+    /// <inheritdoc cref="IdSpan.GetHashCode()"/>
     public override int GetHashCode() => _value.GetHashCode();
 
     /// <inheritdoc/>
     public int CompareTo(Tag other) => _value.CompareTo(other._value);
 
-    /// <inheritdoc cref="Identity.ToString()"/>
+    /// <inheritdoc cref="IdSpan.ToString()"/>
     public override string? ToString() => _value.ToString();
 
     /// <inheritdoc/>
@@ -118,11 +122,11 @@ public readonly struct Tag : IEquatable<Tag>, IComparable<Tag>, ISpanFormattable
     /// <inheritdoc cref="FromString(string)"/>
     public static implicit operator Tag(string name) => new(name);
 
-    /// <inheritdoc cref="ToIdentity(Tag)"/>
-    public static explicit operator Identity(Tag tag) => tag._value;
+    /// <inheritdoc cref="ToIdSpan(Tag)"/>
+    public static explicit operator IdSpan(Tag tag) => tag._value;
 
-    /// <inheritdoc cref="FromIdentity(Identity)"/>
-    public static explicit operator Tag(Identity id) => new(id);
+    /// <inheritdoc cref="FromIdSpan(IdSpan)"/>
+    public static explicit operator Tag(IdSpan id) => new(id);
 
     /// <summary>
     /// Конвертирует <see cref="string"/> в <see cref="Tag"/>.
@@ -132,18 +136,18 @@ public readonly struct Tag : IEquatable<Tag>, IComparable<Tag>, ISpanFormattable
     public static Tag FromString(string name) => new(name);
 
     /// <summary>
-    /// Конвертирует <see cref="Tag"/> в <see cref="Identity"/>.
+    /// Конвертирует <see cref="Tag"/> в <see cref="IdSpan"/>.
     /// </summary>
-    /// <param name="tag"><inheritdoc cref="Tag(Identity)" path="/param[@rawIdentity]"/></param>
+    /// <param name="tag"><inheritdoc cref="Tag(IdSpan)" path="/param[@rawIdSpan]"/></param>
     /// <returns>Соответствующий <see cref="Tag"/>.</returns>
-    public static Identity ToIdentity(Tag tag) => tag._value;
+    public static IdSpan ToIdSpan(Tag tag) => tag._value;
 
     /// <summary>
-    /// Конвертирует <see cref="Identity"/> в <see cref="Tag"/>.
+    /// Конвертирует <see cref="IdSpan"/> в <see cref="Tag"/>.
     /// </summary>
-    /// <param name="rawIdentity"><inheritdoc cref="Tag(Identity)" path="/param[@rawIdentity]"/></param>
+    /// <param name="rawIdSpan"><inheritdoc cref="Tag(IdSpan)" path="/param[@rawIdSpan]"/></param>
     /// <returns>Соответствующий <see cref="Tag"/>.</returns>
-    public static Tag FromIdentity(Identity rawIdentity) => new(rawIdentity);
+    public static Tag FromIdSpan(IdSpan rawIdSpan) => new(rawIdSpan);
 
     /// <summary>
     /// Compares the provided operands for equality.

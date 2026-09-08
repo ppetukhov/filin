@@ -9,7 +9,7 @@ public sealed class EventTypeTests
     const string Text3 = "b0507063-77f0-48de-b005-88e35651ce30";
     const string Text4 = @"!""#$%&'()*+,-./:;<=>?@[\]^_`~";
 
-    public static readonly TheoryData<string?, ulong, bool> StringWithExpectedHashes = new()
+    public static readonly TheoryData<string?, uint, bool> StringWithExpectedHashes = new()
     {
         { null, StableHash.Hash32((string?)null), true },
         { "", StableHash.Hash32(""), true },
@@ -19,11 +19,11 @@ public sealed class EventTypeTests
         { Text4, StableHash.Hash32(Text4), false },
     };
 
-    public static readonly TheoryData<string?, IFormatProvider, string> FormatWithFormatProviderAndExpectedString = IdentityTests.FormatWithFormatProviderAndExpectedString;
+    public static readonly TheoryData<string?, IFormatProvider, string> FormatWithFormatProviderAndExpectedString = IdSpanTests.FormatWithFormatProviderAndExpectedString;
 
     [Theory]
     [MemberData(nameof(StringWithExpectedHashes))]
-    public void EventType_Constructor_From_String(string? name, ulong expectedHash, bool expectedIsDefault)
+    public void EventType_Constructor_From_String(string? name, uint expectedHash, bool expectedIsDefault)
     {
         var expectedSpan = name.AsSpan();
 

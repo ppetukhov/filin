@@ -1,7 +1,5 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.Json.Serialization;
 
 namespace Filin.EventStore.Postgres;
@@ -23,7 +21,7 @@ sealed record PgEventPayload
     public required string TypeName { get; init; }
 
     [JsonPropertyName(ColumnNames.TagHashes)]
-    public int[]? TagHashes { get; init; }
+    public long[]? TagHashes { get; init; }
 
     [JsonPropertyName(ColumnNames.TagNames)]
     public string[]? TagNames { get; init; }
@@ -45,7 +43,9 @@ sealed record PgEventPayload
 
             for (var i = 0; i < tgNames.Length && i < tgHashes.Length; i++)
             {
-                tagsBulder.Add((Tag)Identity.UnsafeCreate(ToValueBytes(tgNames[i]), tgHashes[i]));
+#pragma warning disable CS0618 // Type or member is obsolete
+                tagsBulder.Add((Tag)IdSpan.UnsafeCreate(tgNames[i], (ulong)tgHashes[i]));
+#pragma warning restore CS0618 // Type or member is obsolete
             }
 
             tags = tagsBulder.ToImmutable();
@@ -56,8 +56,5 @@ sealed record PgEventPayload
         }
 
         return new DcbEventSequenced(position, new DcbEvent { EventType = eventType, Timestamp = timestamp, Tags = tags, Data = NullData });
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static byte[]? ToValueBytes(string? id) => string.IsNullOrEmpty(id) ? null : Encoding.UTF8.GetBytes(id);
     }
 }

@@ -8,10 +8,10 @@ namespace Filin;
 /// <remarks>
 /// Creates a new <see cref="ProjectionId"/> instance.
 /// </remarks>
-public readonly struct ProjectionId(ProjectorId projectorId, Identity key) : IEquatable<ProjectionId>, IComparable<ProjectionId>, ISpanFormattable, IUtf8SpanFormattable
+public readonly struct ProjectionId(ProjectorId projectorId, IdSpan key) : IEquatable<ProjectionId>, IComparable<ProjectionId>, ISpanFormattable, IUtf8SpanFormattable
 {
     readonly ProjectorId _projectorId = projectorId;
-    readonly Identity _key = key;
+    readonly IdSpan _key = key;
 
     /// <summary>
     /// Gets <inheritdoc cref="Filin.ProjectorId" path="/summary"/>
@@ -21,9 +21,9 @@ public readonly struct ProjectionId(ProjectorId projectorId, Identity key) : IEq
     /// <summary>
     /// Gets the projection key.
     /// </summary>
-    public Identity Key => _key;
+    public IdSpan Key => _key;
 
-    /// <inheritdoc cref="Identity.IsDefault"/>
+    /// <inheritdoc cref="IdSpan.IsDefault"/>
     public bool IsDefault => _projectorId.IsDefault && _key.IsDefault;
 
     /// <inheritdoc/>
@@ -32,7 +32,7 @@ public readonly struct ProjectionId(ProjectorId projectorId, Identity key) : IEq
     /// <inheritdoc/>
     public bool Equals(ProjectionId obj) => _key.Equals(obj._key) && _projectorId.Equals(obj._projectorId);
 
-    /// <inheritdoc cref="Identity.GetHashCode()"/>
+    /// <inheritdoc cref="IdSpan.GetHashCode()"/>
     public override int GetHashCode() => _projectorId.GetHashCode() * 31 + _key.GetHashCode(); // stable hashcode.
 
     /// <inheritdoc/>
@@ -47,14 +47,14 @@ public readonly struct ProjectionId(ProjectorId projectorId, Identity key) : IEq
     /// Deconstruct to Tuple.
     /// </summary>
     /// <param name="projectorId"><inheritdoc cref="Filin.ProjectorId" path="/summary"/></param>
-    /// <param name="key"><inheritdoc cref="Identity" path="/summary"/></param>
-    public void Deconstruct(out ProjectorId projectorId, out Identity key)
+    /// <param name="key"><inheritdoc cref="IdSpan" path="/summary"/></param>
+    public void Deconstruct(out ProjectorId projectorId, out IdSpan key)
     {
         projectorId = _projectorId;
         key = _key;
     }
 
-    /// <inheritdoc cref="Identity.ToString()"/>
+    /// <inheritdoc cref="IdSpan.ToString()"/>
     public override string? ToString() => _key.IsDefault ? _projectorId.ToString() : $"{_projectorId}/{_key}";
 
     /// <inheritdoc/>
@@ -206,15 +206,15 @@ public readonly struct ProjectionId(ProjectorId projectorId, Identity key) : IEq
     /// <returns>Соответствующий <see cref="string"/>.</returns>
     public static implicit operator string?(ProjectionId value) => value.ToString();
 
-    /// <inheritdoc cref="FromTuple(ValueTuple{ProjectorId, Identity})"/>
-    public static explicit operator ProjectionId((ProjectorId Projector, Identity Key) tuple) => new(tuple.Projector, tuple.Key);
+    /// <inheritdoc cref="FromTuple(ValueTuple{ProjectorId, IdSpan})"/>
+    public static explicit operator ProjectionId((ProjectorId Projector, IdSpan Key) tuple) => new(tuple.Projector, tuple.Key);
 
     /// <summary>
-    /// Конвертирует <see cref="ValueTuple{ProjectorId, Identity}"/> в <see cref="ProjectionId"/>.
+    /// Конвертирует <see cref="ValueTuple{ProjectorId, IdSpan}"/> в <see cref="ProjectionId"/>.
     /// </summary>
     /// <param name="tuple">Projector tuple</param>
     /// <returns>Соответствующий <see cref="ProjectorId"/>.</returns>
-    public static ProjectionId FromTuple((ProjectorId Projector, Identity Key) tuple) => new(tuple.Projector, tuple.Key);
+    public static ProjectionId FromTuple((ProjectorId Projector, IdSpan Key) tuple) => new(tuple.Projector, tuple.Key);
 
     /// <summary>
     /// Сравнивает предоставленные операнды на равенство.
