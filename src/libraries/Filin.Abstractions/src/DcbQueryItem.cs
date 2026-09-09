@@ -12,7 +12,7 @@ namespace Filin;
 /// </remarks>
 /// <param name="EventTypes">Типы событий <see cref="EventType"/> применяются с оператором <see langword="or"/>.</param>
 /// <param name="Tags">Тэги событий <see cref="Tag"/> применяются с оператором <see langword="and"/>.</param>
-public sealed record DcbQueryItem(ImmutableHashSet<EventType> EventTypes, ImmutableHashSet<Tag> Tags)
+public sealed record DcbQueryItem(ImmutableHashSet<EventType> EventTypes, ImmutableSortedSet<Tag> Tags)
 {
     public static readonly DcbQueryItem Any = new([], []);
 

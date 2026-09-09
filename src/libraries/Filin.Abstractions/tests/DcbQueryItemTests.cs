@@ -47,7 +47,7 @@ public sealed class DcbQueryItemTests
     [InlineData("SomeEventTag1", "SomeEventTag2", "SomeEventTag3")]
     public void DcbQueryItem_Contructor_From_Tags(params string[] eventTags)
     {
-        var expectedEventTags = eventTags.Select(x => new Tag(x)).ToImmutableHashSet();
+        var expectedEventTags = eventTags.Select(x => new Tag(x)).ToImmutableSortedSet();
 
         var result = new DcbQueryItem(expectedEventTags);
 
@@ -66,7 +66,7 @@ public sealed class DcbQueryItemTests
         var eventTypesCount = names.Length / 2;
 
         var expectedEventTypes = names.Take(eventTypesCount).Select(x => new EventType(x)).ToImmutableHashSet();
-        var expectedEventTags = names.Skip(eventTypesCount).Select(x => new Tag(x)).ToImmutableHashSet();
+        var expectedEventTags = names.Skip(eventTypesCount).Select(x => new Tag(x)).ToImmutableSortedSet();
 
         var result = new DcbQueryItem(expectedEventTypes, expectedEventTags);
 
@@ -162,7 +162,8 @@ public sealed class DcbQueryItemTests
     public void DcbQueryItem_And_Tags(params string[] tagNames)
     {
         var andTags = tagNames.Select(x => new Tag(x)).ToImmutableHashSet();
-        var expected = andTags.Add(new Tag("OrigTag"));
+        var expected = andTags.Add(new Tag("OrigTag")).ToList();
+        expected.Sort();
 
         var result = new DcbQueryItem(new Tag("OrigTag")).And(andTags);
 
@@ -178,7 +179,8 @@ public sealed class DcbQueryItemTests
         var andEventType = new EventType("AndEventType");
 
         ImmutableHashSet<EventType> expectedEventTypes = [new EventType("OrigEventType"), andEventType];
-        ImmutableHashSet<Tag> expectedTags = [new Tag("OrigTag"), andTag];
+        List<Tag> expectedTags = [new Tag("OrigTag"), andTag];
+        expectedTags.Sort();
 
         var result = new DcbQueryItem([new EventType("OrigEventType")], [new Tag("OrigTag")]).And(andEventType, andTag);
 
@@ -199,7 +201,8 @@ public sealed class DcbQueryItemTests
         var andEventType = new EventType("AndEventType");
 
         ImmutableHashSet<EventType> expectedEventTypes = [new EventType("OrigEventType"), andEventType];
-        ImmutableHashSet<Tag> expectedTags = [new Tag("OrigTag"), .. andTags];
+        List<Tag> expectedTags = [new Tag("OrigTag"), .. andTags];
+        expectedTags.Sort();
 
         var result = new DcbQueryItem([new EventType("OrigEventType")], [new Tag("OrigTag")]).And(andEventType, andTags);
 
@@ -220,7 +223,8 @@ public sealed class DcbQueryItemTests
         var andTag = new Tag("AndTag");
 
         ImmutableHashSet<EventType> expectedEventTypes = [new EventType("OrigEventType"), .. andEventTypes];
-        ImmutableHashSet<Tag> expectedTags = [new Tag("OrigTag"), andTag];
+        List<Tag> expectedTags = [new Tag("OrigTag"), andTag];
+        expectedTags.Sort();
 
         var result = new DcbQueryItem([new EventType("OrigEventType")], [new Tag("OrigTag")]).And(andEventTypes, andTag);
 
@@ -243,7 +247,8 @@ public sealed class DcbQueryItemTests
         var andTags = names.Skip(eventTypesCount).Select(x => new Tag(x)).ToImmutableHashSet();
 
         ImmutableHashSet<EventType> expectedEventTypes = [new EventType("OrigEventType"), .. andEventTypes];
-        ImmutableHashSet<Tag> expectedTags = [new Tag("OrigTag"), .. andTags];
+        List<Tag> expectedTags = [new Tag("OrigTag"), .. andTags];
+        expectedTags.Sort();
 
         var result = new DcbQueryItem([new EventType("OrigEventType")], [new Tag("OrigTag")]).And(andEventTypes, andTags);
 

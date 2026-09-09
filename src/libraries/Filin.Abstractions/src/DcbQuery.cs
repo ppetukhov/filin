@@ -82,7 +82,7 @@ public sealed partial record DcbQuery(ImmutableHashSet<DcbQueryItem> Items)
 
         var builder = ImmutableHashSet.CreateBuilder<DcbQueryItem>();
 
-        foreach (var grouped in Items.GroupBy(static x => x.Tags, TagHashSetEqualityComparer.Instance))
+        foreach (var grouped in Items.GroupBy(static x => x.Tags, TagSetEqualityComparer.Instance))
         {
             var eventTypes = grouped.SelectMany(static q => q.EventTypes).ToImmutableHashSet();
 
@@ -118,17 +118,17 @@ public sealed partial record DcbQuery(ImmutableHashSet<DcbQueryItem> Items)
     public static implicit operator DcbQuery(ImmutableHashSet<DcbEvent> dcbEvents) => FromImmutableHashSet(dcbEvents);
 
     /// <inheritdoc/>
-    sealed class TagHashSetEqualityComparer : IEqualityComparer<ImmutableHashSet<Tag>>
+    sealed class TagSetEqualityComparer : IEqualityComparer<ImmutableSortedSet<Tag>>
     {
-        internal static readonly TagHashSetEqualityComparer Instance = new TagHashSetEqualityComparer();
+        internal static readonly TagSetEqualityComparer Instance = new TagSetEqualityComparer();
 
         /// <inheritdoc/>
-        public bool Equals(ImmutableHashSet<Tag>? x, ImmutableHashSet<Tag>? y) =>
+        public bool Equals(ImmutableSortedSet<Tag>? x, ImmutableSortedSet<Tag>? y) =>
             x is not null && y is not null && x.Count == y.Count && x.All(y.Contains)
             || x is null && y is null;
 
         /// <inheritdoc/>
-        public int GetHashCode([DisallowNull] ImmutableHashSet<Tag> obj)
+        public int GetHashCode([DisallowNull] ImmutableSortedSet<Tag> obj)
         {
             var hashCode = 0;
 
