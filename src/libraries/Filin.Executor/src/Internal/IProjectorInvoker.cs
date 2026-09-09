@@ -8,11 +8,11 @@ interface IProjectorInvoker<TState> where TState : notnull
     /// <inheritdoc cref="IProjector{TState}.ProjectorId"/>
     ProjectorId ProjectorId { get; }
 
-    /// <inheritdoc cref="IProjector{TState}.GetQuery(ImmutableHashSet{Tag})"/>
-    DcbQuery GetQuery(ImmutableHashSet<Tag> tags);
+    /// <inheritdoc cref="IProjector{TState}.GetQuery(ImmutableSortedSet{Tag})"/>
+    DcbQuery GetQuery(ImmutableSortedSet<Tag> tags);
 
-    /// <inheritdoc cref="IProjector{TState}.GetProjectionId(ImmutableHashSet{Tag})"/>
-    ProjectionId GetProjectionId(ImmutableHashSet<Tag> tags);
+    /// <inheritdoc cref="IProjector{TState}.GetProjectionId(ImmutableSortedSet{Tag})"/>
+    ProjectionId GetProjectionId(ImmutableSortedSet<Tag> tags);
 
     /// <inheritdoc cref="IProjector{TState}.Project(DcbEventSequenced)"/>
     TState Project(DcbEventSequenced domainEvent);

@@ -173,7 +173,7 @@ static class Constants
     public const string TypeManifestProviderAttribute = "Filin.TypeManifestProviderAttribute";
 
     /// <summary>
-    /// Value is <c>global::System.Collections.Immutable.ImmutableHashSet&lt;global::Filin.Tag&gt;</c>.
+    /// Value is <c>global::System.Collections.Immutable.ImmutableSortedSet&lt;global::Filin.Tag&gt;</c>.
     /// </summary>
-    public const string ReturnTagTypeCollection = $"global::System.Collections.Immutable.ImmutableHashSet<{TagTypeFullName}>";
+    public const string ReturnTagTypeCollection = $"global::System.Collections.Immutable.ImmutableSortedSet<{TagTypeFullName}>";
 }

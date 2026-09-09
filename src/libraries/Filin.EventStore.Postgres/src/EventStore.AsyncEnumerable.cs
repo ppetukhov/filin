@@ -215,7 +215,7 @@ sealed partial class EventStore
 #pragma warning restore CS0618 // Type or member is obsolete
         }
 
-        static ImmutableHashSet<Tag>? GetTags(DbDataReader reader, Ordinals ordinals)
+        static ImmutableSortedSet<Tag>? GetTags(DbDataReader reader, Ordinals ordinals)
         {
             var tag_values = reader.GetFieldValue<string[]>(ordinals.TagNames);
 
@@ -226,7 +226,7 @@ sealed partial class EventStore
 
             var tag_hashes = reader.GetFieldValue<long[]>(ordinals.TagHashes);
 
-            var hashSet = ImmutableHashSet.CreateBuilder<Tag>();
+            var hashSet = ImmutableSortedSet.CreateBuilder<Tag>();
 
             for (int i = 0; i < tag_values.Length; i++)
             {

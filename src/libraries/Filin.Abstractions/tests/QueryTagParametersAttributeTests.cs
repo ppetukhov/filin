@@ -64,8 +64,8 @@ public sealed class QueryTagParametersAttributeTests
         Tag tagStudent2 = "student:smiths";
         Tag tagTeacher = "teacher:584456";
 
-        ImmutableHashSet<Tag> exactTags = [tagCourse, tagTeacher, tagStudent1, tagStudent2];
-        ImmutableHashSet<Tag> tags = [.. exactTags, "other-entity:846123", "owner:4123"];
+        ImmutableSortedSet<Tag> exactTags = [tagCourse, tagTeacher, tagStudent1, tagStudent2];
+        ImmutableSortedSet<Tag> tags = [.. exactTags, "other-entity:846123", "owner:4123"];
 
         var result = ProjectorWithQueryTagParameters.GetProjectionId(tags);
 
@@ -83,8 +83,8 @@ public sealed class QueryTagParametersAttributeTests
         Tag tagStudent2 = "student:smiths";
         Tag tagTeacher = "teacher:584456";
 
-        ImmutableHashSet<Tag> exactTags = [tagCourse, tagTeacher, tagStudent1, tagStudent2];
-        ImmutableHashSet<Tag> tags = [.. exactTags, "other-entity:846123", "owner:4123"];
+        ImmutableSortedSet<Tag> exactTags = [tagCourse, tagTeacher, tagStudent1, tagStudent2];
+        ImmutableSortedSet<Tag> tags = [.. exactTags, "other-entity:846123", "owner:4123"];
 
         var result = ProjectorWithQueryTagParametersV1.GetProjectionId(tags);
 
@@ -102,8 +102,8 @@ public sealed class QueryTagParametersAttributeTests
         Tag tagStudent2 = "student:smiths";
         Tag tagTeacher = "teacher:584456";
 
-        ImmutableHashSet<Tag> exactTags = [tagCourse, tagTeacher, tagStudent1, tagStudent2];
-        ImmutableHashSet<Tag> tags = [.. exactTags, "other-entity:846123", "owner:4123"];
+        ImmutableSortedSet<Tag> exactTags = [tagCourse, tagTeacher, tagStudent1, tagStudent2];
+        ImmutableSortedSet<Tag> tags = [.. exactTags, "other-entity:846123", "owner:4123"];
 
         var result = TestDomainProjectors.V0.NestedProjectorWithQueryTagParameters.GetProjectionId(tags);
 
@@ -121,8 +121,8 @@ public sealed class QueryTagParametersAttributeTests
         Tag tagStudent2 = "student:smiths";
         Tag tagTeacher = "teacher:584456";
 
-        ImmutableHashSet<Tag> exactTags = [tagCourse, tagTeacher, tagStudent1, tagStudent2];
-        ImmutableHashSet<Tag> tags = [.. exactTags, "other-entity:846123", "owner:4123"];
+        ImmutableSortedSet<Tag> exactTags = [tagCourse, tagTeacher, tagStudent1, tagStudent2];
+        ImmutableSortedSet<Tag> tags = [.. exactTags, "other-entity:846123", "owner:4123"];
 
         var result = ProjectorWithQueryTagParameters.GetQuery(tags);
 
@@ -147,7 +147,7 @@ public sealed class QueryTagParametersAttributeTests
         Tag tagStudent2 = "student:smiths";
         Tag tagTeacher = "teacher:584456";
 
-        ImmutableHashSet<Tag> tags = [tagCourse, tagTeacher, tagStudent1, tagStudent2, "other-entity:846123", "owner:4123"];
+        ImmutableSortedSet<Tag> tags = [tagCourse, tagTeacher, tagStudent1, tagStudent2, "other-entity:846123", "owner:4123"];
 
         var result = ProjectorWithQueryTagParametersV1.GetQuery(tags);
 
@@ -172,7 +172,7 @@ public sealed class QueryTagParametersAttributeTests
         Tag tagStudent2 = "student:smiths";
         Tag tagTeacher = "teacher:584456";
 
-        ImmutableHashSet<Tag> tags = [tagCourse, tagTeacher, tagStudent1, tagStudent2, "other-entity:846123", "owner:4123"];
+        ImmutableSortedSet<Tag> tags = [tagCourse, tagTeacher, tagStudent1, tagStudent2, "other-entity:846123", "owner:4123"];
 
         var result = TestDomainProjectors.V0.NestedProjectorWithQueryTagParameters.GetQuery(tags);
 
@@ -192,7 +192,7 @@ public sealed class QueryTagParametersAttributeTests
     [Fact]
     public void ProjectorWithQueryTagParameters_GetProjectionId_Throw_ArgumentException_When_Notfound_Student_Tag()
     {
-        ImmutableHashSet<Tag> tags = ["course:5555", "teacher:584456", "other-entity:846123", "owner:4123"];
+        ImmutableSortedSet<Tag> tags = ["course:5555", "teacher:584456", "other-entity:846123", "owner:4123"];
 
         Action act = () => ProjectorWithQueryTagParameters.GetProjectionId(tags);
 
@@ -206,7 +206,7 @@ public sealed class QueryTagParametersAttributeTests
     [Fact]
     public void ProjectorWithQueryTagParametersV1_GetProjectionId_Throw_ArgumentException_When_Notfound_Student_Tag()
     {
-        ImmutableHashSet<Tag> tags = ["course:5555", "teacher:584456", "other-entity:846123", "owner:4123"];
+        ImmutableSortedSet<Tag> tags = ["course:5555", "teacher:584456", "other-entity:846123", "owner:4123"];
 
         Action act = () => ProjectorWithQueryTagParametersV1.GetProjectionId(tags);
 
@@ -220,7 +220,7 @@ public sealed class QueryTagParametersAttributeTests
     [Fact]
     public void NestedProjectorWithQueryTagParameters_GetProjectionId_Throw_ArgumentException_When_Notfound_Student_Tag()
     {
-        ImmutableHashSet<Tag> tags = ["course:5555", "teacher:584456", "other-entity:846123", "owner:4123"];
+        ImmutableSortedSet<Tag> tags = ["course:5555", "teacher:584456", "other-entity:846123", "owner:4123"];
 
         Action act = () => TestDomainProjectors.V0.NestedProjectorWithQueryTagParameters.GetProjectionId(tags);
 

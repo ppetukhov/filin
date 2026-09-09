@@ -12,5 +12,5 @@ namespace Edu.UseCases;
 public sealed record GetActiveCourses : IQuery<ActiveCourses>
 {
     /// <inheritdoc/>
-    public ImmutableHashSet<Tag> GetTags() => [];
+    public ImmutableSortedSet<Tag> GetTags() => [];
 }

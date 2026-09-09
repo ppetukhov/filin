@@ -41,7 +41,7 @@ static partial class DomainEvents
 public static class EduEventsToDcbEventExtensions
 {
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    internal static DcbEvent ToDcbEvent(this V1.CourseCreated evt, ImmutableHashSet<Tag>? tags = null) => new DcbEvent
+    internal static DcbEvent ToDcbEvent(this V1.CourseCreated evt, ImmutableSortedSet<Tag>? tags = null) => new DcbEvent
     {
         EventType = evt.GetEventType(),
         Data = evt,
@@ -50,7 +50,7 @@ public static class EduEventsToDcbEventExtensions
     };
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    internal static DcbEvent ToDcbEvent(this V1.CourseRenamed evt, ImmutableHashSet<Tag>? tags = null) => new DcbEvent
+    internal static DcbEvent ToDcbEvent(this V1.CourseRenamed evt, ImmutableSortedSet<Tag>? tags = null) => new DcbEvent
     {
         EventType = evt.GetEventType(),
         Data = evt,
@@ -68,7 +68,7 @@ public static class EduEventsToDcbEventExtensions
     };
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    internal static DcbEvent ToDcbEvent(this V1.StudentSubscribed evt, ImmutableHashSet<Tag>? tags = null) => new DcbEvent
+    internal static DcbEvent ToDcbEvent(this V1.StudentSubscribed evt, ImmutableSortedSet<Tag>? tags = null) => new DcbEvent
     {
         EventType = evt.GetEventType(),
         Data = evt,

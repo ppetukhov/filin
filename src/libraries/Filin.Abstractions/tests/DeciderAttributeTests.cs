@@ -11,7 +11,7 @@ sealed class CreateCourseDecider : IDecider<CreateCourse, ActiveCourses>
 
 sealed record CreateCourse : ICommand<ActiveCourses>
 {
-    public ImmutableHashSet<Tag> GetTags() => ["course:123"];
+    public ImmutableSortedSet<Tag> GetTags() => ["course:123"];
 };
 
 sealed record ActiveCourses { };

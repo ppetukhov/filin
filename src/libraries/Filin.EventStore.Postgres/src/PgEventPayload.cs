@@ -33,13 +33,13 @@ sealed record PgEventPayload
 #pragma warning disable CS0618 // Type or member is obsolete
         var eventType = EventType.UnsafeCreate(TypeName, (uint)TypeHash);
 #pragma warning restore CS0618 // Type or member is obsolete
-        ImmutableHashSet<Tag>? tags;
+        ImmutableSortedSet<Tag>? tags;
 
         if (TagNames is { Length: > 0 } tgNames && TagHashes is { Length: > 0 } tgHashes)
         {
             Debug.Assert(tgHashes.Length == tgHashes.Length);
 
-            var tagsBulder = ImmutableHashSet.CreateBuilder<Tag>();
+            var tagsBulder = ImmutableSortedSet.CreateBuilder<Tag>();
 
             for (var i = 0; i < tgNames.Length && i < tgHashes.Length; i++)
             {

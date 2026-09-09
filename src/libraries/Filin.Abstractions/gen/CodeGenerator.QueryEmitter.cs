@@ -19,7 +19,7 @@ partial class CodeGenerator
     sealed class QueryEmitter(GenerationOptions options)
     {
         static readonly TypeSyntax ProjectionIdTypeSyntax = ParseTypeName(Constants.ProjectionIdTypeFullName);
-        static readonly TypeSyntax ImmutableHashSetTagsTypeSyntax = ParseTypeName($"global::System.Collections.Immutable.ImmutableHashSet<{Constants.TagTypeFullName}>");
+        static readonly TypeSyntax ImmutableSortedSetTagsTypeSyntax = ParseTypeName($"global::System.Collections.Immutable.ImmutableSortedSet<{Constants.TagTypeFullName}>");
         static readonly TypeSyntax ImmutableArrayTagParameterTypeSyntax = ParseTypeName($"global::System.Collections.Immutable.ImmutableArray<({Constants.IdSpanTypeFullName}, global::System.Collections.Immutable.ImmutableArray<int>)>");
         static readonly SyntaxToken IsMatchTagParamToken = Identifier("IsMatchTagParam");
         static readonly SyntaxToken CreateQueryCoreToken = Identifier("CreateQueryCore");
@@ -198,7 +198,7 @@ partial class CodeGenerator
                                 ))),
                 semicolonToken: Token(SyntaxKind.SemicolonToken));
 
-        // static DcbQuery CreateQueryCore(ImmutableArray<DcbQueryItem> queryParts, ImmutableArray<(Identity, ImmutableArray<int>)> queryTagParams, ImmutableHashSet<Tag> tags)
+        // static DcbQuery CreateQueryCore(ImmutableArray<DcbQueryItem> queryParts, ImmutableArray<(Identity, ImmutableArray<int>)> queryTagParams, ImmutableSortedSet<Tag> tags)
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static MethodDeclarationSyntax CreateQueryCoreMethod()
         {
@@ -374,7 +374,7 @@ partial class CodeGenerator
                     SeparatedList([
                         Parameter(attributeLists: default, modifiers: default, Emitter.ImmutableArrayQueryItemTypeSyntax, Identifier("queryParts"), null),
                         Parameter(attributeLists: default, modifiers: default, ImmutableArrayTagParameterTypeSyntax, Identifier("queryTagParams"), null),
-                        Parameter(attributeLists: default, modifiers: default, ImmutableHashSetTagsTypeSyntax, Identifier("tags"), null)]
+                        Parameter(attributeLists: default, modifiers: default, ImmutableSortedSetTagsTypeSyntax, Identifier("tags"), null)]
                     )),
                 body: statements,
                 expressionBody: null,
@@ -639,7 +639,7 @@ partial class CodeGenerator
                     SeparatedList([
                         Parameter(attributeLists: default, modifiers: default, Emitter.ProjectoIdTypeSyntax, Identifier("projectorId"), null),
                         Parameter(attributeLists: default, modifiers: default, ImmutableArrayTagParameterTypeSyntax, Identifier("queryTagParams"), null),
-                        Parameter(attributeLists: default, modifiers: default, ImmutableHashSetTagsTypeSyntax, Identifier("tags"), null)]
+                        Parameter(attributeLists: default, modifiers: default, ImmutableSortedSetTagsTypeSyntax, Identifier("tags"), null)]
                     )),
                 body: statements,
                 expressionBody: null,
@@ -657,7 +657,7 @@ partial class CodeGenerator
                 identifier: methodName,
                 typeParameterList: default,
                 constraintClauses: default,
-                parameterList: ParameterList(SingletonSeparatedList(Parameter(attributeLists: default, modifiers: default, ImmutableHashSetTagsTypeSyntax, hasTagParams ? Identifier("tags") : Emitter.DiscardIdentifierToken, null))),
+                parameterList: ParameterList(SingletonSeparatedList(Parameter(attributeLists: default, modifiers: default, ImmutableSortedSetTagsTypeSyntax, hasTagParams ? Identifier("tags") : Emitter.DiscardIdentifierToken, null))),
                 body: null,
                 expressionBody: hasTagParams
                     ? ArrowExpressionClause(
@@ -670,7 +670,7 @@ partial class CodeGenerator
                     : ArrowExpressionClause(IdentifierName(QueryFieldToken)),
                 semicolonToken: Token(SyntaxKind.SemicolonToken));
 
-        // static ProjectionId methodName(ImmutableHashSet<Tag> tags)
+        // static ProjectionId methodName(ImmutableSortedSet<Tag> tags)
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static MethodDeclarationSyntax CreateGetProjectionIdMethod(SyntaxToken ProjectorIdIdentifier, SyntaxToken methodName, bool hasTagParams) =>
             MethodDeclaration(
@@ -681,7 +681,7 @@ partial class CodeGenerator
                 identifier: methodName,
                 typeParameterList: default,
                 constraintClauses: default,
-                parameterList: ParameterList(SingletonSeparatedList(Parameter(attributeLists: default, modifiers: default, ImmutableHashSetTagsTypeSyntax, hasTagParams ? Identifier("tags") : Emitter.DiscardIdentifierToken, null))),
+                parameterList: ParameterList(SingletonSeparatedList(Parameter(attributeLists: default, modifiers: default, ImmutableSortedSetTagsTypeSyntax, hasTagParams ? Identifier("tags") : Emitter.DiscardIdentifierToken, null))),
                 body: null,
                 expressionBody: hasTagParams
                     ? ArrowExpressionClause(

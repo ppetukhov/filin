@@ -3,12 +3,15 @@ using System.Collections.Immutable;
 namespace Filin;
 
 /// <summary>
-/// Объект с тэгами для формирования запроса.
+/// Defines a contract for domain objects that expose a collection of query tags to form consistency boundaries.
 /// </summary>
 public interface IWithQueryTags
 {
     /// <summary>
-    /// Тэги для формирования запроса.
+    /// Gets the guaranteed sorted, immutable collection of query tags used to evaluate dynamic consistency boundaries.
     /// </summary>
-    ImmutableHashSet<Tag> GetTags();
+    /// <value>
+    /// A <see cref="ImmutableSortedSet{Tag}"/> containing the pre-sorted query tags and their combined hash.
+    /// </value>
+    ImmutableSortedSet<Tag> GetTags();
 }

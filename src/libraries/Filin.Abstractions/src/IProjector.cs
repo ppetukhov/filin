@@ -3,50 +3,65 @@ using System.Collections.Immutable;
 namespace Filin;
 
 /// <summary>
-/// Проектор событий в модель данных для чтения и принятия решения пользователем или приложением.
+/// Defines a contract for an event projector that flattens domain events into a read model 
+/// used for business validation and decision-making.
 /// </summary>
 /// <remarks>
-/// <see cref="ProjectorIdAttribute"/> используется для идентификации проектора.
-/// <see cref="QueryEventTypesAttribute"/> и <see cref="QueryTagsAttribute"/> используется для задания фильтра проектора.
+/// <para>
+/// Implementations must be marked with infrastructure attributes to declare metadata 
+/// if automatic registration is required.
+/// </para>
+/// <para>
+/// This interface utilizes static abstract members to allow metadata resolution 
+/// and query building directly at the type level without instantiation overhead.
+/// </para>
+///
+/// <para>
+/// The <see cref="ProjectorIdAttribute"/> is used to declare a unique runtime identifier for the projector.
+/// </para>
+/// <para>
+/// The <see cref="QueryEventTypesAttribute"/> and <see cref="QueryTagsAttribute"/> are utilized 
+/// by the infrastructure framework to automatically discover and map metadata filtering rules for this projector.
+/// </para>
 /// </remarks>
-/// <typeparam name="TState">Тип объекта проекции.</typeparam>
+/// <typeparam name="TState">The immutable type of the projection state.</typeparam>
 public interface IProjector<TState> where TState : notnull
 {
     /// <summary>
-    /// Идентификатор проектора.
+    /// Gets the unique identifier of the projector type.
     /// </summary>
     static abstract ProjectorId ProjectorId { get; }
 
     /// <summary>
-    /// Создать запрос на получение состояния проекции.
+    /// Builds a deterministic query containing sorted tags and interested event types for history retrieval.
     /// </summary>
-    /// <param name="tags">Коллекция тэгов из контекста.</param>
-    /// <exception cref="ArgumentException">Отсутствует обязательный тэг.</exception>
-    /// <returns></returns>
-    static abstract DcbQuery GetQuery(ImmutableHashSet<Tag> tags);
+    /// <param name="tags">The zero-allocation collection of tags from the current execution context.</param>
+    /// <returns>A <see cref="DcbQuery"/> defining the dynamic consistency boundary for this projection.</returns>
+    /// <exception cref="ArgumentException">Thrown when a required tag is missing from the provided collection.</exception>
+    static abstract DcbQuery GetQuery(ImmutableSortedSet<Tag> tags);
 
     /// <summary>
-    /// Создать идентификатор проекции.
+    /// Generates a unique composite projection identity based on the execution context tags.
     /// </summary>
-    /// <param name="tags">Коллекция тэгов из контекста.</param>
-    /// <exception cref="ArgumentException">Отсутствует обязательный тэг.</exception>
-    /// <returns></returns>
-    static abstract ProjectionId GetProjectionId(ImmutableHashSet<Tag> tags);
+    /// <param name="tags">The zero-allocation collection of tags from the current execution context.</param>
+    /// <returns>The unique identity of the projection.</returns>
+    /// <exception cref="ArgumentException">Thrown when a required tag is missing from the provided collection.</exception>
+    static abstract ProjectionId GetProjectionId(ImmutableSortedSet<Tag> tags);
 
     /// <summary>
-    /// Создать проекцию.
+    /// Initializes the projection state from the very first event in the history stream.
     /// </summary>
-    /// <param name="domainEvent">Доменное событие.</param>
-    /// <exception cref="DcbProjectorException"/>
-    /// <returns></returns>
+    /// <param name="domainEvent">The first sequenced domain event retrieved from the store.</param>
+    /// <returns>The newly initialized <typeparamref name="TState"/> instance.</returns>
+    /// <exception cref="DcbProjectorException">Thrown when an infrastructure or projection mapping failure occurs.</exception>
     static abstract TState Project(DcbEventSequenced domainEvent);
 
     /// <summary>
-    /// Изменить проекцию по событию.
+    /// Incrementally updates (evolves) the existing projection state by applying a subsequent event.
     /// </summary>
-    /// <param name="state">Текущая проекция.</param>
-    /// <param name="domainEvent">Доменное событие.</param>
-    /// <exception cref="DcbProjectorException"/>
-    /// <returns></returns>
+    /// <param name="state">The current snapshot of the projection state.</param>
+    /// <param name="domainEvent">The subsequent sequenced domain event to apply.</param>
+    /// <returns>The evolved <typeparamref name="TState"/> instance.</returns>
+    /// <exception cref="DcbProjectorException">Thrown when an infrastructure or projection mapping failure occurs.</exception>
     static abstract TState Project(TState state, DcbEventSequenced domainEvent);
 }

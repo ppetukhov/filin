@@ -3,7 +3,7 @@ using System.Text;
 namespace Filin;
 
 /// <summary>
-/// Идентификатор проекции.
+/// Represents a unique identifier for a projection instance.
 /// </summary>
 /// <remarks>
 /// Creates a new <see cref="ProjectionId"/> instance.
@@ -33,7 +33,7 @@ public readonly struct ProjectionId(ProjectorId projectorId, IdSpan key) : IEqua
     public bool Equals(ProjectionId obj) => _key.Equals(obj._key) && _projectorId.Equals(obj._projectorId);
 
     /// <inheritdoc cref="IdSpan.GetHashCode()"/>
-    public override int GetHashCode() => _projectorId.GetHashCode() * 31 + _key.GetHashCode(); // stable hashcode.
+    public override int GetHashCode() => _projectorId.GetHashCode() * 31 + _key.GetHashCode();
 
     /// <inheritdoc/>
     public int CompareTo(ProjectionId other)
@@ -200,43 +200,67 @@ public readonly struct ProjectionId(ProjectorId projectorId, IdSpan key) : IEqua
     }
 
     /// <summary>
-    /// Конвертирует <see cref="ProjectionId"/> в <see cref="string"/>.
+    /// Defines an implicit conversion of a <see cref="ProjectionId"/> to a <see cref="string"/>.
     /// </summary>
     /// <param name="value"><inheritdoc cref="ProjectionId" path="/summary"/></param>
-    /// <returns>Соответствующий <see cref="string"/>.</returns>
+    /// <returns>The corresponding <see cref="string"/> representation of the projection identity, or <see langword="null"/> if uninitialized.</returns>
     public static implicit operator string?(ProjectionId value) => value.ToString();
 
     /// <inheritdoc cref="FromTuple(ValueTuple{ProjectorId, IdSpan})"/>
     public static explicit operator ProjectionId((ProjectorId Projector, IdSpan Key) tuple) => new(tuple.Projector, tuple.Key);
 
     /// <summary>
-    /// Конвертирует <see cref="ValueTuple{ProjectorId, IdSpan}"/> в <see cref="ProjectionId"/>.
+    /// Converts a <see cref="ValueTuple{ProjectorId, IdSpan}"/> to a <see cref="ProjectionId"/>.
     /// </summary>
-    /// <param name="tuple">Projector tuple</param>
-    /// <returns>Соответствующий <see cref="ProjectorId"/>.</returns>
+    /// <param name="tuple">The tuple containing the projector identity and the unique boundary key span.</param>
+    /// <returns>The corresponding <see cref="ProjectionId"/> instance.</returns>
     public static ProjectionId FromTuple((ProjectorId Projector, IdSpan Key) tuple) => new(tuple.Projector, tuple.Key);
 
     /// <summary>
-    /// Сравнивает предоставленные операнды на равенство.
-    /// </summary>
-    /// <param name="left">Левый операнд.</param>
-    /// <param name="right">Правый операнд.</param>
-    /// <returns><see langword="true"/> если предоставленные значения равны, в противном случае <see langword="false"/>.</returns>
-    public static bool operator ==(ProjectionId left, ProjectionId right) => left.Equals(right);
-
-    /// <summary>
-    /// Сравнивает предоставленные операнды на неравенство.
+    /// Compares two instances for equality.
     /// </summary>
     /// <param name="left">The left operand.</param>
     /// <param name="right">The right operand.</param>
-    /// <returns><see langword="true"/> если предоставленные значения не равны, в противном случае <see langword="false"/>.</returns>
+    /// <returns><see langword="true"/> if the specified instances are equal; otherwise, <see langword="false"/>.</returns>
+    public static bool operator ==(ProjectionId left, ProjectionId right) => left.Equals(right);
+
+    /// <summary>
+    /// Compares two instances for inequality.
+    /// </summary>
+    /// <param name="left">The left operand.</param>
+    /// <param name="right">The right operand.</param>
+    /// <returns><see langword="true"/> if the specified instances are not equal; otherwise, <see langword="false"/>.</returns>
     public static bool operator !=(ProjectionId left, ProjectionId right) => !(left == right);
 
+    /// <summary>
+    /// Determines whether the first <see cref="ProjectionId"/> instance is less than the second instance.
+    /// </summary>
+    /// <param name="left">The left operand.</param>
+    /// <param name="right">The right operand.</param>
+    /// <returns><see langword="true"/> if the left instance is less than the right instance; otherwise, <see langword="false"/>.</returns>
     public static bool operator <(ProjectionId left, ProjectionId right) => left.CompareTo(right) < 0;
 
+    /// <summary>
+    /// Determines whether the first <see cref="ProjectionId"/> instance is less than or equal to the second instance.
+    /// </summary>
+    /// <param name="left">The left operand.</param>
+    /// <param name="right">The right operand.</param>
+    /// <returns><see langword="true"/> if the left instance is less than or equal to the right instance; otherwise, <see langword="false"/>.</returns>
     public static bool operator <=(ProjectionId left, ProjectionId right) => left.CompareTo(right) <= 0;
 
+    /// <summary>
+    /// Determines whether the first <see cref="ProjectionId"/> instance is greater than the second instance.
+    /// </summary>
+    /// <param name="left">The left operand.</param>
+    /// <param name="right">The right operand.</param>
+    /// <returns><see langword="true"/> if the left instance is greater than the right instance; otherwise, <see langword="false"/>.</returns>
     public static bool operator >(ProjectionId left, ProjectionId right) => left.CompareTo(right) > 0;
 
+    /// <summary>
+    /// Determines whether the first <see cref="ProjectionId"/> instance is greater than or equal to the second instance.
+    /// </summary>
+    /// <param name="left">The left operand.</param>
+    /// <param name="right">The right operand.</param>
+    /// <returns><see langword="true"/> if the left instance is greater than or equal to the right instance; otherwise, <see langword="false"/>.</returns>
     public static bool operator >=(ProjectionId left, ProjectionId right) => left.CompareTo(right) >= 0;
 }
