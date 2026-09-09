@@ -1,5 +1,4 @@
 using System.Buffers;
-using System.Buffers.Binary;
 using System.IO.Hashing;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -9,32 +8,13 @@ namespace Filin;
 /// <summary>
 /// Stable hash.
 /// </summary>
-public static class StableHash
+static class StableHash
 {
     const int MaxStackThreshold = 256;
 
     internal static readonly uint EmptyHash32 = Hash32([]);
 
     internal static readonly ulong EmptyHash64 = Hash64([]);
-
-    /// <summary>
-    /// Computes a hash digest of the input.
-    /// </summary>
-    /// <param name="data">
-    /// The input data.
-    /// </param>
-    /// <returns>
-    /// A hash digest of the input.
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int ComputeHash(ReadOnlySpan<byte> data)
-    {
-        Span<byte> hash = stackalloc byte[sizeof(uint)];
-
-        _ = XxHash32.TryHash(data, hash, out _, seed: 0);
-
-        return BinaryPrimitives.ReadInt32LittleEndian(hash); // OK - ORIGIN
-    }
 
     internal static ulong Hash64(string? value)
     {
