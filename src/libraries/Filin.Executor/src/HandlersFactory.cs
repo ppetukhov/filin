@@ -63,12 +63,12 @@ sealed class HandlersFactory(
     }
 
     object CreateProjectorInvokerInstance(Type stateType) =>
-        !options.Value.ProjectorInvokerTypes.TryGetValue(stateType, out var invokerType)
+        !options.Value.ProjectorProxyTypes.TryGetValue(stateType, out var invokerType)
             ? throw new InvalidOperationException($"Not found projector invoker type for state type {stateType.FullName}")
             : Activator.CreateInstance(invokerType, nonPublic: true) ?? throw new InvalidOperationException($"Fail create instance of {invokerType.FullName}");
 
     object CreateDeciderInvokerInstance((Type CommandType, Type StateType) key) =>
-        !options.Value.DeciderInvokerTypes.TryGetValue(key, out var invokerType)
+        !options.Value.DeciderProxyTypes.TryGetValue(key, out var invokerType)
             ? throw new InvalidOperationException($"Not found decider invoker type for command and state type ({key.CommandType.FullName}, {key.StateType.FullName})")
             : Activator.CreateInstance(invokerType, nonPublic: true) ?? throw new InvalidOperationException($"Fail create instance of {invokerType.FullName}");
 }

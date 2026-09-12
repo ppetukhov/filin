@@ -1,7 +1,7 @@
 namespace Filin.Internal;
 
-/// <inheritdoc cref="IProjectorInvoker{TState}"/>
-sealed class ProjectorInvoker<TProjector, TState> : IProjectorInvoker<TState>
+/// <inheritdoc cref="IProjectorProxy{TState}"/>
+sealed class ProjectorProxy<TProjector, TState> : IProjectorProxy<TState>
     where TProjector : IProjector<TState>
     where TState : notnull
 {

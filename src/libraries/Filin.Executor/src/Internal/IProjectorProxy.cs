@@ -1,7 +1,7 @@
 namespace Filin.Internal;
 
 /// <inheritdoc cref="IProjector{TState}"/>
-interface IProjectorInvoker<TState> where TState : notnull
+interface IProjectorProxy<TState> where TState : notnull
 {
     /// <inheritdoc cref="IProjector{TState}.ProjectorId"/>
     ProjectorId ProjectorId { get; }

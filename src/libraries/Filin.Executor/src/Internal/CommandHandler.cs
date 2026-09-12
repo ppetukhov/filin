@@ -6,7 +6,7 @@ using Filin.Storage;
 
 namespace Filin.Internal;
 
-sealed class CommandHandler<TCommand, TState>(IDeciderInvoker<TCommand, TState> decider, StateManager<TState> stateManager)
+sealed class CommandHandler<TCommand, TState>(IDeciderProxy<TCommand, TState> decider, StateManager<TState> stateManager)
     where TCommand : notnull, ICommand<TState>
     where TState : notnull
 {

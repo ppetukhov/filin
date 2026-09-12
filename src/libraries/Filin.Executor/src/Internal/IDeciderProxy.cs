@@ -1,7 +1,7 @@
 namespace Filin.Internal;
 
 /// <inheritdoc cref="IDecider{TCommand, TState}"/>
-interface IDeciderInvoker<TCommand, TState>
+interface IDeciderProxy<TCommand, TState>
     where TCommand : notnull, ICommand<TState>
     where TState : notnull
 {

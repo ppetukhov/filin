@@ -18,9 +18,9 @@ sealed class ExecutorOptionsProvider(IOptions<TypeManifestOptions> typeManifestO
             var stateType = kv.Key;
             var projectorType = kv.Value;
 
-            var invokerType = typeof(ProjectorInvoker<,>).MakeGenericType(projectorType, stateType);
+            var invokerType = typeof(ProjectorProxy<,>).MakeGenericType(projectorType, stateType);
 
-            options.ProjectorInvokerTypes[stateType] = invokerType;
+            options.ProjectorProxyTypes[stateType] = invokerType;
         }
 
         foreach (var kv in typeManifestOptions.Value.DeciderTypes)
@@ -28,9 +28,9 @@ sealed class ExecutorOptionsProvider(IOptions<TypeManifestOptions> typeManifestO
             var (commandType, stateType) = kv.Key;
             var deciderType = kv.Value;
 
-            var invokerType = typeof(DeciderInvoker<,,>).MakeGenericType(deciderType, commandType, stateType);
+            var invokerType = typeof(DeciderProxy<,,>).MakeGenericType(deciderType, commandType, stateType);
 
-            options.DeciderInvokerTypes[(commandType, stateType)] = invokerType;
+            options.DeciderProxyTypes[(commandType, stateType)] = invokerType;
         }
     }
 }

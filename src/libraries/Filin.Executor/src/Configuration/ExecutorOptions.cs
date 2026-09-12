@@ -5,12 +5,12 @@ namespace Filin.Configuration;
 sealed class ExecutorOptions
 {
     /// <summary>
-    /// Key is <c>TState</c>, value is type of instance <see cref="IProjectorInvoker{TState}"/>.
+    /// Key is <c>TState</c>, value is type of instance <see cref="IProjectorProxy{TState}"/>.
     /// </summary>
-    public Dictionary<Type, Type> ProjectorInvokerTypes { get; } = [];
+    public Dictionary<Type, Type> ProjectorProxyTypes { get; } = [];
 
     /// <summary>
-    /// Get dictionary key: cortage command type with state type and value is type of instance <see cref="IDeciderInvoker{TCommand, TState}"/>.
+    /// Get dictionary key: cortage command type with state type and value is type of instance <see cref="IDeciderProxy{TCommand, TState}"/>.
     /// </summary>
-    public Dictionary<(Type Command, Type State), Type> DeciderInvokerTypes { get; } = [];
+    public Dictionary<(Type Command, Type State), Type> DeciderProxyTypes { get; } = [];
 }

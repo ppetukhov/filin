@@ -9,14 +9,14 @@ using ProjectionTuple = (Filin.Storage.Projection projection, bool create);
 namespace Filin.Internal;
 
 sealed class StateManager<TState>(IEventStore eventStore,
-    IProjectorInvoker<TState> projector,
+    IProjectorProxy<TState> projector,
     LRUCache<ProjectionId, Projection> cache,
     IProjectionStore? projectionStore,
     ProjectionSavePipeline<ProjectionTuple>? pipeline = null
     ) where TState : notnull
 {
     public IEventStore EventStore => eventStore;
-    public IProjectorInvoker<TState> Projector => projector;
+    public IProjectorProxy<TState> Projector => projector;
 
     public async Task<(TState? state, StateMetadata metadata)> LoadStateAsync(
         ProjectionId projectionId,
