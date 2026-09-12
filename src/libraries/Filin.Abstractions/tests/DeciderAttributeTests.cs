@@ -1,5 +1,3 @@
-using System.Collections.Immutable;
-
 namespace Filin.Abstractions.DeciderTests;
 
 [Decider]
@@ -11,7 +9,7 @@ sealed class CreateCourseDecider : IDecider<CreateCourse, ActiveCourses>
 
 sealed record CreateCourse : ICommand<ActiveCourses>
 {
-    public ImmutableSortedSet<Tag> GetTags() => ["course:123"];
+    public TagCollection GetTags() => ["course:123"];
 };
 
 sealed record ActiveCourses { };

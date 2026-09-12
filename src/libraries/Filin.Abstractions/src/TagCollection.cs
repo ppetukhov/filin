@@ -1,6 +1,9 @@
+using System.Buffers;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+
+using Filin.Internal;
 
 namespace Filin;
 
@@ -8,7 +11,8 @@ namespace Filin;
 /// Represents a guaranteed pre-sorted, immutable collection of tags.
 /// </summary>
 [CollectionBuilder(typeof(TagCollection), nameof(Create))]
-public readonly struct TagCollection : IEquatable<TagCollection>, IComparable<TagCollection>
+[DebuggerTypeProxy(typeof(TagCollectionDebugView))]
+public readonly struct TagCollection : IEquatable<TagCollection>, IComparable<TagCollection>, ISpanFormattable
 {
     readonly Tag[]? _tags;
 
@@ -59,7 +63,6 @@ public readonly struct TagCollection : IEquatable<TagCollection>, IComparable<Ta
     /// <summary>
     /// Creates a new span over the collection.
     /// </summary>
-    /// <returns></returns>
     public ReadOnlySpan<Tag> AsSpan() => _tags.AsSpan();
 
     /// <summary>
@@ -83,6 +86,113 @@ public readonly struct TagCollection : IEquatable<TagCollection>, IComparable<Ta
     public override bool Equals(object? obj) => obj is TagCollection collection && Equals(collection);
 
     public override int GetHashCode() => IsEmpty ? 0 : CombineHashCode(_tags);
+
+    /// <summary>
+    /// Formats the collection of tags into the provided span of characters.
+    /// </summary>
+    public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
+    {
+        // 1. Delegate to custom formatter if explicitly provided by the caller
+        if (provider?.GetFormat(typeof(ICustomFormatter)) is ICustomFormatter customFormatter)
+        {
+            var formattedString = customFormatter.Format(format.ToString(), this, provider);
+            var formattedSpan = formattedString.AsSpan();
+
+            if (destination.Length < formattedSpan.Length)
+            {
+                charsWritten = 0;
+                return false;
+            }
+
+            formattedSpan.CopyTo(destination);
+            charsWritten = formattedSpan.Length;
+            return true;
+        }
+
+        // 2. High-performance strict comma-and-space fast-path
+        charsWritten = 0;
+        if (IsEmpty) return true;
+
+        var count = Count;
+        var separator = ", ".AsSpan();
+        var position = 0;
+
+        for (var i = 0; i < count; i++)
+        {
+            var tagValueSpan = this[i].Value.AsSpan();
+
+            if (destination[position..].Length < tagValueSpan.Length) return false;
+            tagValueSpan.CopyTo(destination[position..]);
+            position += tagValueSpan.Length;
+
+            if (i < count - 1)
+            {
+                if (destination[position..].Length < separator.Length) return false;
+                separator.CopyTo(destination[position..]);
+                position += separator.Length;
+            }
+        }
+
+        charsWritten = position;
+        return true;
+    }
+
+    /// <summary>
+    /// Formats the collection into a string layout using standard invariant format context rules.
+    /// </summary>
+    public string ToString(string? format, IFormatProvider? formatProvider) =>
+        formatProvider?.GetFormat(typeof(ICustomFormatter)) is ICustomFormatter formatter
+            ? formatter.Format(format, this, formatProvider)
+            : ToString();
+
+    /// <summary>
+    /// Returns a string that represents the current collection of tags, joined by the invariant culture list separator.
+    /// Allocates strictly on the stack if the combined total length does not exceed 256 characters.
+    /// </summary>
+    /// <returns>A concatenated string of domain tags separated by the invariant list separator.</returns>
+    public override string ToString()
+    {
+        if (IsEmpty)
+        {
+            return string.Empty;
+        }
+
+        var count = Count;
+        if (count == 1)
+        {
+            return this[0].Value;
+        }
+
+        // 1. Calculate the exact combined characters layout requirements
+        var totalLength = 0;
+        for (var i = 0; i < count; i++)
+        {
+            totalLength += this[i].Value.Length;
+        }
+        totalLength += (count - 1) * 2; // 2 chars per separator comma-and-space (", ")
+
+        // 2. Stack allocation evaluation path (256 characters threshold)
+        const int stackAllocThreshold = 256;
+        if (totalLength <= stackAllocThreshold)
+        {
+            Span<char> buffer = stackalloc char[totalLength];
+            TryFormat(buffer, out _, default, null);
+            return new string(buffer);
+        }
+
+        // 3. Thread-safe rented array pool fallback for huge scale tag specifications
+        var rentedArray = ArrayPool<char>.Shared.Rent(totalLength);
+        try
+        {
+            Span<char> buffer = rentedArray.AsSpan(0, totalLength);
+            TryFormat(buffer, out _, default, null);
+            return new string(buffer);
+        }
+        finally
+        {
+            ArrayPool<char>.Shared.Return(rentedArray);
+        }
+    }
 
     static int CombineHashCode(ReadOnlySpan<Tag> _tags)
     {
@@ -228,40 +338,5 @@ public readonly struct TagCollection : IEquatable<TagCollection>, IComparable<Ta
         [MethodImpl(MethodImplOptions.NoInlining)]
         [DoesNotReturn]
         static void ThrowInvalidOperationException() => throw new InvalidOperationException("TagCollection.Enumerator.Current value has not been set.");
-    }
-
-    static bool IsMatchTagParam(global::Filin.IdSpan tagParam, global::Filin.Tag tag) => tag.AsSpan().StartsWith(tagParam.AsSpan());
-
-    internal static global::Filin.DcbQuery CreateQueryCore(global::System.Collections.Immutable.ImmutableArray<global::Filin.DcbQueryItem> queryParts, global::System.Collections.Immutable.ImmutableArray<(global::Filin.IdSpan, global::System.Collections.Immutable.ImmutableArray<int>)> queryTagParams, global::System.Collections.Immutable.ImmutableSortedSet<global::Filin.Tag> tags)
-    {
-        var queryItems = queryParts.ToList();
-        foreach (var tagParam in queryTagParams)
-        {
-            var tagFound = false;
-            foreach (var tag in tags)
-            {
-                if (IsMatchTagParam(tagParam.Item1, tag))
-                {
-                    foreach (var queryIdx in tagParam.Item2)
-                    {
-                        var (qEventTypes, qTags) = queryItems[queryIdx];
-
-                        queryItems[queryIdx] = new(qEventTypes, [.. qTags, tag]);
-                    }
-
-                    tagFound = true;
-                }
-            }
-
-            if (!tagFound)
-            {
-                var ex = new global::System.ArgumentException($"Required tag started with {tagParam.Item1}", nameof(tags));
-                ex.Data["TagParameter"] = tagParam.Item1.ToString();
-                ex.Data["Tags"] = string.Join(";", tags);
-                throw ex;
-            }
-        }
-
-        return new global::Filin.DcbQuery([.. queryItems]);
     }
 }

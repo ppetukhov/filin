@@ -23,7 +23,7 @@ public readonly struct ProjectorId : IEquatable<ProjectorId>, IComparable<Projec
     /// <inheritdoc cref="IdSpan.IsDefault"/>
     public bool IsDefault => _value.IsDefault;
 
-    public string? Value => _value.Value;
+    public string Value => _value.Value;
 
     public ulong Hash => _value.Hash;
 

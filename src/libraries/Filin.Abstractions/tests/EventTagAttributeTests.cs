@@ -27,9 +27,9 @@ public sealed class EventTagAttributeTests
 
         var tags = evt.GetTags();
 
-        tags.Should().HaveCount(2);
-        tags.Should().Contain(new Tag($"course:{courseId}"));
-        tags.Should().Contain(new Tag($"course-name:{name}"));
+        tags.Count.Should().Be(2);
+        tags.Contains(new Tag($"course:{courseId}")).Should().BeTrue();
+        tags.Contains(new Tag($"course-name:{name}")).Should().BeTrue();
     }
 
     [Fact]

@@ -2,14 +2,14 @@ using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using System.Text;
 
+using Filin.Generators.Extensions;
+using Filin.Generators.Specs.Members;
+using Filin.Generators.Specs.Types;
+
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
-
-using Filin.Generators.Extensions;
-using Filin.Generators.Specs.Members;
-using Filin.Generators.Specs.Types;
 
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
@@ -19,7 +19,7 @@ partial class CodeGenerator
 {
     sealed class EventTagsEmitter(TypeDefinitions typeDefinitions, GenerationOptions options)
     {
-        static readonly TypeSyntax ReturnTagTypeCollectionsSyntax = ParseTypeName(Constants.ReturnTagTypeCollection);
+        static readonly TypeSyntax ReturnTagTypeCollectionsSyntax = ParseTypeName(Constants.TagCollectionFullName);
 
         readonly SyntaxToken GetTagMethodIdentifierToken = Identifier(options.GetTagMethod);
         readonly SyntaxToken GetTagsMethodIdentifierToken = Identifier(options.GetTagsMethod);

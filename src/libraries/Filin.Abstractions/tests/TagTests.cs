@@ -16,7 +16,7 @@ public sealed class TagTests
         var result = new Tag(name!);
 
         result.IsDefault.Should().BeTrue();
-        result.Value.Should().BeSameAs(name);
+        result.Value.Should().BeSameAs(string.Empty);
         result.AsSpan().Length.Should().Be(0);
         result.Hash.Should().Be(StableHashTests.HASH64_OF_EMPTY);
     }

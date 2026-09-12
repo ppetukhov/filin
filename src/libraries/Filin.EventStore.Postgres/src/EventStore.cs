@@ -351,7 +351,7 @@ sealed partial class EventStore(
         pName = "@evn" + eventIndex;
         sb.Append(pName);
         sb.Append(',');
-        command.AddParameter(pName, @event.EventType.Value ?? string.Empty);
+        command.AddParameter(pName, @event.EventType.Value);
 
         var sbNames = new ValueStringBuilder(initialCapacity: 256);
 
@@ -404,7 +404,7 @@ sealed partial class EventStore(
 
     static void AppendQuery(ref ValueStringBuilder sb, DcbQuery query, NpgsqlCommand command)
     {
-        if (query.Items.IsEmpty)
+        if (query.IsEmpty)
         {
             return;
         }
@@ -415,7 +415,7 @@ sealed partial class EventStore(
 
         var itemIdx = 0;
 
-        foreach (var (eventTypes, tags) in query.Items)
+        foreach (var (eventTypes, tags) in query)
         {
             string pName;
 
@@ -441,7 +441,7 @@ sealed partial class EventStore(
                 pName = "@qev" + eventIndex + 'n' + suffix;
                 sbNames.Append(pName);
                 sbNames.Append(',');
-                command.AddParameter(pName, eventType.Value ?? string.Empty);
+                command.AddParameter(pName, eventType.Value);
             }
 
             if (eventTypes.Count != 0)

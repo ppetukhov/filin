@@ -19,7 +19,7 @@ partial class CodeGenerator
     sealed class QueryEmitter(GenerationOptions options)
     {
         static readonly TypeSyntax ProjectionIdTypeSyntax = ParseTypeName(Constants.ProjectionIdTypeFullName);
-        static readonly TypeSyntax ImmutableSortedSetTagsTypeSyntax = ParseTypeName($"global::System.Collections.Immutable.ImmutableSortedSet<{Constants.TagTypeFullName}>");
+        static readonly TypeSyntax TagCollectionTypeSyntax = ParseTypeName(Constants.TagCollectionFullName);
         static readonly TypeSyntax ImmutableArrayTagParameterTypeSyntax = ParseTypeName($"global::System.Collections.Immutable.ImmutableArray<({Constants.IdSpanTypeFullName}, global::System.Collections.Immutable.ImmutableArray<int>)>");
         static readonly SyntaxToken IsMatchTagParamToken = Identifier("IsMatchTagParam");
         static readonly SyntaxToken CreateQueryCoreToken = Identifier("CreateQueryCore");
@@ -235,42 +235,46 @@ partial class CodeGenerator
                                             // foreach (var queryIdx in tagParam.Item2)
                                             ForEachStatement(IdentifierName("var"), Identifier("queryIdx"), IdentifierName(Identifier("tagParam")).Member("Item2"),
                                                 Block(
-                                                    // var queryItem = queryItems[queryIdx];
-                                                    LocalDeclarationStatement(VariableDeclaration(IdentifierName("var")))
-                                                        .AddDeclarationVariables(
-                                                            VariableDeclarator(Identifier("queryItem"), null,
-                                                                EqualsValueClause(
-                                                                    ElementAccessExpression(
+                                                    // var (qEventTypes, qTags) = queryItems[queryIdx];
+                                                    ExpressionStatement(
+                                                        AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
+                                                            DeclarationExpression(IdentifierName("var"),
+                                                                ParenthesizedVariableDesignation()
+                                                                    .AddVariables(
+                                                                        SingleVariableDesignation(Identifier("qEventTypes")),
+                                                                        SingleVariableDesignation(Identifier("qTags"))
+                                                                    )
+                                                                ),
+                                                                ElementAccessExpression(
                                                                         IdentifierName(Identifier("queryItems")),
                                                                         BracketedArgumentList([Argument(IdentifierName(Identifier("queryIdx")))])
                                                                     )
-                                                                )
-                                                            )
-                                                        ),
+                                                        )
+                                                    ),
 
-                                                    // queryItems[queryIdx] = queryItem with { Tags = queryItem.Tags.Add(tag) };
+                                                    // queryItems[queryIdx] = new(qEventTypes, [.. qTags, tag]);
                                                     ExpressionStatement(
                                                         AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
                                                             ElementAccessExpression(
                                                                 IdentifierName(Identifier("queryItems")),
                                                                 BracketedArgumentList([Argument(IdentifierName(Identifier("queryIdx")))])
                                                             ),
-                                                            WithExpression(
-                                                                IdentifierName(Identifier("queryItem")),
-                                                                InitializerExpression(SyntaxKind.WithInitializerExpression,
-                                                                    SingletonSeparatedList<ExpressionSyntax>(
-                                                                        AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
-                                                                                IdentifierName(Identifier("Tags")),
-                                                                            InvocationExpression(
-                                                                                IdentifierName(Identifier("queryItem")).Member("Tags").Member("Add"),
-                                                                                ArgumentList()
-                                                                                    .AddArguments(
-                                                                                        Argument(IdentifierName(Identifier("tag")))
-                                                                                    )
+                                                            ObjectCreationExpression(OmittedTypeArgument(),
+                                                                ArgumentList()
+                                                                    .AddArguments(
+                                                                        Argument(
+                                                                            IdentifierName(Identifier("qEventTypes"))
+                                                                        ),
+                                                                        Argument(
+                                                                            CollectionExpression(
+                                                                                [
+                                                                                    SpreadElement(IdentifierName(Identifier("qTags"))),
+                                                                                    ExpressionElement(IdentifierName(Identifier("tag")))
+                                                                                ]
                                                                             )
                                                                         )
-                                                                    )
-                                                                )
+                                                                    ),
+                                                                null
                                                             )
                                                         )
                                                     )
@@ -329,7 +333,7 @@ partial class CodeGenerator
                                         )
                                     )
                                 ),
-                                // ex.Data["Tags"] = string.Join(';', tags);
+                                // ex.Data["Tags"] = tags.ToString();
                                 ExpressionStatement(
                                     AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
                                         ElementAccessExpression(
@@ -337,12 +341,7 @@ partial class CodeGenerator
                                             BracketedArgumentList([Argument("Tags".GetLiteralExpression())])
                                         ),
                                         InvocationExpression(
-                                            IdentifierName(Identifier("string")).Member("Join"),
-                                            ArgumentList()
-                                                .AddArguments(
-                                                    Argument(";".GetLiteralExpression()),
-                                                    Argument(IdentifierName(Identifier("tags")))
-                                                )
+                                            IdentifierName(Identifier("tags")).Member("ToString")
                                         )
                                     )
                                 ),
@@ -374,7 +373,7 @@ partial class CodeGenerator
                     SeparatedList([
                         Parameter(attributeLists: default, modifiers: default, Emitter.ImmutableArrayQueryItemTypeSyntax, Identifier("queryParts"), null),
                         Parameter(attributeLists: default, modifiers: default, ImmutableArrayTagParameterTypeSyntax, Identifier("queryTagParams"), null),
-                        Parameter(attributeLists: default, modifiers: default, ImmutableSortedSetTagsTypeSyntax, Identifier("tags"), null)]
+                        Parameter(attributeLists: default, modifiers: default, TagCollectionTypeSyntax, Identifier("tags"), null)]
                     )),
                 body: statements,
                 expressionBody: null,
@@ -555,7 +554,7 @@ partial class CodeGenerator
                                                 )
                                             )
                                         ),
-                                        // ex.Data["Tags"] = string.Join(';', tags);
+                                        // ex.Data["Tags"] = tags.ToString();
                                         ExpressionStatement(
                                             AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
                                                 ElementAccessExpression(
@@ -563,12 +562,7 @@ partial class CodeGenerator
                                                     BracketedArgumentList([Argument("Tags".GetLiteralExpression())])
                                                 ),
                                                 InvocationExpression(
-                                                    IdentifierName(Identifier("string")).Member("Join"),
-                                                    ArgumentList()
-                                                        .AddArguments(
-                                                            Argument(";".GetLiteralExpression()),
-                                                            Argument(IdentifierName(Identifier("tags")))
-                                                        )
+                                                    IdentifierName(Identifier("tags")).Member("ToString")
                                                 )
                                             )
                                         ),
@@ -639,7 +633,7 @@ partial class CodeGenerator
                     SeparatedList([
                         Parameter(attributeLists: default, modifiers: default, Emitter.ProjectoIdTypeSyntax, Identifier("projectorId"), null),
                         Parameter(attributeLists: default, modifiers: default, ImmutableArrayTagParameterTypeSyntax, Identifier("queryTagParams"), null),
-                        Parameter(attributeLists: default, modifiers: default, ImmutableSortedSetTagsTypeSyntax, Identifier("tags"), null)]
+                        Parameter(attributeLists: default, modifiers: default, TagCollectionTypeSyntax, Identifier("tags"), null)]
                     )),
                 body: statements,
                 expressionBody: null,
@@ -657,7 +651,7 @@ partial class CodeGenerator
                 identifier: methodName,
                 typeParameterList: default,
                 constraintClauses: default,
-                parameterList: ParameterList(SingletonSeparatedList(Parameter(attributeLists: default, modifiers: default, ImmutableSortedSetTagsTypeSyntax, hasTagParams ? Identifier("tags") : Emitter.DiscardIdentifierToken, null))),
+                parameterList: ParameterList(SingletonSeparatedList(Parameter(attributeLists: default, modifiers: default, TagCollectionTypeSyntax, hasTagParams ? Identifier("tags") : Emitter.DiscardIdentifierToken, null))),
                 body: null,
                 expressionBody: hasTagParams
                     ? ArrowExpressionClause(
@@ -681,7 +675,7 @@ partial class CodeGenerator
                 identifier: methodName,
                 typeParameterList: default,
                 constraintClauses: default,
-                parameterList: ParameterList(SingletonSeparatedList(Parameter(attributeLists: default, modifiers: default, ImmutableSortedSetTagsTypeSyntax, hasTagParams ? Identifier("tags") : Emitter.DiscardIdentifierToken, null))),
+                parameterList: ParameterList(SingletonSeparatedList(Parameter(attributeLists: default, modifiers: default, TagCollectionTypeSyntax, hasTagParams ? Identifier("tags") : Emitter.DiscardIdentifierToken, null))),
                 body: null,
                 expressionBody: hasTagParams
                     ? ArrowExpressionClause(

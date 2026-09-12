@@ -1,5 +1,3 @@
-using System.Collections.Immutable;
-
 namespace Filin.Internal;
 
 /// <inheritdoc cref="IProjectorInvoker{TState}"/>
@@ -11,10 +9,10 @@ sealed class ProjectorInvoker<TProjector, TState> : IProjectorInvoker<TState>
     public ProjectorId ProjectorId => TProjector.ProjectorId;
 
     /// <inheritdoc/>
-    public DcbQuery GetQuery(ImmutableSortedSet<Tag> tags) => TProjector.GetQuery(tags);
+    public DcbQuery GetQuery(TagCollection tags) => TProjector.GetQuery(tags);
 
     /// <inheritdoc/>
-    public ProjectionId GetProjectionId(ImmutableSortedSet<Tag> tags) => TProjector.GetProjectionId(tags);
+    public ProjectionId GetProjectionId(TagCollection tags) => TProjector.GetProjectionId(tags);
 
     /// <inheritdoc/>
     public TState Project(DcbEventSequenced domainEvent) => TProjector.Project(domainEvent);

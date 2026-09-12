@@ -151,13 +151,15 @@ public class EventTypeCollectionTests
         {
             _ = enumerator.Current;
         }
-        catch (InvalidOperationException e) when (e.Message == "EventTypeCollection.Enumerator.Current value has not been set.")
+        catch (Exception e)
         {
             ex = e;
         }
         finally
         {
             ex.Should().NotBeNull();
+            ex.Should().BeOfType<InvalidOperationException>();
+            ex.Message.Should().Be("EventTypeCollection.Enumerator.Current value has not been set.");
         }
     }
 
@@ -180,6 +182,111 @@ public class EventTypeCollectionTests
         (c1 <= c3).Should().BeTrue();
         (c2 > c1).Should().BeTrue();
         (c3 >= c1).Should().BeTrue();
+    }
+
+    #endregion
+
+    #region ToString and ISpanFormattable Formatting Tests
+
+    [Fact]
+    public void ToString_WhenCollectionIsEmpty_ShouldReturnEmptyString()
+    {
+        // Arrange
+        var collection = new EventTypeCollection();
+
+        // Act & Assert
+        collection.ToString().Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ToString_WithDefaultSeparator_ShouldJoinElementsWithCommaAndSpace()
+    {
+        // Arrange
+        EventTypeCollection collection = [new EventType("Updated"), new EventType("Created")]; // Auto-sorted
+
+        // Act
+        string result = collection.ToString();
+
+        // Assert
+        result.Should().Be("Created, Updated", "event types must follow proper sorting and default spacing layout rules");
+    }
+
+    [Fact]
+    public void TryFormat_WithSufficientBuffer_ShouldWriteCorrectlyAndReturnTrue()
+    {
+        // Arrange
+        EventTypeCollection collection = [new EventType("Created"), new EventType("Updated")];
+        Span<char> destination = stackalloc char[32];
+
+        // Act
+        bool success = collection.TryFormat(destination, out int charsWritten, default, System.Globalization.CultureInfo.InvariantCulture);
+
+        // Assert
+        success.Should().BeTrue();
+        charsWritten.Should().Be(16); // length of "Created, Updated"
+        new string(destination[..charsWritten]).Should().Be("Created, Updated");
+    }
+
+    [Fact]
+    public void TryFormat_WithInsufficientBuffer_ShouldReturnFalseAndCleanBytes()
+    {
+        // Arrange
+        EventTypeCollection collection = [new EventType("Created"), new EventType("Updated")];
+        Span<char> tinyDestination = stackalloc char[5]; // Insufficient buffer bounds
+
+        // Act
+        bool success = collection.TryFormat(tinyDestination, out int charsWritten, default, System.Globalization.CultureInfo.InvariantCulture);
+
+        // Assert
+        success.Should().BeFalse();
+        charsWritten.Should().Be(0);
+    }
+
+    [Fact]
+    public void ToString_WithExtremeLengthExceeding256Chars_ShouldFallbackToPoolAndFormatFlawlessly()
+    {
+        // Arrange: 3 types * 100 chars = 300 chars (> 256 threshold)
+        var longType1 = new EventType(new string('A', 100));
+        var longType2 = new EventType(new string('B', 100));
+        var longType3 = new EventType(new string('C', 100));
+        EventTypeCollection collection = [longType3, longType1, longType2];
+
+        // Act
+        string result = collection.ToString();
+
+        // Assert
+        result.Length.Should().Be(304); // 300 elements chars + 4 separator chars (", " * 2)
+        result.StartsWith(new string('A', 100)).Should().BeTrue();
+        result.EndsWith(new string('C', 100)).Should().BeTrue();
+    }
+
+    [Fact]
+    public void ToString_WithCustomFormatterProvider_ShouldDelegateToCustomFormatter()
+    {
+        // Arrange
+        var mockFormatter = new LowercaseTypeFormatter();
+        EventTypeCollection collection = [new EventType("Created"), new EventType("Updated")];
+
+        // Act
+        string result = string.Format(mockFormatter, "{0}", collection);
+
+        // Assert
+        result.Should().Be("created, updated", "the collection formatting must cede evaluation execution to custom providers if active");
+    }
+
+    // Custom helper formatter implementation for explicit boundary unit tests
+    sealed class LowercaseTypeFormatter : IFormatProvider, ICustomFormatter
+    {
+        public object? GetFormat(Type? formatType) => formatType == typeof(ICustomFormatter) ? this : null;
+
+        public string Format(string? format, object? arg, IFormatProvider? formatProvider)
+        {
+            if (arg is EventTypeCollection types)
+            {
+                return types.ToString().ToLowerInvariant();
+            }
+            return arg?.ToString() ?? string.Empty;
+        }
     }
 
     #endregion

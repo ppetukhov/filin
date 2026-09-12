@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace Filin.Abstractions.Tests;
 
 public class TagCollectionTests
@@ -215,13 +217,15 @@ public class TagCollectionTests
         {
             _ = enumerator.Current;
         }
-        catch (InvalidOperationException e) when (e.Message == "TagCollection.Enumerator.Current value has not been set.")
+        catch (Exception e)
         {
             ex = e;
         }
         finally
         {
             ex.Should().NotBeNull();
+            ex.Should().BeOfType<InvalidOperationException>();
+            ex.Message.Should().Be("TagCollection.Enumerator.Current value has not been set.");
         }
     }
 
@@ -277,6 +281,131 @@ public class TagCollectionTests
         (c1 <= c3).Should().BeTrue();
         (c2 > c1).Should().BeTrue();
         (c3 >= c1).Should().BeTrue();
+    }
+
+    #endregion
+
+    #region ISpanFormattable Tests
+
+    [Fact]
+    public void TryFormat_WithSufficientBuffer_ShouldWriteCorrectlyAndReturnTrue()
+    {
+        // Arrange
+        TagCollection collection = [new Tag("course:777"), new Tag("student:123")];
+        Span<char> destination = stackalloc char[50];
+
+        // Act
+        bool success = collection.TryFormat(destination, out int charsWritten, default, CultureInfo.InvariantCulture);
+
+        // Assert
+        success.Should().BeTrue();
+        charsWritten.Should().Be(23); // length of "course:777, student:123"
+        new string(destination[..charsWritten]).Should().Be("course:777, student:123");
+    }
+
+    [Fact]
+    public void TryFormat_WithInsufficientBuffer_ShouldReturnFalseAndNotCrash()
+    {
+        // Arrange
+        TagCollection collection = [new Tag("course:777"), new Tag("student:123")];
+        Span<char> tinyDestination = stackalloc char[15]; // Not enough space for full collection
+
+        // Act
+        bool success = collection.TryFormat(tinyDestination, out int charsWritten, default, CultureInfo.InvariantCulture);
+
+        // Assert
+        success.Should().BeFalse("the formatting layout must abort cleanly if the target block span is too small");
+        charsWritten.Should().Be(0);
+    }
+
+    [Fact]
+    public void StringInterpolation_DirectUse_ShouldInvokeSpanFormattableNatively()
+    {
+        // Arrange
+        TagCollection collection = [new Tag("a"), new Tag("b")];
+
+        // Act
+        string message = $"Boundaries: {collection}";
+
+        // Assert
+        message.Should().Be("Boundaries: a, b", "the string interpolation engine must cleanly parse the custom formattable structure");
+    }
+
+    #endregion
+
+    #region ICustomFormatter Integration Tests
+
+    [Fact]
+    public void ToString_WithCustomFormatterProvider_ShouldDelegeteToCustomFormatter()
+    {
+        // Arrange: Создаем кастомный форматтер, который преобразует вывод тегов в верхний регистр
+        var mockFormatter = new UppercaseTagFormatter();
+        TagCollection collection = [new Tag("course:777"), new Tag("faculty:it")];
+
+        // Act
+        string result = string.Format(mockFormatter, "{0}", collection);
+
+        // Assert
+        result.Should().Be("COURSE:777, FACULTY:IT", "the structure must respect explicit third-party ICustomFormatter implementations");
+    }
+
+    sealed class UppercaseTagFormatter : IFormatProvider, ICustomFormatter
+    {
+        public object? GetFormat(Type? formatType) => formatType == typeof(ICustomFormatter) ? this : null;
+
+        public string Format(string? format, object? arg, IFormatProvider? formatProvider)
+        {
+            if (arg is TagCollection tags)
+            {
+                return tags.ToString().ToUpperInvariant();
+            }
+            return arg?.ToString() ?? string.Empty;
+        }
+    }
+
+    #endregion
+
+    #region ToString Formatting Tests
+
+    [Fact]
+    public void ToString_WhenCollectionIsEmpty_ShouldReturnEmptyString()
+    {
+        // Arrange
+        var collection = new TagCollection();
+
+        // Act & Assert
+        collection.ToString().Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ToString_WithDefaultSeparator_ShouldJoinElementsWithStrictComma()
+    {
+        // Arrange
+        TagCollection collection = [new Tag("faculty:it"), new Tag("course:777")];
+
+        // Act
+        string result = collection.ToString();
+
+        // Assert
+        result.Should().Be("course:777, faculty:it", "tags must be explicitly separated by a single raw comma character");
+    }
+
+    [Fact]
+    public void ToString_WithExtremeLengthExceeding256Chars_ShouldFallbackToPoolAndFormatCorrectly()
+    {
+        // Arrange: 3 tags * 100 chars = 300 chars total length (> 256 threshold)
+        var longTag1 = new Tag(new string('x', 100));
+        var longTag2 = new Tag(new string('y', 100));
+        var longTag3 = new Tag(new string('z', 100));
+        TagCollection collection = [longTag3, longTag1, longTag2];
+
+        // Act
+        string result = collection.ToString();
+
+        // Assert
+        result.Length.Should().Be(304); // 300 elements chars + 4 separator chars (2 intersections * 2 chars)
+        result.StartsWith(new string('x', 100)).Should().BeTrue();
+        result.EndsWith(new string('z', 100)).Should().BeTrue();
     }
 
     #endregion

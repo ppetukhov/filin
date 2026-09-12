@@ -1,17 +1,16 @@
-using System.Collections.Immutable;
 using System.Data;
 using System.Data.Common;
 using System.Text.Json;
 using System.Threading.Channels;
+
+using Filin.Configuration;
+using Filin.Storage;
 
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 using Npgsql;
-
-using Filin.Configuration;
-using Filin.Storage;
 
 namespace Filin.EventStore.Postgres;
 
@@ -24,7 +23,7 @@ sealed class EventStreamingService(
     readonly ILogger _logger = loggerFactory.CreateLogger("Filin.Streaming.Postgres");
     readonly LinkedList<WeakReference<EventStore.StreamAsyncEnumerator>> _weakConsumers = new();
 
-    (QueryStatus Status, DcbQuery Query) _query = (QueryStatus.None, DcbQuery.All);
+    (QueryStatus Status, DcbQuery Query) _query = (QueryStatus.None, default);
     EventPosition _lastEventPosition;
 
     /// <inheritdoc/>
@@ -184,11 +183,8 @@ sealed class EventStreamingService(
             {
                 case QueryStatus.Actual:
                     break;
-                case QueryStatus.Uncompacted:
-                    _query = (QueryStatus.Actual, _query.Query.Compact());
-                    break;
                 case QueryStatus.NotActual:
-                    var builder = ImmutableHashSet.CreateBuilder<DcbQueryItem>();
+                    var builder = new HashSet<DcbQueryItem>();
 
                     var hasActiveConsumer = false;
                     var allowAnyEvent = false;
@@ -201,9 +197,9 @@ sealed class EventStreamingService(
                         {
                             hasActiveConsumer = true;
 
-                            foreach (var item in consumer.Query.Items)
+                            foreach (var item in consumer.Query)
                             {
-                                if (item.IsAny)
+                                if (item.IsEmpty)
                                 {
                                     allowAnyEvent = true;
                                     break;
@@ -227,18 +223,18 @@ sealed class EventStreamingService(
                     // fast path
                     if (!hasActiveConsumer)
                     {
-                        _query = (QueryStatus.None, DcbQuery.All);
+                        _query = (QueryStatus.None, default);
                         return;
                     }
 
                     // fast path
                     if (allowAnyEvent)
                     {
-                        _query = (QueryStatus.Actual, DcbQuery.All);
+                        _query = (QueryStatus.Actual, default);
                     }
                     else
                     {
-                        _query = (QueryStatus.Actual, new DcbQuery(builder.ToImmutable()).Compact());
+                        _query = (QueryStatus.Actual, new DcbQuery([.. builder]));
 
                         if (!_query.Query.MatchesEvent(partialEvent.Event))
                         {
@@ -298,8 +294,7 @@ sealed class EventStreamingService(
         switch (_query.Status)
         {
             case QueryStatus.Actual:
-            case QueryStatus.Uncompacted:
-                _query = (QueryStatus.Uncompacted, _query.Query.Or(subscriber.Query));
+                _query = (QueryStatus.Actual, _query.Query.Or(subscriber.Query));
                 break;
             case QueryStatus.None:
                 _query = (QueryStatus.Actual, subscriber.Query);
@@ -347,8 +342,8 @@ sealed class EventStreamingService(
     {
         _query = _weakConsumers.Count switch
         {
-            0 => (QueryStatus.None, DcbQuery.All),
-            _ => (QueryStatus.NotActual, DcbQuery.All),
+            0 => (QueryStatus.None, default),
+            _ => (QueryStatus.NotActual, default),
         };
     }
 
@@ -356,7 +351,6 @@ sealed class EventStreamingService(
     {
         None,
         NotActual,
-        Uncompacted,
         Actual,
     }
 }

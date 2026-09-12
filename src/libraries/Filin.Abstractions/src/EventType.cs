@@ -33,7 +33,7 @@ public readonly struct EventType : IEquatable<EventType>, IComparable<EventType>
     /// <summary>
     /// Gets the underlying value.
     /// </summary>
-    public string? Value => _value;
+    public string Value => _value ?? string.Empty;
 
     /// <summary>
     /// Returns a span representation of this instance.
@@ -140,7 +140,7 @@ public readonly struct EventType : IEquatable<EventType>, IComparable<EventType>
     /// </summary>
     /// <param name="eventType">The event type instance to convert.</param>
     /// <returns>The string representation of the event type, or <see langword="null"/> if uninitialized.</returns>
-    public static implicit operator string?(EventType eventType) => eventType.Value;
+    public static implicit operator string(EventType eventType) => eventType.Value;
 
     /// <inheritdoc cref="FromString(string)"/>
     public static implicit operator EventType(string name) => new(name);

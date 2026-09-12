@@ -1,4 +1,4 @@
-using System.Collections.Immutable;
+using System.Buffers;
 using System.Data;
 using System.Data.Common;
 using System.Diagnostics;
@@ -215,29 +215,41 @@ sealed partial class EventStore
 #pragma warning restore CS0618 // Type or member is obsolete
         }
 
-        static ImmutableSortedSet<Tag>? GetTags(DbDataReader reader, Ordinals ordinals)
+        static TagCollection GetTags(DbDataReader reader, Ordinals ordinals)
         {
-            var tag_values = reader.GetFieldValue<string[]>(ordinals.TagNames);
+            var tgNames = reader.GetFieldValue<string[]>(ordinals.TagNames);
 
-            if (tag_values.Length == 0)
+            if (tgNames.Length == 0)
             {
-                return null;
+                return default;
             }
 
-            var tag_hashes = reader.GetFieldValue<long[]>(ordinals.TagHashes);
+            var tgHashes = reader.GetFieldValue<long[]>(ordinals.TagHashes);
 
-            var hashSet = ImmutableSortedSet.CreateBuilder<Tag>();
+            Debug.Assert(tgHashes.Length == tgHashes.Length);
 
-            for (int i = 0; i < tag_values.Length; i++)
+            Tag[]? rented = null;
+
+            try
             {
+                rented = ArrayPool<Tag>.Shared.Rent(tgHashes.Length);
+
+                for (var i = 0; i < tgNames.Length && i < tgHashes.Length; i++)
+                {
 #pragma warning disable CS0618 // Type or member is obsolete
-                var tag = Tag.FromIdSpan(IdSpan.UnsafeCreate(tag_values[i], (ulong)tag_hashes[i]));
+                    rented[i] = (Tag)IdSpan.UnsafeCreate(tgNames[i], (ulong)tgHashes[i]);
 #pragma warning restore CS0618 // Type or member is obsolete
+                }
 
-                hashSet.Add(tag);
+                return [.. rented];
             }
-
-            return hashSet.ToImmutable();
+            finally
+            {
+                if (rented is not null)
+                {
+                    ArrayPool<Tag>.Shared.Return(rented);
+                }
+            }
         }
 
         async ValueTask<DbDataReader> GetReaderAsync()

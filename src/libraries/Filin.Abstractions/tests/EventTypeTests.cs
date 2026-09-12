@@ -85,21 +85,21 @@ public sealed class EventTypeTests
     }
 
     [Fact]
-    public void EventType_ToString_Return_Null_When_IsDefault()
+    public void EventType_Value_Not_Null_When_IsDefault()
     {
         EventType identity = default;
 
-        identity.Value.Should().BeNull(because: "EventType is default");
+        identity.Value.Should().NotBeNull(because: "EventType is default");
     }
 
     [Fact]
-    public void EventType_ToString_Return_Original_String()
+    public void EventType_Value_Return_Original_String()
     {
         var expectedString = "Some text";
 
         var identity = new EventType(expectedString);
 
-        identity.Value.Should().Be(expectedString);
+        identity.Value.Should().BeSameAs(expectedString);
     }
 
     [Theory]

@@ -1,5 +1,3 @@
-using System.Collections.Immutable;
-
 namespace Filin.Abstractions.ProjectorTests;
 
 [ProjectorId("projector-with-query-tag-parameters")]
@@ -64,8 +62,8 @@ public sealed class QueryTagParametersAttributeTests
         Tag tagStudent2 = "student:smiths";
         Tag tagTeacher = "teacher:584456";
 
-        ImmutableSortedSet<Tag> exactTags = [tagCourse, tagTeacher, tagStudent1, tagStudent2];
-        ImmutableSortedSet<Tag> tags = [.. exactTags, "other-entity:846123", "owner:4123"];
+        SortedSet<Tag> exactTags = [tagCourse, tagTeacher, tagStudent1, tagStudent2];
+        TagCollection tags = [.. exactTags, "other-entity:846123", "owner:4123"];
 
         var result = ProjectorWithQueryTagParameters.GetProjectionId(tags);
 
@@ -83,8 +81,8 @@ public sealed class QueryTagParametersAttributeTests
         Tag tagStudent2 = "student:smiths";
         Tag tagTeacher = "teacher:584456";
 
-        ImmutableSortedSet<Tag> exactTags = [tagCourse, tagTeacher, tagStudent1, tagStudent2];
-        ImmutableSortedSet<Tag> tags = [.. exactTags, "other-entity:846123", "owner:4123"];
+        SortedSet<Tag> exactTags = [tagCourse, tagTeacher, tagStudent1, tagStudent2];
+        TagCollection tags = [.. exactTags, "other-entity:846123", "owner:4123"];
 
         var result = ProjectorWithQueryTagParametersV1.GetProjectionId(tags);
 
@@ -102,8 +100,8 @@ public sealed class QueryTagParametersAttributeTests
         Tag tagStudent2 = "student:smiths";
         Tag tagTeacher = "teacher:584456";
 
-        ImmutableSortedSet<Tag> exactTags = [tagCourse, tagTeacher, tagStudent1, tagStudent2];
-        ImmutableSortedSet<Tag> tags = [.. exactTags, "other-entity:846123", "owner:4123"];
+        SortedSet<Tag> exactTags = [tagCourse, tagTeacher, tagStudent1, tagStudent2];
+        TagCollection tags = [.. exactTags, "other-entity:846123", "owner:4123"];
 
         var result = TestDomainProjectors.V0.NestedProjectorWithQueryTagParameters.GetProjectionId(tags);
 
@@ -121,8 +119,8 @@ public sealed class QueryTagParametersAttributeTests
         Tag tagStudent2 = "student:smiths";
         Tag tagTeacher = "teacher:584456";
 
-        ImmutableSortedSet<Tag> exactTags = [tagCourse, tagTeacher, tagStudent1, tagStudent2];
-        ImmutableSortedSet<Tag> tags = [.. exactTags, "other-entity:846123", "owner:4123"];
+        SortedSet<Tag> exactTags = [tagCourse, tagTeacher, tagStudent1, tagStudent2];
+        TagCollection tags = [.. exactTags, "other-entity:846123", "owner:4123"];
 
         var result = ProjectorWithQueryTagParameters.GetQuery(tags);
 
@@ -131,12 +129,12 @@ public sealed class QueryTagParametersAttributeTests
         var expected3 = new DcbQueryItem(["CoursesPaused", "CoursesResumed"], []);
         var expected4 = new DcbQueryItem(["CourseStarted", "StudentSubscribed", "CourseFinished"], [tagCourse, tagStudent1, tagStudent2]);
 
-        result.Items.Should().HaveCount(4);
+        result.Count.Should().Be(4);
 
-        result.Items.Should().ContainEquivalentOf(expected1);
-        result.Items.Should().ContainEquivalentOf(expected2);
-        result.Items.Should().ContainEquivalentOf(expected3);
-        result.Items.Should().ContainEquivalentOf(expected4);
+        result.Contains(expected1).Should().BeTrue();
+        result.Contains(expected2).Should().BeTrue();
+        result.Contains(expected3).Should().BeTrue();
+        result.Contains(expected4).Should().BeTrue();
     }
 
     [Fact]
@@ -147,7 +145,7 @@ public sealed class QueryTagParametersAttributeTests
         Tag tagStudent2 = "student:smiths";
         Tag tagTeacher = "teacher:584456";
 
-        ImmutableSortedSet<Tag> tags = [tagCourse, tagTeacher, tagStudent1, tagStudent2, "other-entity:846123", "owner:4123"];
+        TagCollection tags = [tagCourse, tagTeacher, tagStudent1, tagStudent2, "other-entity:846123", "owner:4123"];
 
         var result = ProjectorWithQueryTagParametersV1.GetQuery(tags);
 
@@ -156,12 +154,12 @@ public sealed class QueryTagParametersAttributeTests
         var expected3 = new DcbQueryItem(["CoursesPaused", "CoursesResumed"], []);
         var expected4 = new DcbQueryItem(["CourseStarted", "StudentSubscribed", "CourseFinished"], [tagCourse, tagStudent1, tagStudent2]);
 
-        result.Items.Should().HaveCount(4);
+        result.Count.Should().Be(4);
 
-        result.Items.Should().ContainEquivalentOf(expected1);
-        result.Items.Should().ContainEquivalentOf(expected2);
-        result.Items.Should().ContainEquivalentOf(expected3);
-        result.Items.Should().ContainEquivalentOf(expected4);
+        result.Contains(expected1).Should().BeTrue();
+        result.Contains(expected2).Should().BeTrue();
+        result.Contains(expected3).Should().BeTrue();
+        result.Contains(expected4).Should().BeTrue();
     }
 
     [Fact]
@@ -172,7 +170,7 @@ public sealed class QueryTagParametersAttributeTests
         Tag tagStudent2 = "student:smiths";
         Tag tagTeacher = "teacher:584456";
 
-        ImmutableSortedSet<Tag> tags = [tagCourse, tagTeacher, tagStudent1, tagStudent2, "other-entity:846123", "owner:4123"];
+        TagCollection tags = [tagCourse, tagTeacher, tagStudent1, tagStudent2, "other-entity:846123", "owner:4123"];
 
         var result = TestDomainProjectors.V0.NestedProjectorWithQueryTagParameters.GetQuery(tags);
 
@@ -181,32 +179,33 @@ public sealed class QueryTagParametersAttributeTests
         var expected3 = new DcbQueryItem(["CoursesPaused", "CoursesResumed"], []);
         var expected4 = new DcbQueryItem(["CourseStarted", "StudentSubscribed", "CourseFinished"], [tagCourse, tagStudent1, tagStudent2]);
 
-        result.Items.Should().HaveCount(4);
+        result.Count.Should().Be(4);
 
-        result.Items.Should().ContainEquivalentOf(expected1);
-        result.Items.Should().ContainEquivalentOf(expected2);
-        result.Items.Should().ContainEquivalentOf(expected3);
-        result.Items.Should().ContainEquivalentOf(expected4);
+        result.Contains(expected1).Should().BeTrue();
+        result.Contains(expected2).Should().BeTrue();
+        result.Contains(expected3).Should().BeTrue();
+        result.Contains(expected4).Should().BeTrue();
     }
 
     [Fact]
     public void ProjectorWithQueryTagParameters_GetProjectionId_Throw_ArgumentException_When_Notfound_Student_Tag()
     {
-        ImmutableSortedSet<Tag> tags = ["course:5555", "teacher:584456", "other-entity:846123", "owner:4123"];
+        TagCollection tags = ["course:5555", "teacher:584456", "other-entity:846123", "owner:4123"];
 
         Action act = () => ProjectorWithQueryTagParameters.GetProjectionId(tags);
+
 
         act.Should().Throw<ArgumentException>()
             .WithMessage("Required tag started with student: *")
             .WithParameterName("tags")
             .Where(x => x.Data.Contains("TagParameter") && x.Data["TagParameter"]!.Equals("student:"))
-            .Where(x => x.Data.Contains("Tags") && x.Data["Tags"]!.Equals(string.Join(';', tags)));
+            .Where(x => x.Data.Contains("Tags") && x.Data["Tags"]!.Equals(tags.ToString()));
     }
 
     [Fact]
     public void ProjectorWithQueryTagParametersV1_GetProjectionId_Throw_ArgumentException_When_Notfound_Student_Tag()
     {
-        ImmutableSortedSet<Tag> tags = ["course:5555", "teacher:584456", "other-entity:846123", "owner:4123"];
+        TagCollection tags = ["course:5555", "teacher:584456", "other-entity:846123", "owner:4123"];
 
         Action act = () => ProjectorWithQueryTagParametersV1.GetProjectionId(tags);
 
@@ -214,13 +213,13 @@ public sealed class QueryTagParametersAttributeTests
             .WithMessage("Required tag started with student: *")
             .WithParameterName("tags")
             .Where(x => x.Data.Contains("TagParameter") && x.Data["TagParameter"]!.Equals("student:"))
-            .Where(x => x.Data.Contains("Tags") && x.Data["Tags"]!.Equals(string.Join(';', tags)));
+            .Where(x => x.Data.Contains("Tags") && x.Data["Tags"]!.Equals(tags.ToString()));
     }
 
     [Fact]
     public void NestedProjectorWithQueryTagParameters_GetProjectionId_Throw_ArgumentException_When_Notfound_Student_Tag()
     {
-        ImmutableSortedSet<Tag> tags = ["course:5555", "teacher:584456", "other-entity:846123", "owner:4123"];
+        TagCollection tags = ["course:5555", "teacher:584456", "other-entity:846123", "owner:4123"];
 
         Action act = () => TestDomainProjectors.V0.NestedProjectorWithQueryTagParameters.GetProjectionId(tags);
 
@@ -228,7 +227,7 @@ public sealed class QueryTagParametersAttributeTests
             .WithMessage("Required tag started with student: *")
             .WithParameterName("tags")
             .Where(x => x.Data.Contains("TagParameter") && x.Data["TagParameter"]!.Equals("student:"))
-            .Where(x => x.Data.Contains("Tags") && x.Data["Tags"]!.Equals(string.Join(';', tags)));
+            .Where(x => x.Data.Contains("Tags") && x.Data["Tags"]!.Equals(tags.ToString()));
     }
 
     [Fact]

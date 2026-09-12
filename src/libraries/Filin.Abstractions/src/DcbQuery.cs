@@ -1,143 +1,314 @@
-using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
-using Filin.Storage;
+using Filin.Internal;
 
 namespace Filin;
 
 /// <summary>
-/// Фильтр событий в <see cref="IEventStore"/>.
+/// Represents a guaranteed pre-sorted, immutable collection of <see cref="DcbQueryItem"/> instances.
 /// </summary>
-/// <remarks>Элементы фильтра <see cref="DcbQueryItem"/> применяются с оператором <see langword="or"/>.</remarks>
-/// <param name="Items">Коллеция элементов фильтра.</param>
-public sealed partial record DcbQuery(ImmutableHashSet<DcbQueryItem> Items)
+[CollectionBuilder(typeof(DcbQuery), nameof(Create))]
+[DebuggerTypeProxy(typeof(DcbQueryDebugView))]
+[DebuggerDisplay("{Internal.DcbQueryDebugView.GetDisplayString(this),nq}")]
+public readonly struct DcbQuery : IEquatable<DcbQuery>, IComparable<DcbQuery>
 {
-    /// <summary>
-    /// Любое событие.
-    /// </summary>
-    public static readonly DcbQuery All = new([]);
+    readonly DcbQueryItem[]? _items;
 
     /// <summary>
-    /// Является запросом на выборку любого события.
+    /// Gets a value indicating whether the current collection is empty.
     /// </summary>
-    public bool IsAll => Items.IsEmpty || Items.Contains(DcbQueryItem.Any);
+    [MemberNotNullWhen(false, nameof(_items))]
+    public bool IsEmpty => _items is not { Length: > 0 };
 
-    public static DcbQuery FromItems(IEnumerable<DcbQueryItem> items)
+    /// <summary>
+    /// Gets the total number of elements in the collection.
+    /// </summary>
+    public int Count => _items?.Length ?? 0;
+
+    /// <summary>
+    /// Gets the <see cref="DcbQueryItem"/> at the specified index.
+    /// </summary>
+    public DcbQueryItem this[int index]
     {
-        ArgumentNullException.ThrowIfNull(items);
-
-        if (items is ImmutableHashSet<DcbQueryItem> inset)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get
         {
-            return inset.IsEmpty || inset.Contains(DcbQueryItem.Any) ? All : new DcbQuery(inset);
+            ArgumentOutOfRangeException.ThrowIfNegative(index);
+            ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, Count);
+
+            return _items![index];
         }
-
-        ImmutableHashSet<DcbQueryItem> set = [];
-
-        var builder = set.ToBuilder();
-
-        foreach (var item in items)
-        {
-            if (item.IsAny) return All;
-
-            builder.Add(item);
-        }
-
-        return builder.Count == 0 ? All : new DcbQuery(builder.ToImmutable());
     }
 
-    public bool MatchesEvent(DcbEvent @event)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DcbQuery"/> struct by copying, 
+    /// sorting, and deduplicating items from a stack-allocated or heap-allocated span.
+    /// </summary>
+    /// <param name="items">The span of query items to initialize the collection with.</param>
+    public DcbQuery(params ReadOnlySpan<DcbQueryItem> items)
+    {
+        if (items.IsEmpty)
+        {
+            return;
+        }
+
+        if (items.Length == 1)
+        {
+            _items = [items[0]];
+            return;
+        }
+
+        _items = ToSortedSet(items.ToArray());
+    }
+
+    /// <summary>
+    /// Factory method utilized automatically by the C# compiler to construct the type from collection expressions.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static DcbQuery Create(ReadOnlySpan<DcbQueryItem> items) => new(items);
+
+    /// <summary>
+    /// Determines whether the collection contains a specific query item using high-performance binary search.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public readonly bool Contains(DcbQueryItem item) => IsEmpty ? false : AsSpan().BinarySearch(item) >= 0;
+
+    /// <summary>
+    /// Combines the current query specification with an additional <see cref="DcbQueryItem"/> boundary block.
+    /// Items targeting the same tag boundaries are merged automatically.
+    /// </summary>
+    /// <param name="queryItem">The query item constraint to append.</param>
+    /// <returns>A new <see cref="DcbQuery"/> instance containing the combined, optimized boundary specifications.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public readonly DcbQuery Or(DcbQueryItem queryItem)
+    {
+        if (IsEmpty) return [queryItem];
+
+        return [.. this, queryItem];
+    }
+
+    /// <summary>
+    /// Combines the current query specification with another composite <see cref="DcbQuery"/> block.
+    /// Items targeting identical tag boundaries are merged automatically and sorted deterministically.
+    /// </summary>
+    /// <param name="query">The other composite query specification to merge with.</param>
+    /// <returns>A new <see cref="DcbQuery"/> instance representing the union of both specifications.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public readonly DcbQuery Or(DcbQuery query)
+    {
+        if (IsEmpty) return query;
+        if (query.IsEmpty) return this;
+
+        return [.. this, .. query];
+    }
+
+    /// <summary>
+    /// Determines whether the specified domain event matches any of the consistency constraints 
+    /// defined within this query specification.
+    /// </summary>
+    /// <param name="event">The domain event container to evaluate.</param>
+    /// <returns><see langword="true"/> if the event satisfies at least one query item boundary; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="event"/> is <see langword="null"/>.</exception>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public readonly bool MatchesEvent(DcbEvent @event)
     {
         ArgumentNullException.ThrowIfNull(@event);
 
-        if (IsAll) return true;
-
-        foreach (var queryItem in Items)
+        if (IsEmpty)
         {
-            if (queryItem.MatchesEvent(@event)) return true;
+            return true;
+        }
+
+        // Сканируем отсортированные и оптимизированные элементы запроса.
+        // Так как _items — это непрерывный массив, обход идет по L1-кэшу процессора.
+        var itemsSpan = _items.AsSpan();
+        for (int i = 0; i < itemsSpan.Length; i++)
+        {
+            if (itemsSpan[i].MatchesEvent(@event))
+            {
+                return true; // Найдено первое совпадение — событие полностью валидно для данной DCB-спецификации
+            }
         }
 
         return false;
     }
 
-    public DcbQuery Or(DcbQueryItem queryItem)
-    {
-        ArgumentNullException.ThrowIfNull(queryItem);
+    /// <summary>
+    /// Creates a new span over the collection.
+    /// </summary>
+    public ReadOnlySpan<DcbQueryItem> AsSpan() => _items.AsSpan();
 
-        return queryItem.IsAny || IsAll ? All : this with { Items = Items.Add(queryItem) };
+    /// <summary>
+    /// Returns a high-performance stack-only enumerator over the collection.
+    /// </summary>
+    public Enumerator GetEnumerator() => new(_items);
+
+    public bool Equals(DcbQuery other) => AsSpan().SequenceEqual(other.AsSpan());
+
+    public override bool Equals(object? obj) => obj is DcbQuery collection && Equals(collection);
+
+    public override int GetHashCode() => IsEmpty ? 0 : CombineHashCode(_items);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public int CompareTo(DcbQuery other) => AsSpan().SequenceCompareTo(other.AsSpan());
+
+    static int CombineHashCode(ReadOnlySpan<DcbQueryItem> items)
+    {
+        Debug.Assert(!items.IsEmpty);
+
+        return items.Length switch
+        {
+            1 => items[0].GetHashCode(),
+            2 => HashCode.Combine(items[0], items[1]),
+            3 => HashCode.Combine(items[0], items[1], items[2]),
+            4 => HashCode.Combine(items[0], items[1], items[2], items[3]),
+            5 => HashCode.Combine(items[0], items[1], items[2], items[3], items[4]),
+            _ => HashCode.Combine(items[0], items[1], items[2], items[3], items[4], CombineHashCode(items[5..])),
+        };
     }
 
-    public DcbQuery Or(DcbQuery query)
+    static DcbQueryItem[] ToSortedSet(DcbQueryItem[] array)
     {
-        ArgumentNullException.ThrowIfNull(query);
+        // 1. Sort items by tags first to group identical boundaries together
+        Array.Sort(array, CompareItemsByTags);
 
-        return query.IsAll || IsAll ? All : this with { Items = Items.Union(query.Items) };
-    }
-
-    public DcbQuery Compact()
-    {
-        if (IsAll)
+        int index = 1;
+        for (int i = 1; i < array.Length; i++)
         {
-            return All;
-        }
-
-        var builder = ImmutableHashSet.CreateBuilder<DcbQueryItem>();
-
-        foreach (var grouped in Items.GroupBy(static x => x.Tags, TagSetEqualityComparer.Instance))
-        {
-            var eventTypes = grouped.SelectMany(static q => q.EventTypes).ToImmutableHashSet();
-
-            builder.Add(new(EventTypes: eventTypes, Tags: grouped.Key));
-        }
-
-        return new DcbQuery(builder.ToImmutable());
-    }
-
-    public static DcbQuery FromImmutableHashSet(ImmutableHashSet<DcbEvent> dcbEvents)
-    {
-        ArgumentNullException.ThrowIfNull(dcbEvents);
-
-        var queryItems = ImmutableHashSet<DcbQueryItem>.Empty.ToBuilder();
-
-        foreach (var dcbEvent in dcbEvents)
-        {
-            var queryItem = dcbEvent.ToDcbQueryItem();
-
-            if (queryItems.FirstOrDefault(x => x.Tags.SetEquals(queryItem.Tags)) is { } existWithSameTags)
+            // Check if the current item has the exact same tag boundary as the previous unique item
+            if (array[i].Tags.Equals(array[index - 1].Tags))
             {
-                _ = queryItems.Remove(existWithSameTags);
+                // This invokes CollectionBuilder under the hood, ensuring automatic sorting and deduplication.
+                EventTypeCollection mergedTypes = [.. array[index - 1].EventTypes, .. array[i].EventTypes];
 
-                queryItem = existWithSameTags.Or(queryItem.EventTypes);
+                // Reconstruct the immutable query item with the combined event types
+                array[index - 1] = new DcbQueryItem(mergedTypes, array[index - 1].Tags);
+            }
+            else
+            {
+                // Tags are different, shift the independent boundary forward
+                if (index != i)
+                {
+                    array[index] = array[i];
+                }
+                index++;
+            }
+        }
+
+        // 2. Shrink the array to contain only unique tag groups
+        if (index != array.Length)
+        {
+            Array.Resize(ref array, index);
+        }
+
+        // 3. Final touch: Sort the merged array by its default IComparable specification 
+        // to maintain deterministic lexicographical order across the entire collection.
+        Array.Sort(array);
+
+        return array;
+    }
+
+    /// <summary>
+    /// A high-performance, allocation-free static comparison method used to group query items strictly by their tag boundaries.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static int CompareItemsByTags(DcbQueryItem x, DcbQueryItem y) => x.Tags.CompareTo(y.Tags);
+
+    /// <summary>
+    /// Compares two <see cref="DcbQuery"/> instances for equality.
+    /// </summary>
+    /// <param name="left">The left operand.</param>
+    /// <param name="right">The right operand.</param>
+    /// <returns><see langword="true"/> if the collections are equal; otherwise, <see langword="false"/>.</returns>
+    public static bool operator ==(DcbQuery left, DcbQuery right) => left.Equals(right);
+
+    /// <summary>
+    /// Compares two <see cref="DcbQuery"/> instances for inequality.
+    /// </summary>
+    /// <param name="left">The left operand.</param>
+    /// <param name="right">The right operand.</param>
+    /// <returns><see langword="true"/> if the collections are not equal; otherwise, <see langword="false"/>.</returns>
+    public static bool operator !=(DcbQuery left, DcbQuery right) => !left.Equals(right);
+
+    /// <summary>
+    /// Determines whether the first <see cref="DcbQuery"/> instance precedes the second instance lexicographically.
+    /// </summary>
+    /// <param name="left">The left operand.</param>
+    /// <param name="right">The right operand.</param>
+    /// <returns><see langword="true"/> if the left instance precedes the right instance; otherwise, <see langword="false"/>.</returns>
+    public static bool operator <(DcbQuery left, DcbQuery right) => left.CompareTo(right) < 0;
+
+    /// <summary>
+    /// Determines whether the first <see cref="DcbQuery"/> instance precedes or occurs in the same position as the second instance lexicographically.
+    /// </summary>
+    /// <param name="left">The left operand.</param>
+    /// <param name="right">The right operand.</param>
+    /// <returns><see langword="true"/> if the left instance precedes or equals the right instance; otherwise, <see langword="false"/>.</returns>
+    public static bool operator <=(DcbQuery left, DcbQuery right) => left.CompareTo(right) <= 0;
+
+    /// <summary>
+    /// Determines whether the first <see cref="DcbQuery"/> instance follows the second instance lexicographically.
+    /// </summary>
+    /// <param name="left">The left operand.</param>
+    /// <param name="right">The right operand.</param>
+    /// <returns><see langword="true"/> if the left instance follows the right instance; otherwise, <see langword="false"/>.</returns>
+    public static bool operator >(DcbQuery left, DcbQuery right) => left.CompareTo(right) > 0;
+
+    /// <summary>
+    /// Determines whether the first <see cref="DcbQuery"/> instance follows or occurs in the same position as the second instance lexicographically.
+    /// </summary>
+    /// <param name="left">The left operand.</param>
+    /// <param name="right">The right operand.</param>
+    /// <returns><see langword="true"/> if the left instance follows or equals the right instance; otherwise, <see langword="false"/>.</returns>
+    public static bool operator >=(DcbQuery left, DcbQuery right) => left.CompareTo(right) >= 0;
+
+    /// <summary>
+    /// Provides a high-performance, stack-only enumerator over a collection.
+    /// </summary>
+    public ref struct Enumerator
+    {
+        int _index;
+        readonly ReadOnlySpan<DcbQueryItem> _span;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal Enumerator(ReadOnlySpan<DcbQueryItem> values)
+        {
+            _span = values;
+            _index = -1;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool MoveNext()
+        {
+            int nextIndex = _index + 1;
+            if (nextIndex < _span.Length)
+            {
+                _index = nextIndex;
+                return true;
             }
 
-            queryItems.Add(queryItem);
+            _index = nextIndex;
+            return false;
         }
 
-        return new DcbQuery(queryItems.ToImmutable());
-    }
-
-    public static implicit operator DcbQuery(ImmutableHashSet<DcbEvent> dcbEvents) => FromImmutableHashSet(dcbEvents);
-
-    /// <inheritdoc/>
-    sealed class TagSetEqualityComparer : IEqualityComparer<ImmutableSortedSet<Tag>>
-    {
-        internal static readonly TagSetEqualityComparer Instance = new TagSetEqualityComparer();
-
-        /// <inheritdoc/>
-        public bool Equals(ImmutableSortedSet<Tag>? x, ImmutableSortedSet<Tag>? y) =>
-            x is not null && y is not null && x.Count == y.Count && x.All(y.Contains)
-            || x is null && y is null;
-
-        /// <inheritdoc/>
-        public int GetHashCode([DisallowNull] ImmutableSortedSet<Tag> obj)
+        public readonly DcbQueryItem Current
         {
-            var hashCode = 0;
-
-            foreach (var tag in obj)
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
             {
-                hashCode = HashCode.Combine(hashCode, tag);
+                if (_index < 0 || _index >= _span.Length)
+                {
+                    ThrowInvalidOperationException();
+                }
+                return _span[_index];
             }
-
-            return hashCode;
         }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        [DoesNotReturn]
+        static void ThrowInvalidOperationException() =>
+            throw new InvalidOperationException("DcbQuery.Enumerator.Current value has not been set.");
     }
 }

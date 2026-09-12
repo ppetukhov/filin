@@ -82,51 +82,39 @@ public sealed class QueryEventTypesAttributeTests
     }
 
     [Fact]
-    public void ProjectorWithoutQueryTags_GetQuery_Return_QueryWithThreeItems()
+    public void ProjectorWithoutQueryTags_GetQuery_Return_QueryWithOneItem()
     {
         var result = ProjectorWithoutQueryTags.GetQuery([]);
 
-        var expected1 = new DcbQueryItem(["StudentSubscribed"], []);
-        var expected2 = new DcbQueryItem(["CourseCreated", "CourseRenamed", "CourseScheduled", "CourseCapacityChanged", "CourseStarted"], []);
-        var expected3 = new DcbQueryItem(["CourseFinished"], []);
+        var expected = new DcbQueryItem(["StudentSubscribed", "CourseCreated", "CourseRenamed", "CourseScheduled", "CourseCapacityChanged", "CourseStarted", "CourseFinished"], []);
 
-        result.Items.Should().HaveCount(3);
+        result.Count.Should().Be(1);
 
-        result.Items.Should().ContainEquivalentOf(expected1);
-        result.Items.Should().ContainEquivalentOf(expected2);
-        result.Items.Should().ContainEquivalentOf(expected3);
+        result[0].Should().Be(expected);
     }
 
     [Fact]
-    public void ProjectorWithoutQueryTagsV1_GetQuery_Return_QueryWithThreeItems()
+    public void ProjectorWithoutQueryTagsV1_GetQuery_Return_QueryWithOneItem()
     {
         var result = ProjectorWithoutQueryTagsV1.GetQuery([]);
 
-        var expected1 = new DcbQueryItem(["StudentSubscribed"], []);
-        var expected2 = new DcbQueryItem(["CourseCreated", "CourseRenamed", "CourseScheduled", "CourseCapacityChanged", "CourseStarted"], []);
-        var expected3 = new DcbQueryItem(["CourseFinished"], []);
+        var expected = new DcbQueryItem(["StudentSubscribed", "CourseCreated", "CourseRenamed", "CourseScheduled", "CourseCapacityChanged", "CourseStarted", "CourseFinished"], []);
 
-        result.Items.Should().HaveCount(3);
+        result.Count.Should().Be(1);
 
-        result.Items.Should().ContainEquivalentOf(expected1);
-        result.Items.Should().ContainEquivalentOf(expected2);
-        result.Items.Should().ContainEquivalentOf(expected3);
+        result[0].Should().Be(expected);
     }
 
     [Fact]
-    public void NestedProjectorWithoutQueryTags_GetQuery_Return_QueryWithThreeItems()
+    public void NestedProjectorWithoutQueryTags_GetQuery_Return_QueryWithOneItem()
     {
         var result = TestDomainProjectors.V0.NestedProjectorWithoutQueryTags.GetQuery([]);
 
-        var expected1 = new DcbQueryItem(["StudentSubscribed"], []);
-        var expected2 = new DcbQueryItem(["CourseCreated", "CourseRenamed", "CourseScheduled", "CourseCapacityChanged", "CourseStarted"], []);
-        var expected3 = new DcbQueryItem(["CourseFinished"], []);
+        var expected = new DcbQueryItem(["StudentSubscribed", "CourseCreated", "CourseRenamed", "CourseScheduled", "CourseCapacityChanged", "CourseStarted", "CourseFinished"], []);
 
-        result.Items.Should().HaveCount(3);
+        result.Count.Should().Be(1);
 
-        result.Items.Should().ContainEquivalentOf(expected1);
-        result.Items.Should().ContainEquivalentOf(expected2);
-        result.Items.Should().ContainEquivalentOf(expected3);
+        result[0].Should().Be(expected);
     }
 
     [Fact]

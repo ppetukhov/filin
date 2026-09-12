@@ -1,5 +1,3 @@
-using System.Collections.Immutable;
-
 using Filin;
 
 using static Edu.DomainEvents;
@@ -41,7 +39,7 @@ static partial class DomainEvents
 public static class EduEventsToDcbEventExtensions
 {
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    internal static DcbEvent ToDcbEvent(this V1.CourseCreated evt, ImmutableSortedSet<Tag>? tags = null) => new DcbEvent
+    internal static DcbEvent ToDcbEvent(this V1.CourseCreated evt, TagCollection tags) => new DcbEvent
     {
         EventType = evt.GetEventType(),
         Data = evt,
@@ -49,8 +47,15 @@ public static class EduEventsToDcbEventExtensions
         Tags = tags is { IsEmpty: false } ? [.. tags, .. evt.GetTags()] : evt.GetTags()
     };
 
+    internal static DcbEvent ToDcbEvent(this V1.CourseCreated evt, IWithQueryTags withQuery) => evt.ToDcbEvent(withQuery, DateTimeOffset.UtcNow);
+
+    internal static DcbEvent ToDcbEvent(this V1.CourseCreated evt, IWithQueryTags withQuery, DateTimeOffset timestamp)
+    {
+        throw new NotImplementedException();
+    }
+
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    internal static DcbEvent ToDcbEvent(this V1.CourseRenamed evt, ImmutableSortedSet<Tag>? tags = null) => new DcbEvent
+    internal static DcbEvent ToDcbEvent(this V1.CourseRenamed evt, TagCollection tags) => new DcbEvent
     {
         EventType = evt.GetEventType(),
         Data = evt,
@@ -68,7 +73,7 @@ public static class EduEventsToDcbEventExtensions
     };
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    internal static DcbEvent ToDcbEvent(this V1.StudentSubscribed evt, ImmutableSortedSet<Tag>? tags = null) => new DcbEvent
+    internal static DcbEvent ToDcbEvent(this V1.StudentSubscribed evt, TagCollection tags) => new DcbEvent
     {
         EventType = evt.GetEventType(),
         Data = evt,

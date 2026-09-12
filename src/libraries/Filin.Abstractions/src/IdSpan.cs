@@ -38,7 +38,7 @@ public readonly struct IdSpan : IEquatable<IdSpan>, IComparable<IdSpan>, ISpanFo
     /// <summary>
     /// Gets the underlying value.
     /// </summary>
-    public string? Value => _value;
+    public string Value => _value ?? string.Empty;
 
     /// <summary>
     /// Returns a span representation of this instance.
@@ -145,7 +145,7 @@ public readonly struct IdSpan : IEquatable<IdSpan>, IComparable<IdSpan>, ISpanFo
     /// </summary>
     /// <param name="IdSpan">The event type instance to convert.</param>
     /// <returns>The string representation of the event type, or <see langword="null"/> if uninitialized.</returns>
-    public static implicit operator string?(IdSpan IdSpan) => IdSpan.Value;
+    public static implicit operator string(IdSpan IdSpan) => IdSpan.Value;
 
     /// <inheritdoc cref="FromString(string)"/>
     public static implicit operator IdSpan(string id) => new(id);

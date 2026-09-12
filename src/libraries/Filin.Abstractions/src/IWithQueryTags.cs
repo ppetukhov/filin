@@ -1,5 +1,3 @@
-using System.Collections.Immutable;
-
 namespace Filin;
 
 /// <summary>
@@ -11,7 +9,7 @@ public interface IWithQueryTags
     /// Gets the guaranteed sorted, immutable collection of query tags used to evaluate dynamic consistency boundaries.
     /// </summary>
     /// <value>
-    /// A <see cref="ImmutableSortedSet{Tag}"/> containing the pre-sorted query tags and their combined hash.
+    /// A <see cref="TagCollection"/> containing the pre-sorted query tags and their combined hash.
     /// </value>
-    ImmutableSortedSet<Tag> GetTags();
+    TagCollection GetTags();
 }

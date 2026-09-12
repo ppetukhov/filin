@@ -1,62 +1,175 @@
-using System.Collections.Immutable;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
+
+using Filin.Internal;
 
 namespace Filin;
 
 /// <summary>
-/// Элемент фильтра <see cref="DcbQuery"/>.
+/// Represents a unique query item that encapsulates a combined specification of domain tags 
+/// and interested event types to form a specific dynamic consistency boundary section.
 /// </summary>
-/// <remarks>Тип события может быть любым из коллекции <paramref name="EventTypes"/>, если она не пуста.
-/// В противном случае тип события не учитывается при фильтрации.
-/// И событие должно содержать все тэги из коллекции <paramref name="Tags"/>, если она не пуста.
-/// В противном случае тэги события не учитываются при фильтрации.
-/// </remarks>
-/// <param name="EventTypes">Типы событий <see cref="EventType"/> применяются с оператором <see langword="or"/>.</param>
-/// <param name="Tags">Тэги событий <see cref="Tag"/> применяются с оператором <see langword="and"/>.</param>
-public sealed record DcbQueryItem(ImmutableHashSet<EventType> EventTypes, ImmutableSortedSet<Tag> Tags)
+/// <param name="eventTypes">The pre-sorted collection of domain event types.</param>
+/// <param name="tags">The pre-sorted collection of domain tags.</param>
+[DebuggerTypeProxy(typeof(DcbQueryItemDebugView))]
+[DebuggerDisplay("{Internal.DcbQueryItemDebugView.GetDisplayString(this),nq}")]
+public readonly record struct DcbQueryItem(EventTypeCollection eventTypes, TagCollection tags) : IEquatable<DcbQueryItem>, IComparable<DcbQueryItem>
 {
-    public static readonly DcbQueryItem Any = new([], []);
+    /// <summary>
+    /// Gets the guaranteed sorted, immutable collection of query tags.
+    /// </summary>
+    public TagCollection Tags => tags;
 
-    public bool IsAny => this == Any;
+    /// <summary>
+    /// Gets the guaranteed sorted, immutable collection of interested event types.
+    /// </summary>
+    public EventTypeCollection EventTypes => eventTypes;
 
-    public DcbQueryItem(EventType eventType) : this([eventType], []) { }
+    /// <summary>
+    /// Gets a value indicating whether the query item defines empty boundaries.
+    /// </summary>
+    public bool IsEmpty => tags.IsEmpty && eventTypes.IsEmpty;
 
-    public DcbQueryItem(IEnumerable<EventType> eventTypes) : this([.. eventTypes], []) { }
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DcbQueryItem"/> struct with specified event types and an empty tag boundary.
+    /// </summary>
+    /// <param name="eventTypes">The stack-allocated or heap-allocated span of interested event types.</param>
+    public DcbQueryItem(params ReadOnlySpan<EventType> eventTypes)
+        : this(new EventTypeCollection(eventTypes), default)
+    {
+    }
 
-    public DcbQueryItem(Tag tag) : this([], [tag]) { }
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DcbQueryItem"/> struct with specified domain tags and an empty event type boundary.
+    /// </summary>
+    /// <param name="tags">The stack-allocated or heap-allocated span of query tags.</param>
+    public DcbQueryItem(params ReadOnlySpan<Tag> tags)
+        : this(default, new TagCollection(tags))
+    {
+    }
 
-    public DcbQueryItem(IEnumerable<Tag> tags) : this([], [.. tags]) { }
+    /// <summary>
+    /// Combines the current query item boundaries with an additional set of interested event types.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public DcbQueryItem Or(params ReadOnlySpan<EventType> eventTypes)
+    {
+        if (eventTypes.IsEmpty) return this;
 
-    public DcbQueryItem(IEnumerable<EventType> eventTypes, IEnumerable<Tag> tags) : this([.. eventTypes], [.. tags]) { }
+        EventTypeCollection mergedTypes = [.. this.eventTypes, .. eventTypes];
+        return new DcbQueryItem(mergedTypes, tags);
+    }
 
-    public DcbQueryItem Or(EventType eventType) => this with { EventTypes = EventTypes.Add(eventType) };
+    /// <summary>
+    /// Combines the current query item boundaries with an additional set of domain tags.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public DcbQueryItem And(params ReadOnlySpan<Tag> tags)
+    {
+        if (tags.IsEmpty) return this;
 
-    public DcbQueryItem Or(IEnumerable<EventType> eventTypes) => this with { EventTypes = EventTypes.Union(eventTypes) };
+        TagCollection mergedTags = [.. this.tags, .. tags];
+        return new DcbQueryItem(eventTypes, mergedTags);
+    }
 
-    public DcbQueryItem And(Tag tag) => this with { Tags = Tags.Add(tag) };
+    /// <summary>
+    /// Combines the current query item boundaries with another <see cref="DcbQueryItem"/> specification.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public DcbQueryItem Add(DcbQueryItem other)
+    {
+        if (IsEmpty) return other;
+        if (other.IsEmpty) return this;
 
-    public DcbQueryItem And(IEnumerable<Tag> tags) => this with { Tags = Tags.Union(tags) };
+        EventTypeCollection mergedTypes = [.. eventTypes, .. other.EventTypes];
+        TagCollection mergedTags = [.. tags, .. other.Tags];
 
-    public DcbQueryItem And(EventType eventType, Tag tag) => this with { EventTypes = EventTypes.Add(eventType), Tags = Tags.Add(tag) };
+        return new DcbQueryItem(mergedTypes, mergedTags);
+    }
 
-    public DcbQueryItem And(EventType eventType, IEnumerable<Tag> tags) => this with { EventTypes = EventTypes.Add(eventType), Tags = Tags.Union(tags) };
+    /// <summary>
+    /// Compares the current query item with another <see cref="DcbQueryItem"/> instance.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public int CompareTo(DcbQueryItem other)
+    {
+        // 1. Сначала лексикографически сравниваем коллекции типов событий
+        int typeComparison = eventTypes.CompareTo(other.EventTypes);
+        if (typeComparison != 0)
+        {
+            return typeComparison;
+        }
 
-    public DcbQueryItem And(IEnumerable<EventType> eventTypes, Tag tag) => this with { EventTypes = EventTypes.Union(eventTypes), Tags = Tags.Add(tag) };
+        // 2. Если типы событий идентичны, сравниваем коллекции тегов
+        return tags.CompareTo(other.Tags);
+    }
 
-    public DcbQueryItem And(IEnumerable<EventType> eventTypes, IEnumerable<Tag> tags) => this with { EventTypes = EventTypes.Union(eventTypes), Tags = Tags.Union(tags) };
-
-    public bool MatchesEvent(DcbEvent @event)
+    /// <summary>
+    /// Determines whether the specified domain event matches the consistency constraints.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public readonly bool MatchesEvent(DcbEvent @event)
     {
         ArgumentNullException.ThrowIfNull(@event);
 
-        return (EventTypes.IsEmpty || EventTypes.Contains(@event.EventType)) && (Tags.IsEmpty || @event.Tags is { IsEmpty: false } tags && Tags.All(tags.Contains));
+        // 1. Validate event type
+        if (!IsEmpty && !Contains(@event.EventType))
+        {
+            return false;
+        }
+
+        // 2. If the query specifies no tag constraints, any event automatically qualifies
+        if (tags.IsEmpty)
+        {
+            return true;
+        }
+
+        // 3. If the query requires specific tags but the event has none
+        if (@event.Tags.IsEmpty)
+        {
+            return false;
+        }
+
+        // 4. Verify that ALL query tags (subset) are present within the event tags (superset)
+        var queryTagsSpan = tags.AsSpan();
+        var eventTagsSpan = @event.Tags.AsSpan();
+
+        int i = 0; // Pointer for query tags subset
+        int j = 0; // Pointer for event tags superset
+
+        while (i < queryTagsSpan.Length && j < eventTagsSpan.Length)
+        {
+            int cmp = queryTagsSpan[i].CompareTo(eventTagsSpan[j]);
+
+            if (cmp == 0)
+            {
+                i++;
+                j++;
+            }
+            else if (cmp > 0)
+            {
+                j++;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        return i == queryTagsSpan.Length;
     }
 
-    public static implicit operator DcbQuery(DcbQueryItem queryItem)
-    {
-        ArgumentNullException.ThrowIfNull(queryItem);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    readonly bool Contains(EventType eventType) => eventTypes.Contains(eventType);
 
-        return queryItem.ToDcbQuery();
-    }
+    /// <summary>
+    /// Indicates whether the current query item boundary specification is equal to another.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool Equals(DcbQueryItem other) => eventTypes.Equals(other.EventTypes) && tags.Equals(other.Tags);
 
-    public DcbQuery ToDcbQuery() => new([this]);
+    /// <summary>
+    /// Returns the combined hash code for this boundary query item specification.
+    /// </summary>
+    public override int GetHashCode() => HashCode.Combine(eventTypes, tags);
 }

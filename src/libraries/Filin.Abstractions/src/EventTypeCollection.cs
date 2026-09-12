@@ -1,6 +1,9 @@
+using System.Buffers;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+
+using Filin.Internal;
 
 namespace Filin;
 
@@ -8,7 +11,9 @@ namespace Filin;
 /// Represents a guaranteed pre-sorted, immutable collection of event types.
 /// </summary>
 [CollectionBuilder(typeof(EventTypeCollection), nameof(Create))]
-public readonly struct EventTypeCollection : IEquatable<EventTypeCollection>, IComparable<EventTypeCollection>
+[DebuggerTypeProxy(typeof(EventTypeCollectionDebugView))]
+
+public readonly struct EventTypeCollection : IEquatable<EventTypeCollection>, IComparable<EventTypeCollection>, ISpanFormattable
 {
     readonly EventType[]? _eventTypes;
 
@@ -60,11 +65,7 @@ public readonly struct EventTypeCollection : IEquatable<EventTypeCollection>, IC
     /// Determines whether the collection contains a specific event type using high-performance binary search.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public readonly bool Contains(EventType eventType)
-    {
-        if (IsEmpty) return false;
-        return AsSpan().BinarySearch(eventType) >= 0;
-    }
+    public readonly bool Contains(EventType eventType) => IsEmpty ? false : AsSpan().BinarySearch(eventType) >= 0;
 
     public ReadOnlySpan<EventType> AsSpan() => _eventTypes.AsSpan();
 
@@ -79,6 +80,110 @@ public readonly struct EventTypeCollection : IEquatable<EventTypeCollection>, IC
     public override bool Equals(object? obj) => obj is EventTypeCollection collection && Equals(collection);
 
     public override int GetHashCode() => IsEmpty ? 0 : CombineHashCode(_eventTypes);
+
+    /// <summary>
+    /// Formats the collection of event types into the provided span of characters using standard comma-and-space separator.
+    /// </summary>
+    public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
+    {
+        // 1. Delegate to custom formatter if explicitly provided by the caller
+        if (provider?.GetFormat(typeof(ICustomFormatter)) is ICustomFormatter customFormatter)
+        {
+            var formattedString = customFormatter.Format(format.ToString(), this, provider);
+            var formattedSpan = formattedString.AsSpan();
+
+            if (destination.Length < formattedSpan.Length)
+            {
+                charsWritten = 0;
+                return false;
+            }
+
+            formattedSpan.CopyTo(destination);
+            charsWritten = formattedSpan.Length;
+            return true;
+        }
+
+        // 2. High-performance strict comma-and-space fast-path
+        charsWritten = 0;
+        if (IsEmpty) return true;
+
+        var count = Count;
+        var separator = ", ".AsSpan();
+        var position = 0;
+
+        for (var i = 0; i < count; i++)
+        {
+            var typeValueSpan = this[i].Value.AsSpan();
+
+            if (destination[position..].Length < typeValueSpan.Length) return false;
+            typeValueSpan.CopyTo(destination[position..]);
+            position += typeValueSpan.Length;
+
+            if (i < count - 1)
+            {
+                if (destination[position..].Length < separator.Length) return false;
+                separator.CopyTo(destination[position..]);
+                position += separator.Length;
+            }
+        }
+
+        charsWritten = position;
+        return true;
+    }
+
+    /// <summary>
+    /// Formats the collection into a string layout, respecting custom formatting providers.
+    /// </summary>
+    public string ToString(string? format, IFormatProvider? formatProvider) =>
+        formatProvider?.GetFormat(typeof(ICustomFormatter)) is ICustomFormatter customFormatter
+            ? customFormatter.Format(format, this, formatProvider)
+            : ToString();
+
+    /// <summary>
+    /// Returns a string that represents the current collection of event types, joined by a strict comma-and-space separator.
+    /// Allocates strictly on the stack if the combined total length does not exceed 256 characters.
+    /// </summary>
+    public override string ToString()
+    {
+        if (IsEmpty)
+        {
+            return string.Empty;
+        }
+
+        var count = Count;
+        if (count == 1)
+        {
+            return this[0].Value;
+        }
+
+        // Calculate exact string buffer requirement allocation bounds
+        var totalLength = 0;
+        for (var i = 0; i < count; i++)
+        {
+            totalLength += this[i].Value.Length;
+        }
+        totalLength += (count - 1) * 2; // 2 chars per separator (", ")
+
+        const int stackAllocThreshold = 256;
+        if (totalLength <= stackAllocThreshold)
+        {
+            Span<char> buffer = stackalloc char[totalLength];
+            TryFormat(buffer, out _, default, null);
+            return new string(buffer);
+        }
+
+        var rentedArray = ArrayPool<char>.Shared.Rent(totalLength);
+        try
+        {
+            Span<char> buffer = rentedArray.AsSpan(0, totalLength);
+            TryFormat(buffer, out _, default, null);
+            return new string(buffer);
+        }
+        finally
+        {
+            ArrayPool<char>.Shared.Return(rentedArray);
+        }
+    }
 
     static int CombineHashCode(ReadOnlySpan<EventType> _eventTypes)
     {

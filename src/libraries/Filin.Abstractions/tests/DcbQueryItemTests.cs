@@ -31,43 +31,6 @@ public class DcbQueryItemTests
         queryItem.Tags.Should().Be(tags);
     }
 
-    [Fact]
-    public void Any_Field_ShouldBeEqualToDefaultValue()
-    {
-        // Arrange & Act
-        DcbQueryItem defaultItem = default;
-        DcbQueryItem anyItem = DcbQueryItem.Any;
-
-        // Assert
-        anyItem.Should().Be(defaultItem);
-        anyItem.IsEmpty.Should().BeTrue();
-    }
-
-    [Fact]
-    public void IsAny_WhenInstanceIsEmpty_ShouldReturnTrue()
-    {
-        // Arrange
-        var emptyItem = new DcbQueryItem();
-        var anyItem = DcbQueryItem.Any;
-
-        // Act & Assert
-        emptyItem.IsAny.Should().BeTrue();
-        anyItem.IsAny.Should().BeTrue();
-    }
-
-    [Fact]
-    public void IsAny_WhenInstanceHasConstraints_ShouldReturnFalse()
-    {
-        // Arrange
-        var workingItem = new DcbQueryItem(
-            new EventTypeCollection(new EventType("Created")),
-            new TagCollection(new Tag("course:777"))
-        );
-
-        // Act & Assert
-        workingItem.IsAny.Should().BeFalse();
-    }
-
     #endregion
 
     #region Fluent API Pipelines (And / Or Modifications)

@@ -1,4 +1,4 @@
-using System.Collections.Immutable;
+using System.Buffers;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 
@@ -33,26 +33,38 @@ sealed record PgEventPayload
 #pragma warning disable CS0618 // Type or member is obsolete
         var eventType = EventType.UnsafeCreate(TypeName, (uint)TypeHash);
 #pragma warning restore CS0618 // Type or member is obsolete
-        ImmutableSortedSet<Tag>? tags;
+        TagCollection tags;
 
         if (TagNames is { Length: > 0 } tgNames && TagHashes is { Length: > 0 } tgHashes)
         {
             Debug.Assert(tgHashes.Length == tgHashes.Length);
 
-            var tagsBulder = ImmutableSortedSet.CreateBuilder<Tag>();
+            Tag[]? rented = null;
 
-            for (var i = 0; i < tgNames.Length && i < tgHashes.Length; i++)
+            try
             {
-#pragma warning disable CS0618 // Type or member is obsolete
-                tagsBulder.Add((Tag)IdSpan.UnsafeCreate(tgNames[i], (ulong)tgHashes[i]));
-#pragma warning restore CS0618 // Type or member is obsolete
-            }
+                rented = ArrayPool<Tag>.Shared.Rent(TagHashes.Length);
 
-            tags = tagsBulder.ToImmutable();
+                for (var i = 0; i < tgNames.Length && i < tgHashes.Length; i++)
+                {
+#pragma warning disable CS0618 // Type or member is obsolete
+                    rented[i] = (Tag)IdSpan.UnsafeCreate(tgNames[i], (ulong)tgHashes[i]);
+#pragma warning restore CS0618 // Type or member is obsolete
+                }
+
+                tags = [.. rented];
+            }
+            finally
+            {
+                if (rented is not null)
+                {
+                    ArrayPool<Tag>.Shared.Return(rented);
+                }
+            }
         }
         else
         {
-            tags = null;
+            tags = default;
         }
 
         return new DcbEventSequenced(position, new DcbEvent { EventType = eventType, Timestamp = timestamp, Tags = tags, Data = NullData });

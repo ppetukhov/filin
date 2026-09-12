@@ -1,5 +1,3 @@
-using System.Collections.Immutable;
-
 using Edu.ReadModels;
 
 using Filin;
@@ -12,5 +10,5 @@ namespace Edu.UseCases;
 public sealed record GetActiveCourses : IQuery<ActiveCourses>
 {
     /// <inheritdoc/>
-    public ImmutableSortedSet<Tag> GetTags() => [];
+    public TagCollection GetTags() => [];
 }
