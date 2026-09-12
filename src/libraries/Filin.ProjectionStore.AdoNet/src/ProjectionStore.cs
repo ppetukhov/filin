@@ -56,10 +56,10 @@ public sealed class ProjectionStore(
 
             var resultRecords = await _storage.ReadAsync(opQueries.ReadStorageKey, parameterProvider: command =>
                     {
-                        command.AddParameter(CommandParam.IdHash, projectionId.Key.GetHashCode());
-                        command.AddParameter(CommandParam.IdName, projectionId.Key.ToString());
-                        command.AddParameter(CommandParam.TypeHash, projectionId.ProjectorId.GetHashCode());
-                        command.AddParameter(CommandParam.TypeName, projectionId.ProjectorId.ToString());
+                        command.AddParameter(CommandParam.IdHash, (long)projectionId.Key.Hash);
+                        command.AddParameter(CommandParam.IdName, projectionId.Key.Value);
+                        command.AddParameter(CommandParam.TypeHash, (long)projectionId.ProjectorId.Hash);
+                        command.AddParameter(CommandParam.TypeName, projectionId.ProjectorId.Value);
                     },
                     selector: (selector, resultSetCount, token) =>
                     {
@@ -130,11 +130,11 @@ public sealed class ProjectionStore(
                         {
                             var projectionId = projection.Id;
 
-                            command.AddParameter(CommandParam.IdHash, projectionId.Key.GetHashCode());
-                            command.AddParameter(CommandParam.IdName, projectionId.Key.ToString());
-                            command.AddParameter(CommandParam.TypeHash, projectionId.ProjectorId.GetHashCode());
-                            command.AddParameter(CommandParam.TypeName, projectionId.ProjectorId.ToString());
-                            command.AddParameter(CommandParam.Position, projection.Position.Value);
+                            command.AddParameter(CommandParam.IdHash, (long)projectionId.Key.Hash);
+                            command.AddParameter(CommandParam.IdName, projectionId.Key.Value);
+                            command.AddParameter(CommandParam.TypeHash, (long)projectionId.ProjectorId.Hash);
+                            command.AddParameter(CommandParam.TypeName, projectionId.ProjectorId.Value);
+                            command.AddParameter(CommandParam.Position, (long)projection.Position.Value);
                             command.AddParameter(CommandParam.TimestampUtc, projection.Timestamp.ToUniversalTime());
                             command.AddParameter(CommandParam.Payload, _serializer.Serialize(projection.Payload).ToArray());
                         },
@@ -170,11 +170,11 @@ public sealed class ProjectionStore(
 
             _ = await _storage.ExecuteAsync(opQueries.ClearStorageKey, command =>
                         {
-                            command.AddParameter(CommandParam.IdHash, projectionId.Key.GetHashCode());
-                            command.AddParameter(CommandParam.IdName, projectionId.Key.ToString());
-                            command.AddParameter(CommandParam.TypeHash, projectionId.ProjectorId.GetHashCode());
-                            command.AddParameter(CommandParam.TypeName, projectionId.ProjectorId.ToString());
-                            command.AddParameter(CommandParam.Position, position.Value);
+                            command.AddParameter(CommandParam.IdHash, (long)projectionId.Key.Hash);
+                            command.AddParameter(CommandParam.IdName, projectionId.Key.Value);
+                            command.AddParameter(CommandParam.TypeHash, (long)projectionId.ProjectorId.Hash);
+                            command.AddParameter(CommandParam.TypeName, projectionId.ProjectorId.Value);
+                            command.AddParameter(CommandParam.Position, (long)position.Value);
                         },
                         cancellationToken: CancellationToken.None)
                     .ConfigureAwait(false);

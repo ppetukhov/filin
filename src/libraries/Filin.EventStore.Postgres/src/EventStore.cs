@@ -346,7 +346,7 @@ sealed partial class EventStore(
         pName = "@evh" + eventIndex;
         sb.Append(pName);
         sb.Append(',');
-        command.AddParameter(pName, @event.EventType.GetHashCode());
+        command.AddParameter(pName, (int)@event.EventType.Hash);
 
         pName = "@evn" + eventIndex;
         sb.Append(pName);
@@ -370,13 +370,13 @@ sealed partial class EventStore(
                 pName = "@tg" + eventIndex + 'h' + suffix;
                 sb.Append(pName);
                 sb.Append(',');
-                command.AddParameter(pName, tag.GetHashCode());
+                command.AddParameter(pName, (long)tag.Hash);
 
                 // names
                 pName = "@tg" + eventIndex + 'n' + suffix;
                 sbNames.Append(pName);
                 sbNames.Append(',');
-                command.AddParameter(pName, tag.ToString() ?? string.Empty);
+                command.AddParameter(pName, tag.Value);
             }
 
             sbNames.Length -= 1; // drop last symbol ','
@@ -397,7 +397,7 @@ sealed partial class EventStore(
 
     static void AppendAfterPosition(ref ValueStringBuilder sb, EventPosition afterPosition, NpgsqlCommand command)
     {
-        command.AddParameter(COMMAND_PARAMETER_NAME_AFTER, afterPosition.Value);
+        command.AddParameter(COMMAND_PARAMETER_NAME_AFTER, (long)afterPosition.Value);
 
         sb.Append(COMMAND_PARAMETER_NAME_AFTER);
     }
@@ -435,7 +435,7 @@ sealed partial class EventStore(
 
                 sb.Append(pName);
                 sb.Append(',');
-                command.AddParameter(pName, eventType.GetHashCode());
+                command.AddParameter(pName, (int)eventType.Hash);
 
                 // names
                 pName = "@qev" + eventIndex + 'n' + suffix;
@@ -454,7 +454,7 @@ sealed partial class EventStore(
 
             if (eventTypes.Count == 0)
             {
-                sb.Append("::dcb_event_type_hash[]");
+                sb.Append("::integer[]");
             }
 
             sb.Append(", array[");
@@ -463,7 +463,7 @@ sealed partial class EventStore(
 
             if (eventTypes.Count == 0)
             {
-                sb.Append("::dcb_event_type_name[]");
+                sb.Append("::varchar[]");
             }
 
             sbNames.Length = 0;
@@ -482,13 +482,13 @@ sealed partial class EventStore(
 
                 sb.Append(pName);
                 sb.Append(',');
-                command.AddParameter(pName, tag.GetHashCode());
+                command.AddParameter(pName, (long)tag.Hash);
 
                 // names
                 pName = "@qtg" + eventIndex + 'n' + suffix;
                 sbNames.Append(pName);
                 sbNames.Append(',');
-                command.AddParameter(pName, tag.ToString() ?? string.Empty);
+                command.AddParameter(pName, tag.Value);
             }
 
             if (tags.Count != 0)
@@ -501,7 +501,7 @@ sealed partial class EventStore(
 
             if (tags.Count == 0)
             {
-                sb.Append("::dcb_event_tag_hash[]");
+                sb.Append("::bigint[]");
             }
 
             sb.Append(", array[");
@@ -510,7 +510,7 @@ sealed partial class EventStore(
 
             if (tags.Count == 0)
             {
-                sb.Append("::dcb_event_tag_name[]");
+                sb.Append("::varchar[]");
             }
 
             sb.Append("),");

@@ -2,16 +2,15 @@
 
 -- DROP TABLE IF EXISTS dcb_events;
 
---- IDENTITY - cached in each new session, so unavoidable ones are missed
 CREATE TABLE IF NOT EXISTS dcb_events
 (
-    "position" dcb_event_position NOT NULL,
-    timestamp_utc dcb_event_timestamp NOT NULL,
-    type_hash dcb_event_type_hash NOT NULL,
-    type_name dcb_event_type_name COLLATE pg_catalog."C.utf8" NOT NULL,
-    tag_hashes dcb_event_tag_hash[],
-    tag_names dcb_event_tag_name[] COLLATE pg_catalog."C.utf8",
-	payload dcb_event_payload
+    "position" bigint NOT NULL,
+    timestamp_utc timestamp NOT NULL,
+    type_hash integer NOT NULL,
+    type_name varchar(30) COLLATE pg_catalog."C.utf8" NOT NULL,
+    tag_hashes bigint[],
+    tag_names varchar[] COLLATE pg_catalog."C.utf8",
+	payload bytea
 );
 
 -- Index: ix_dcb_events_position
@@ -24,21 +23,21 @@ CREATE INDEX IF NOT EXISTS ix_dcb_events_position
     WITH (pages_per_range=128, autosummarize=False);
 
 
--- FUNCTION: read_events(dcb_event_position, dcb_query_item[])
+-- FUNCTION: read_events(bigint, dcb_query_item[])
 
--- DROP FUNCTION IF EXISTS read_events(dcb_event_position, dcb_query_item[]);
+-- DROP FUNCTION IF EXISTS read_events(bigint, dcb_query_item[]);
 
 CREATE OR REPLACE FUNCTION read_events(
-	p_after_position dcb_event_position,
+	p_after_position bigint,
 	VARIADIC p_fail_if_match dcb_query_item[])
 	RETURNS TABLE (
-	    "position" dcb_event_position,
-	    timestamp_utc dcb_event_timestamp,
-	    type_hash dcb_event_type_hash,
-	    type_name dcb_event_type_name,
-	    tag_hashes dcb_event_tag_hash[],
-	    tag_names dcb_event_tag_name[],
-	    payload dcb_event_payload
+	    "position" bigint,
+	    timestamp_utc timestamp,
+	    type_hash integer,
+	    type_name varchar,
+	    tag_hashes bigint[],
+	    tag_names varchar[],
+	    payload bytea
 	)
     LANGUAGE 'plpgsql'
     COST 100
@@ -46,10 +45,10 @@ CREATE OR REPLACE FUNCTION read_events(
     ROWS 1000
 
 AS $BODY$DECLARE
-	TEMPLATE_TYPES_HASHES CONSTANT text := 'e.type_hash = ANY($2[%1$s].type_hashes::dcb_event_type_hash[])';
-	TEMPLATE_TAGS_HASHES CONSTANT text := 'e.tag_hashes @> $2[%1$s].tag_hashes::dcb_event_tag_hash[]';
-	TEMPLATE_TYPES_NAMES CONSTANT text := 'e.type_name = ANY($2[%1$s].type_names::dcb_event_type_name[])';
-	TEMPLATE_TAGS_NAMES CONSTANT text := 'e.tag_names @> $2[%1$s].tag_names::dcb_event_tag_name[]';
+	TEMPLATE_TYPES_HASHES CONSTANT text := 'e.type_hash = ANY($2[%1$s].type_hashes::integer[])';
+	TEMPLATE_TAGS_HASHES CONSTANT text := 'e.tag_hashes @> $2[%1$s].tag_hashes::bigint[]';
+	TEMPLATE_TYPES_NAMES CONSTANT text := 'e.type_name = ANY($2[%1$s].type_names::varchar[])';
+	TEMPLATE_TAGS_NAMES CONSTANT text := 'e.tag_names @> $2[%1$s].tag_names::varchar[]';
 	
 	execute_statement text;
 BEGIN
@@ -71,9 +70,9 @@ END;$BODY$;
 
 CREATE OR REPLACE FUNCTION append_event(
 	p_event dcb_event_raw,
-	p_after_position dcb_event_position,
+	p_after_position bigint,
 	VARIADIC p_fail_if_match dcb_query_item[])
-    RETURNS TABLE("position" dcb_event_position) 
+    RETURNS TABLE("position" bigint) 
     LANGUAGE 'plpgsql'
     COST 100
     VOLATILE PARALLEL UNSAFE
@@ -81,10 +80,10 @@ CREATE OR REPLACE FUNCTION append_event(
 
 AS $BODY$
 DECLARE
-	TEMPLATE_TYPES_HASHES CONSTANT text := 'e.type_hash = ANY($2[%1$s].type_hashes::dcb_event_type_hash[])';
-	TEMPLATE_TAGS_HASHES CONSTANT text := 'e.tag_hashes @> $2[%1$s].tag_hashes::dcb_event_tag_hash[]';
-	TEMPLATE_TYPES_NAMES CONSTANT text := 'e.type_name = ANY($2[%1$s].type_names::dcb_event_type_name[])';
-	TEMPLATE_TAGS_NAMES CONSTANT text := 'e.tag_names @> $2[%1$s].tag_names::dcb_event_tag_name[]';
+	TEMPLATE_TYPES_HASHES CONSTANT text := 'e.type_hash = ANY($2[%1$s].type_hashes::integer[])';
+	TEMPLATE_TAGS_HASHES CONSTANT text := 'e.tag_hashes @> $2[%1$s].tag_hashes::bigint[]';
+	TEMPLATE_TYPES_NAMES CONSTANT text := 'e.type_name = ANY($2[%1$s].type_names::varchar[])';
+	TEMPLATE_TAGS_NAMES CONSTANT text := 'e.tag_names @> $2[%1$s].tag_names::varchar[]';
 
 	ins_statement text;
 
@@ -93,7 +92,7 @@ DECLARE
 	total_wait_sec real := 0;
 BEGIN
 	ins_statement := 'INSERT INTO dcb_events("position", timestamp_utc, type_hash, type_name, tag_hashes, tag_names, payload) '
-	   'SELECT 0::dcb_event_position, $3.timestamp_utc::dcb_event_timestamp, $3.type_hash::dcb_event_type_hash, $3.type_name::dcb_event_type_name, $3.tag_hashes::dcb_event_tag_hash[], $3.tag_names::dcb_event_tag_name[], $3.payload::dcb_event_payload '
+	   'SELECT 0::bigint, $3.timestamp_utc::timestamp, $3.type_hash::integer, $3.type_name::varchar, $3.tag_hashes::bigint[], $3.tag_names::varchar[], $3.payload::bytea '
 	   'WHERE NOT EXISTS (SELECT 1 FROM dcb_events e WHERE e.position > $1 AND (' || string_agg(
 			concat_ws(' AND ',
 				(SELECT CASE WHEN types_count IS NOT NULL THEN format(TEMPLATE_TYPES_HASHES, i) ELSE 'type_hash IS NOT NULL' END),
@@ -124,9 +123,9 @@ $BODY$;
 
 CREATE OR REPLACE FUNCTION append_events(
 	p_events dcb_event_raw[],
-	p_after_position dcb_event_position,
+	p_after_position bigint,
 	VARIADIC p_fail_if_match dcb_query_item[])
-    RETURNS TABLE("position" dcb_event_position) 
+    RETURNS TABLE("position" bigint) 
     LANGUAGE 'plpgsql'
     COST 100
     VOLATILE PARALLEL UNSAFE
@@ -134,12 +133,12 @@ CREATE OR REPLACE FUNCTION append_events(
 
 AS $BODY$
 DECLARE
-	TEMPLATE_TYPES_HASHES CONSTANT text := 'e.type_hash = ANY($2[%1$s].type_hashes::dcb_event_type_hash[])';
-	TEMPLATE_TAGS_HASHES CONSTANT text := 'e.tag_hashes @> $2[%1$s].tag_hashes::dcb_event_tag_hash[]';
-	TEMPLATE_TYPES_NAMES CONSTANT text := 'e.type_name = ANY($2[%1$s].type_names::dcb_event_type_name[])';
-	TEMPLATE_TAGS_NAMES CONSTANT text := 'e.tag_names @> $2[%1$s].tag_names::dcb_event_tag_name[]';
+	TEMPLATE_TYPES_HASHES CONSTANT text := 'e.type_hash = ANY($2[%1$s].type_hashes::integer[])';
+	TEMPLATE_TAGS_HASHES CONSTANT text := 'e.tag_hashes @> $2[%1$s].tag_hashes::bigint[]';
+	TEMPLATE_TYPES_NAMES CONSTANT text := 'e.type_name = ANY($2[%1$s].type_names::varchar[])';
+	TEMPLATE_TAGS_NAMES CONSTANT text := 'e.tag_names @> $2[%1$s].tag_names::varchar[]';
 
-	TEMPLATE_INSERT CONSTANT text := '(0::dcb_event_position, $3[%1$s].timestamp_utc::dcb_event_timestamp, $3[%1$s].type_hash::dcb_event_type_hash, $3[%1$s].type_name::dcb_event_type_name, $3[%1$s].tag_hashes::dcb_event_tag_hash[], $3[%1$s].tag_names::dcb_event_tag_name[], $3[%1$s].payload::dcb_event_payload)::dcb_event';
+	TEMPLATE_INSERT CONSTANT text := '(0::bigint, $3[%1$s].timestamp_utc::timestamp, $3[%1$s].type_hash::integer, $3[%1$s].type_name::varchar, $3[%1$s].tag_hashes::bigint[], $3[%1$s].tag_names::varchar[], $3[%1$s].payload::bytea)::dcb_event';
 	ins_statement text;
 
 	MAX_LOCK_TIME_OUT_SEC CONSTANT real := 15;
@@ -186,7 +185,7 @@ $BODY$;
 
 CREATE TABLE IF NOT EXISTS dcb_positions
 (
-    last_position dcb_event_position NOT NULL
+    last_position bigint NOT NULL
 );
 
 -- FUNCTION: update_event_position()

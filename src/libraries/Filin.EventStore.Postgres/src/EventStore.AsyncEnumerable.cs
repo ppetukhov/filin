@@ -86,7 +86,7 @@ sealed partial class EventStore
 
                             var afterParam = command.Parameters[COMMAND_PARAMETER_NAME_AFTER];
 
-                            afterParam.Value = Current.Position.Value;
+                            afterParam.Value = (long)Current.Position.Value;
 
                             reader = await GetReaderAsync().ConfigureAwait(false);
 
@@ -105,7 +105,7 @@ sealed partial class EventStore
 
                     ordinals = _ordinals ??= Ordinals.CreateOrdinals(reader);
 
-                    position = new EventPosition((uint)reader.GetInt64(ordinals.Position));
+                    position = new EventPosition((ulong)reader.GetInt64(ordinals.Position));
 
                     Debug.Assert(position > Current.Position);
 
