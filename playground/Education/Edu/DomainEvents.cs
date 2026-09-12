@@ -1,7 +1,5 @@
 using Filin;
 
-using static Edu.DomainEvents;
-
 namespace Edu;
 
 static partial class DomainEvents
@@ -36,48 +34,3 @@ static partial class DomainEvents
     }
 }
 
-public static class EduEventsToDcbEventExtensions
-{
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    internal static DcbEvent ToDcbEvent(this V1.CourseCreated evt, TagCollection tags) => new DcbEvent
-    {
-        EventType = evt.GetEventType(),
-        Data = evt,
-        Timestamp = DateTimeOffset.UtcNow,
-        Tags = tags is { IsEmpty: false } ? [.. tags, .. evt.GetTags()] : evt.GetTags()
-    };
-
-    internal static DcbEvent ToDcbEvent(this V1.CourseCreated evt, IWithQueryTags withQuery) => evt.ToDcbEvent(withQuery, DateTimeOffset.UtcNow);
-
-    internal static DcbEvent ToDcbEvent(this V1.CourseCreated evt, IWithQueryTags withQuery, DateTimeOffset timestamp)
-    {
-        throw new NotImplementedException();
-    }
-
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    internal static DcbEvent ToDcbEvent(this V1.CourseRenamed evt, TagCollection tags) => new DcbEvent
-    {
-        EventType = evt.GetEventType(),
-        Data = evt,
-        Timestamp = DateTimeOffset.UtcNow,
-        Tags = tags is { IsEmpty: false } ? [.. tags, .. evt.GetTags()] : evt.GetTags()
-    };
-
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    internal static DcbEvent ToDcbEvent(this V1.CourseCapacityChanged evt) => new DcbEvent
-    {
-        EventType = evt.GetEventType(),
-        Data = evt,
-        Timestamp = DateTimeOffset.UtcNow,
-        Tags = evt.GetTags()
-    };
-
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    internal static DcbEvent ToDcbEvent(this V1.StudentSubscribed evt, TagCollection tags) => new DcbEvent
-    {
-        EventType = evt.GetEventType(),
-        Data = evt,
-        Timestamp = DateTimeOffset.UtcNow,
-        Tags = tags is { IsEmpty: false } ? [.. tags, .. evt.GetTags()] : evt.GetTags()
-    };
-}

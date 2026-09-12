@@ -23,6 +23,11 @@ static class Constants
     public const string DefaultEventTypeExtensionsClassName = "EventTypeExtensions";
 
     /// <summary>
+    /// Default value is <c>EventTypeToDcbEventExtensions</c>.
+    /// </summary>
+    public const string DefaultEventTypeToDcbEventExtensionsClassName = "EventTypeToDcbEventExtensions";
+
+    /// <summary>
     /// Default value is <c>GetEventType</c>.
     /// </summary>
     public const string DefaultGetEventTypeMethod = "GetEventType";
@@ -63,6 +68,11 @@ static class Constants
     public const string DefaultTagExtensionsClassName = "TagExtensions";
 
     /// <summary>
+    /// Default value is <c>ToDcbEvent</c>.
+    /// </summary>
+    public const string DefaultToDcbEventMethod = "ToDcbEvent";
+
+    /// <summary>
     /// Value is <c>Filin.EventTagAttribute</c>.
     /// </summary>
     public const string EventTagAttribute = "Filin.EventTagAttribute";
@@ -76,6 +86,11 @@ static class Constants
     /// Value is <c>global::Filin.EventType</c>.
     /// </summary>
     public const string EventTypeTypeFullName = "global::Filin.EventType";
+
+    /// <summary>
+    /// Value is <c>global::Filin.DcbEvent</c>.
+    /// </summary>
+    public const string DcbEventTypeFullName = "global::Filin.DcbEvent";
 
     /// <summary>
     /// Value is <c>@</c>.

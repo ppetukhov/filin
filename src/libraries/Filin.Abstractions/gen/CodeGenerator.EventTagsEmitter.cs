@@ -19,8 +19,6 @@ partial class CodeGenerator
 {
     sealed class EventTagsEmitter(TypeDefinitions typeDefinitions, GenerationOptions options)
     {
-        static readonly TypeSyntax ReturnTagTypeCollectionsSyntax = ParseTypeName(Constants.TagCollectionFullName);
-
         readonly SyntaxToken GetTagMethodIdentifierToken = Identifier(options.GetTagMethod);
         readonly SyntaxToken GetTagsMethodIdentifierToken = Identifier(options.GetTagsMethod);
         readonly FileScopedNamespaceDeclarationSyntax NamespaceSyntax = FileScopedNamespaceDeclaration(ParseName(options.EmittingNamespace));
@@ -185,7 +183,7 @@ partial class CodeGenerator
             return MethodDeclaration(
                 attributeLists: SingletonList(Emitter.AggressiveInliningAttributeSyntax),
                 modifiers: TokenList(Token(Emitter.MethodAccessibility(targetType.Accessibility)), Token(SyntaxKind.StaticKeyword)),
-                returnType: ReturnTagTypeCollectionsSyntax,
+                returnType: Emitter.TagCollectionTypeSyntax,
                 explicitInterfaceSpecifier: null,
                 identifier: GetTagsMethodIdentifierToken,
                 typeParameterList: default,
@@ -209,7 +207,7 @@ partial class CodeGenerator
                 return [MethodDeclaration(
                     attributeLists: SingletonList(Emitter.AggressiveInliningAttributeSyntax),
                     modifiers: TokenList(Token(SyntaxKind.PublicKeyword)),
-                    returnType: ReturnTagTypeCollectionsSyntax,
+                    returnType: Emitter.TagCollectionTypeSyntax,
                     explicitInterfaceSpecifier: null,
                     identifier: GetTagsMethodIdentifierToken,
                     typeParameterList: default,

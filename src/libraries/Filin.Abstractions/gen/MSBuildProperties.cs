@@ -16,6 +16,11 @@ static class MSBuildProperties
     public const string EventTypeExtensionsClassName = $"FilinEventTypeExtensionsClassName";
 
     /// <summary>
+    /// The MSBuild property for <see cref="GenerationOptions.EventTypeToDcbEventExtensionsClassName"/>
+    /// </summary>
+    public const string EventTypeToDcbEventExtensionsClassName = $"FilinEventTypeToDcbEventExtensionsClassName";
+
+    /// <summary>
     /// The MSBuild property for <see cref="GenerationOptions.GetEventTypeMethod" path="/summary"/>
     /// </summary>
     public const string GetEventTypeMethod = $"FilinGetEventTypeMethod";

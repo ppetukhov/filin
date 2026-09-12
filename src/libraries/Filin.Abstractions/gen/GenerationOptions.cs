@@ -1,6 +1,6 @@
-using Microsoft.CodeAnalysis.Diagnostics;
-
 using Filin.Generators.Extensions;
+
+using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Filin.Generators;
 
@@ -15,6 +15,11 @@ sealed record GenerationOptions
     /// EventType extensions classname. <inheritdoc cref="Constants.DefaultEventTypeExtensionsClassName" path="/summary"/>
     /// </summary>
     public string EventTypeExtensionsClassName { get; init; } = Constants.DefaultEventTypeExtensionsClassName;
+
+    /// <summary>
+    /// EventTypeToDcbEvent extensions classname. <inheritdoc cref="Constants.DefaultEventTypeToDcbEventExtensionsClassName" path="/summary"/>
+    /// </summary>
+    public string EventTypeToDcbEventExtensionsClassName { get; init; } = Constants.DefaultEventTypeToDcbEventExtensionsClassName;
 
     /// <summary>
     /// Getting Tag method. <inheritdoc cref="Constants.DefaultGetEventTypeMethod" path="/summary"/>
@@ -40,6 +45,11 @@ sealed record GenerationOptions
     /// Getting Tags method. <inheritdoc cref="Constants.DefaultGetTagsMethod" path="/summary"/>
     /// </summary>
     public string GetTagsMethod { get; init; } = Constants.DefaultGetTagsMethod;
+
+    /// <summary>
+    /// Getting ToDcbEvent method. <inheritdoc cref="Constants.DefaultToDcbEventMethod" path="/summary"/>
+    /// </summary>
+    public string ToDcbEventMethod { get; init; } = Constants.DefaultToDcbEventMethod;
 
     /// <summary>
     /// Getting ProjectorId property. <inheritdoc cref="Constants.DefaultProjectorIdProperty" path="/summary"/>
@@ -75,6 +85,11 @@ sealed record GenerationOptions
         if (options.TryGetStringValueMSBuildProperty(MSBuildProperties.EventTypeExtensionsClassName, out var eventTypeExtensionsClassName))
         {
             opt = opt with { EventTypeExtensionsClassName = eventTypeExtensionsClassName! };
+        }
+
+        if (options.TryGetStringValueMSBuildProperty(MSBuildProperties.EventTypeToDcbEventExtensionsClassName, out var eventTypeToDcbEventExtensionsClassName))
+        {
+            opt = opt with { EventTypeToDcbEventExtensionsClassName = eventTypeToDcbEventExtensionsClassName! };
         }
 
         if (options.TryGetStringValueMSBuildProperty(MSBuildProperties.GetQueryMethod, out var getQueryMethod))

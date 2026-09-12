@@ -1,9 +1,9 @@
 using System.Collections.Immutable;
 
-using Microsoft.CodeAnalysis;
-
 using Filin.Generators.Specs.Members;
 using Filin.Generators.Specs.Types;
+
+using Microsoft.CodeAnalysis;
 
 namespace Filin.Generators;
 
@@ -24,13 +24,15 @@ public sealed partial class CodeGenerator : IIncrementalGenerator
 
         var typeDefsAndOptions = context.CompilationProvider.Select(static (x, _) => new TypeDefinitions(x)).Combine(generationOptions);
 
-        var eventTypes = EventTypesParser.ParseEventTypes(context.SyntaxProvider);
+        var eventTypes = EventTypesParser.ParseEventTypes(context.SyntaxProvider).Collect();
 
-        context.RegisterSourceOutput(eventTypes.Collect().Combine(typeDefsAndOptions), EmitEventTypes);
+        context.RegisterSourceOutput(eventTypes.Combine(typeDefsAndOptions), EmitEventTypes);
 
-        var eventTags = EventTagsParser.ParseEventTags(context.SyntaxProvider);
+        var eventTags = EventTagsParser.ParseEventTags(context.SyntaxProvider).Collect();
 
-        context.RegisterImplementationSourceOutput(eventTags.Collect().Combine(typeDefsAndOptions), EmitEventTags);
+        context.RegisterImplementationSourceOutput(eventTags.Combine(typeDefsAndOptions), EmitEventTags);
+
+        context.RegisterImplementationSourceOutput(eventTypes.Combine(eventTags).Combine(typeDefsAndOptions), EmitDcbEvents);
 
         var queries = QueryParser.ParseQueries(context.SyntaxProvider);
 
@@ -65,6 +67,18 @@ public sealed partial class CodeGenerator : IIncrementalGenerator
             var emitter = new EventTypesEmitter(typeDefinitions, options);
 
             emitter.EmitEventTypes(context, items);
+        }
+    }
+
+    void EmitDcbEvents(SourceProductionContext context, ((ImmutableArray<EventType>, ImmutableArray<EventTag>), (TypeDefinitions, GenerationOptions)) input)
+    {
+        var ((items, eventTags), (_, options)) = input;
+
+        if (!items.IsDefaultOrEmpty)
+        {
+            var emitter = new DcbEventEmitter(options);
+
+            emitter.Emit(context, items, eventTags);
         }
     }
 

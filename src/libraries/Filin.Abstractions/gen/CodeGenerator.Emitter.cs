@@ -2,12 +2,12 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 
+using Filin.Generators.Extensions;
+using Filin.Generators.Specs.Types;
+
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-
-using Filin.Generators.Extensions;
-using Filin.Generators.Specs.Types;
 
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
@@ -43,6 +43,11 @@ partial class CodeGenerator
         /// EventTypesGenerated
         /// </summary>
         internal static readonly IdentifierNameSyntax EventTypesGeneratedNameSyntax = IdentifierName(EventTypesGeneratedToken);
+
+        internal static readonly TypeSyntax DcbEventTypeSyntax = ParseTypeName(Constants.DcbEventTypeFullName);
+        internal static readonly TypeSyntax DateTimeOffsetTypeSyntax = ParseTypeName("global::System.DateTimeOffset");
+        internal static readonly TypeSyntax IWithQueryTagsTypeSyntax = ParseTypeName(Constants.IWithQueryTags);
+        internal static readonly TypeSyntax TagCollectionTypeSyntax = ParseTypeName(Constants.TagCollectionFullName);
 
         /// <summary>
         /// QueriesGenerated

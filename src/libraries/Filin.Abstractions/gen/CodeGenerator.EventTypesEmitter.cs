@@ -2,12 +2,12 @@ using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using System.Text;
 
+using Filin.Generators.Extensions;
+
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
-
-using Filin.Generators.Extensions;
 
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
@@ -75,7 +75,7 @@ partial class CodeGenerator
 
             var methodsMembers = new List<MemberDeclarationSyntax>(capacity: eventTypes.Length);
 
-            foreach (var (fieldName, targetType, _, _) in eventTypes.OrderBy(static x => x.TargetType.FullName, StringComparer.Ordinal).Distinct(EventTypeTargetTypeFullNameComparer.Instance))
+            foreach (var (fieldName, targetType, _, _) in eventTypes.OrderBy(static x => x.TargetType.FullName, StringComparer.Ordinal).Distinct(EventTypeNameComparer.Instance))
             {
                 ctx.CancellationToken.ThrowIfCancellationRequested();
 
@@ -131,14 +131,5 @@ partial class CodeGenerator
                 body: null,
                 expressionBody: ArrowExpressionClause(Emitter.EventTypesGeneratedNameSyntax.Member(fieldName)),
                 semicolonToken: Token(SyntaxKind.SemicolonToken));
-
-        sealed class EventTypeTargetTypeFullNameComparer : IEqualityComparer<EventType>
-        {
-            internal static readonly EventTypeTargetTypeFullNameComparer Instance = new EventTypeTargetTypeFullNameComparer();
-
-            public bool Equals(EventType x, EventType y) => string.Equals(x.TargetType.FullName, y.TargetType.FullName, StringComparison.Ordinal);
-
-            public int GetHashCode(EventType obj) => obj.TargetType.FullName.GetHashCode();
-        }
     }
 }
