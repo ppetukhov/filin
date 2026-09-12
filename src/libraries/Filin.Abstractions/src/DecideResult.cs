@@ -103,7 +103,6 @@ public readonly struct DecideResult
         }
     }
 
-
     [MemberNotNullWhen(true, nameof(_value))]
     public bool IsSuccess => _errorMessage is null && _value is not null;
 
@@ -132,7 +131,7 @@ public readonly struct DecideResult
 
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Enumerator<DcbEvent> GetEnumerator() =>
+    public Enumerator GetEnumerator() =>
         _value switch
         {
             DcbEvent evt => new(evt),
@@ -181,4 +180,75 @@ public readonly struct DecideResult
     public static implicit operator DecideResult(Error error) => new(error.Code, error.Message);
 
     public static implicit operator DecideResult((string Code, string Message) error) => new(error.Code, error.Message);
+
+    /// <summary>
+    /// Provides a high-performance, stack-only enumerator over a collection.
+    /// </summary>
+    public ref struct Enumerator
+    {
+        readonly int _length;
+        int _index;
+        readonly DcbEvent? _single;
+        readonly ReadOnlySpan<DcbEvent> _span;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal Enumerator(DcbEvent value)
+        {
+            _single = value;
+            _length = 1;
+            _index = -1;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal Enumerator(ReadOnlySpan<DcbEvent> values)
+        {
+            _span = values;
+            _length = values.Length;
+            _index = -1;
+        }
+
+        /// <summary>
+        /// Advances the enumerator to the next element of the collection.
+        /// </summary>
+        /// <returns>
+        /// <see langword="true"/> if the enumerator was successfully advanced to the next element;
+        /// <see langword="false"/> if the enumerator has passed the end of the collection.
+        /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool MoveNext()
+        {
+            int nextIndex = _index + 1;
+
+            if (nextIndex < _length)
+            {
+                _index = nextIndex;
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <inheritdoc cref="IEnumerator{T}.Current"/>
+        public readonly DcbEvent Current
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                if (_index < 0 || _index >= _length)
+                {
+                    ThrowInvalidOperationException();
+                }
+
+                return _single is not null ? _single : _span[_index];
+            }
+        }
+
+        /// <summary>
+        /// Non-inlined helper method containing the exception throwing logic.
+        /// This keeps the main 'get' property hot-path small and eligible for aggressive CPU inlining.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        [DoesNotReturn]
+        static void ThrowInvalidOperationException() => throw new InvalidOperationException("DecideResult.Enumerator.Current value has not been set.");
+    }
 }
