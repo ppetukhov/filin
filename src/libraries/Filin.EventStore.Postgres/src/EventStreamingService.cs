@@ -20,7 +20,7 @@ sealed class EventStreamingService(
     IOptions<EventStorePostgresOptions> options,
     ILoggerFactory loggerFactory) : BackgroundService
 {
-    readonly ILogger _logger = loggerFactory.CreateLogger("Filin.Streaming.Postgres");
+    readonly ILogger _logger = loggerFactory.CreateLogger("Filin.EventStore.Postgres.Streaming");
     readonly LinkedList<WeakReference<EventStore.StreamAsyncEnumerator>> _weakConsumers = new();
 
     (QueryStatus Status, DcbQuery Query) _query = (QueryStatus.None, default);
