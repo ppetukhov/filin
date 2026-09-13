@@ -16,7 +16,7 @@ sealed partial class ActiveCoursesProjector : IProjector<ActiveCourses>
 {
     /// <inheritdoc/>
     public static ActiveCourses Project(DcbEventSequenced domainEvent) =>
-        domainEvent.Event.Data switch
+        domainEvent.Event.Payload switch
         {
             V1.CourseCreated evt => Add(evt.CourseId, evt.Name),
             V1.CourseRenamed evt => Add(evt.CourseId, evt.NewName),
@@ -25,7 +25,7 @@ sealed partial class ActiveCoursesProjector : IProjector<ActiveCourses>
 
     /// <inheritdoc/>
     public static ActiveCourses Project(ActiveCourses state, DcbEventSequenced domainEvent) =>
-        domainEvent.Event.Data switch
+        domainEvent.Event.Payload switch
         {
             V1.CourseCreated evt => Upsert(state, evt.CourseId, evt.Name),
             V1.CourseRenamed evt => Upsert(state, evt.CourseId, evt.NewName),

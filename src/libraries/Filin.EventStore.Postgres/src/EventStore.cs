@@ -358,7 +358,7 @@ sealed partial class EventStore(
         pName = "@pl" + eventIndex;
         sb.Append(pName);
         sb.Append("::json)::dcb_event");
-        command.AddParameter(pName, Encoding.UTF8.GetString(serializer.Serialize(@event.Data)));
+        command.AddParameter(pName, Encoding.UTF8.GetString(serializer.Serialize(@event.Payload)));
 
         sbNames.Dispose();
     }
@@ -495,7 +495,7 @@ sealed partial class EventStore(
     static DcbEventSequenced InitialEnumeratorEvent(EventPosition afterPosition) => new(afterPosition, default, new DcbEvent
     {
         EventType = default,
-        Data = new object()
+        Payload = new object()
     });
 
     static DcbEventStoreException EventStoreException(Exception ex) => new(message: ex.Message, innerException: ex);

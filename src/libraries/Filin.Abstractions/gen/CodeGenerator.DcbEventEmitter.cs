@@ -181,13 +181,13 @@ partial class CodeGenerator
                                     ),
                                     AssignmentExpression(
                                         SyntaxKind.SimpleAssignmentExpression,
-                                        IdentifierName("Data"),
-                                        IdentifierName(Identifier("evt"))
+                                        IdentifierName("Tags"),
+                                        tagsExpr
                                     ),
                                     AssignmentExpression(
                                         SyntaxKind.SimpleAssignmentExpression,
-                                        IdentifierName("Tags"),
-                                        tagsExpr
+                                        IdentifierName("Payload"),
+                                        IdentifierName(Identifier("evt"))
                                     )
                                 ]
                             )

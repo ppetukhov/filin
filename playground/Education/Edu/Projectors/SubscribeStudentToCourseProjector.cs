@@ -15,7 +15,7 @@ namespace Edu.Projectors;
 sealed partial class SubscribeStudentToCourseProjector : IProjector<StudentCourseSubscriptionState>
 {
     public static StudentCourseSubscriptionState Project(DcbEventSequenced domainEvent) =>
-        domainEvent.Event.Data switch
+        domainEvent.Event.Payload switch
         {
             V1.CourseCreated evt => Create(evt),
             V1.StudentRegistered evt => Create(evt),
@@ -23,7 +23,7 @@ sealed partial class SubscribeStudentToCourseProjector : IProjector<StudentCours
         };
 
     public static StudentCourseSubscriptionState Project(StudentCourseSubscriptionState state, DcbEventSequenced domainEvent) =>
-        domainEvent.Event.Data switch
+        domainEvent.Event.Payload switch
         {
             V1.CourseCreated evt => Update(state, evt),
             V1.StudentRegistered evt => Update(state, evt),

@@ -16,5 +16,5 @@ public sealed record DcbEvent
     /// <summary>
     /// Gets the payload containing the core data of the domain event.
     /// </summary>
-    public required object Data { get; init; }
+    public required object Payload { get; init; }
 }

@@ -67,6 +67,6 @@ sealed record PgEventPayload
             tags = default;
         }
 
-        return new DcbEventSequenced(position, timestamp, new DcbEvent { EventType = eventType, Tags = tags, Data = NullData });
+        return new DcbEventSequenced(position, timestamp, new DcbEvent { EventType = eventType, Tags = tags, Payload = NullData });
     }
 }

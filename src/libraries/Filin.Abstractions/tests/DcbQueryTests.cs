@@ -165,7 +165,7 @@ public class DcbQueryTests
         {
             EventType = new EventType("CourseSubscribed"),
             Tags = new TagCollection(new Tag("course:777")),
-            Data = new object()
+            Payload = new object()
         };
 
         // Act & Assert
@@ -185,7 +185,7 @@ public class DcbQueryTests
         {
             EventType = new EventType("Updated"),
             Tags = new TagCollection(new Tag("course:222")),
-            Data = new object()
+            Payload = new object()
         };
 
         // Assert
@@ -204,7 +204,7 @@ public class DcbQueryTests
         {
             EventType = new EventType("Deleted"),
             Tags = new TagCollection(new Tag("course:999")),
-            Data = new object()
+            Payload = new object()
         };
 
         // Assert

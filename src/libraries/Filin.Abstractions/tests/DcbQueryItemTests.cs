@@ -97,7 +97,7 @@ public class DcbQueryItemTests
         {
             EventType = new EventType("CourseCapacityChanged"),
             Tags = new TagCollection(new Tag("a"), new Tag("b"), new Tag("c")),
-            Data = new object()
+            Payload = new object()
         };
 
         // Assert
