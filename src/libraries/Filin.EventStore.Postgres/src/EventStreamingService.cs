@@ -184,7 +184,7 @@ sealed class EventStreamingService(
                 case QueryStatus.Actual:
                     break;
                 case QueryStatus.NotActual:
-                    var builder = new HashSet<DcbQueryItem>();
+                    var builder = new List<DcbQueryItem>(capacity: _weakConsumers.Count);
 
                     var hasActiveConsumer = false;
                     var allowAnyEvent = false;
@@ -204,7 +204,7 @@ sealed class EventStreamingService(
                                     allowAnyEvent = true;
                                     break;
                                 }
-                                _ = builder.Add(item);
+                                builder.Add(item);
                             }
                         }
                         else
