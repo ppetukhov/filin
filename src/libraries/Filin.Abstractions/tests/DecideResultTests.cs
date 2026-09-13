@@ -5,7 +5,7 @@ public sealed class DecideResultTests
     [Fact]
     public void SubmissionEntry_Constructor_One_DcbEvent()
     {
-        var evt = new DcbEvent { EventType = new EventType("SomeEventType"), Timestamp = default, Data = new object() };
+        var evt = new DcbEvent { EventType = new EventType("SomeEventType"), Data = new object() };
 
         var result = new DecideResult(evt);
 
@@ -17,9 +17,9 @@ public sealed class DecideResultTests
     [Fact]
     public void SubmissionEntry_Constructor_Some_DcbEvents()
     {
-        var evt1 = new DcbEvent { EventType = new EventType("SomeEventType1"), Timestamp = default, Data = new object() };
-        var evt2 = new DcbEvent { EventType = new EventType("SomeEventType2"), Timestamp = default, Data = new object() };
-        var evt3 = new DcbEvent { EventType = new EventType("SomeEventType3"), Timestamp = default, Data = new object() };
+        var evt1 = new DcbEvent { EventType = new EventType("SomeEventType1"), Data = new object() };
+        var evt2 = new DcbEvent { EventType = new EventType("SomeEventType2"), Data = new object() };
+        var evt3 = new DcbEvent { EventType = new EventType("SomeEventType3"), Data = new object() };
 
         var result = new DecideResult(evt1, evt2, evt3);
 

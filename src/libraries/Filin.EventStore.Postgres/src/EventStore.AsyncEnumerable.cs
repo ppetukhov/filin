@@ -131,7 +131,7 @@ sealed partial class EventStore
                     var ex = new DcbEventStoreException("Corrupted event. Event data is null.");
                     ex.Data[nameof(DcbEvent.EventType)] = eventType;
                     ex.Data[nameof(DcbEvent.Data)] = null;
-                    ex.Data[nameof(DcbEvent.Timestamp)] = timestamp;
+                    ex.Data[nameof(DcbEventSequenced.Timestamp)] = timestamp;
                     ex.Data[nameof(DcbEventSequenced.Position)] = position;
 
                     logger.ErrorReadingEvents(exception: ex);
@@ -139,9 +139,9 @@ sealed partial class EventStore
                     throw ex;
                 }
 
-                var dcbEvent = new DcbEvent { EventType = eventType, Tags = tags, Timestamp = timestamp, Data = data };
+                var dcbEvent = new DcbEvent { EventType = eventType, Tags = tags, Data = data };
 
-                Current = new DcbEventSequenced(position, dcbEvent);
+                Current = new DcbEventSequenced(position, timestamp, dcbEvent);
             }
             catch (OperationCanceledException)
             {

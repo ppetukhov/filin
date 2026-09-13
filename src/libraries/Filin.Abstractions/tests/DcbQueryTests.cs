@@ -164,7 +164,6 @@ public class DcbQueryTests
         var evt = new DcbEvent
         {
             EventType = new EventType("CourseSubscribed"),
-            Timestamp = DateTimeOffset.UtcNow,
             Tags = new TagCollection(new Tag("course:777")),
             Data = new object()
         };
@@ -185,7 +184,6 @@ public class DcbQueryTests
         var evt = new DcbEvent
         {
             EventType = new EventType("Updated"),
-            Timestamp = DateTimeOffset.UtcNow,
             Tags = new TagCollection(new Tag("course:222")),
             Data = new object()
         };
@@ -205,7 +203,6 @@ public class DcbQueryTests
         var evt = new DcbEvent
         {
             EventType = new EventType("Deleted"),
-            Timestamp = DateTimeOffset.UtcNow,
             Tags = new TagCollection(new Tag("course:999")),
             Data = new object()
         };

@@ -84,6 +84,6 @@ sealed class StateManager<TState>(IEventStore eventStore,
         }
 
         metadata.Position = @event.Position;
-        metadata.Timestamp = @event.Event.Timestamp;
+        metadata.Timestamp = @event.Timestamp;
     }
 }

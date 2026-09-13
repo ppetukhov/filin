@@ -96,7 +96,6 @@ public class DcbQueryItemTests
         var evt = new DcbEvent
         {
             EventType = new EventType("CourseCapacityChanged"),
-            Timestamp = DateTimeOffset.UtcNow,
             Tags = new TagCollection(new Tag("a"), new Tag("b"), new Tag("c")),
             Data = new object()
         };

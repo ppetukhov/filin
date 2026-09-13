@@ -44,12 +44,10 @@ partial class CodeGenerator
                 ctx.CancellationToken.ThrowIfCancellationRequested();
 
                 toDcbEventExtentions.Add(CreateToDcbEvent_IWithQueryTags(targetType));
-                toDcbEventExtentions.Add(CreateToDcbEvent_IWithQueryTags_TimeStamp(targetType));
-                toDcbEventExtentions.Add(CreateToDcbEvent_Tags(targetType));
 
                 _ = evtTagsCount.TryGetValue(targetType.FullName, out var tagsCount);
 
-                toDcbEventExtentions.Add(CreateToDcbEvent_Tags_TimeStamp(targetType, tagsCount));
+                toDcbEventExtentions.Add(CreateToDcbEvent_Tags(targetType, tagsCount));
             }
 
             if (toDcbEventExtentions is { Count: 0 })
@@ -98,53 +96,6 @@ partial class CodeGenerator
                                 modifiers: default,
                                 Emitter.IWithQueryTagsTypeSyntax,
                                 Identifier("command"),
-                                null),
-                            Parameter(
-                                attributeLists: default,
-                                modifiers: default,
-                                Emitter.DateTimeOffsetTypeSyntax,
-                                Identifier("timestamp"),
-                                null)
-                        ]
-                    )
-                ),
-                body: null,
-                expressionBody: ArrowExpressionClause(
-                    InvocationExpression(
-                        IdentifierName(Identifier("evt")).Member(options.ToDcbEventMethod),
-                        ArgumentList()
-                            .AddArguments(
-                                Argument(InvocationExpression(IdentifierName("command").Member(options.GetTagsMethod))),
-                                Argument(IdentifierName("timestamp"))
-                            )
-                    )
-                ),
-                semicolonToken: Token(SyntaxKind.SemicolonToken));
-
-        // static DcbEvent ToDcbEvent(this V1.CourseCreated evt, IWithQueryTags command, DateTimeOffset timestamp) => evt.ToDcbEvent(command.GetTags(), timestamp);
-        MethodDeclarationSyntax CreateToDcbEvent_IWithQueryTags_TimeStamp(ObjectSpec targetType) =>
-            MethodDeclaration(
-                attributeLists: SingletonList(Emitter.AggressiveInliningAttributeSyntax),
-                modifiers: TokenList(Token(Emitter.MethodAccessibility(targetType.Accessibility)), Token(SyntaxKind.StaticKeyword)),
-                returnType: Emitter.DcbEventTypeSyntax,
-                explicitInterfaceSpecifier: null,
-                identifier: ToDcbEventMethodIdentifierToken,
-                typeParameterList: default,
-                constraintClauses: default,
-                parameterList: ParameterList(
-                    SeparatedList(
-                        [
-                            Parameter(
-                                attributeLists: default,
-                                modifiers: TokenList(Token(SyntaxKind.ThisKeyword)),
-                                ParseTypeName(targetType.FullName),
-                                Identifier("evt"),
-                                null),
-                            Parameter(
-                                attributeLists: default,
-                                modifiers: default,
-                                Emitter.IWithQueryTagsTypeSyntax,
-                                Identifier("command"),
                                 null)
                         ]
                     )
@@ -161,49 +112,8 @@ partial class CodeGenerator
                 ),
                 semicolonToken: Token(SyntaxKind.SemicolonToken));
 
-        // static DcbEvent ToDcbEvent(this {targetType} evt, TagCollection tags) => evt.ToDcbEvent(tags, DateTimeOffset.UtcNow);
-        MethodDeclarationSyntax CreateToDcbEvent_Tags(ObjectSpec targetType) =>
-            MethodDeclaration(
-                attributeLists: SingletonList(Emitter.AggressiveInliningAttributeSyntax),
-                modifiers: TokenList(Token(Emitter.MethodAccessibility(targetType.Accessibility)), Token(SyntaxKind.StaticKeyword)),
-                returnType: Emitter.DcbEventTypeSyntax,
-                explicitInterfaceSpecifier: null,
-                identifier: ToDcbEventMethodIdentifierToken,
-                typeParameterList: default,
-                constraintClauses: default,
-                parameterList: ParameterList(
-                    SeparatedList(
-                        [
-                            Parameter(
-                                attributeLists: default,
-                                modifiers: TokenList(Token(SyntaxKind.ThisKeyword)),
-                                ParseTypeName(targetType.FullName),
-                                Identifier("evt"),
-                                null),
-                            Parameter(
-                                attributeLists: default,
-                                modifiers: default,
-                                Emitter.TagCollectionTypeSyntax,
-                                Identifier("tags"),
-                                null)
-                        ]
-                    )
-                ),
-                body: null,
-                expressionBody: ArrowExpressionClause(
-                    InvocationExpression(
-                        IdentifierName(Identifier("evt")).Member(options.ToDcbEventMethod),
-                        ArgumentList()
-                            .AddArguments(
-                                Argument(IdentifierName("tags")),
-                                Argument(Emitter.DateTimeOffsetTypeSyntax.Member("UtcNow"))
-                            )
-                    )
-                ),
-                semicolonToken: Token(SyntaxKind.SemicolonToken));
-
-        // static DcbEvent ToDcbEvent(this {targetType} evt, TagCollection tags, DateTimeOffset timestamp)
-        MethodDeclarationSyntax CreateToDcbEvent_Tags_TimeStamp(ObjectSpec targetType, int tagsCount)
+        // static DcbEvent ToDcbEvent(this {targetType} evt, TagCollection tags)
+        MethodDeclarationSyntax CreateToDcbEvent_Tags(ObjectSpec targetType, int tagsCount)
         {
             // Tags = {tagsExpr}
             ExpressionSyntax tagsExpr = tagsCount switch
@@ -251,12 +161,6 @@ partial class CodeGenerator
                                 modifiers: default,
                                 Emitter.TagCollectionTypeSyntax,
                                 Identifier("tags"),
-                                null),
-                            Parameter(
-                                attributeLists: default,
-                                modifiers: default,
-                                Emitter.DateTimeOffsetTypeSyntax,
-                                Identifier("timestamp"),
                                 null)
                         ]
                     )
@@ -279,11 +183,6 @@ partial class CodeGenerator
                                         SyntaxKind.SimpleAssignmentExpression,
                                         IdentifierName("Data"),
                                         IdentifierName(Identifier("evt"))
-                                    ),
-                                    AssignmentExpression(
-                                        SyntaxKind.SimpleAssignmentExpression,
-                                        IdentifierName("Timestamp"),
-                                        IdentifierName(Identifier("timestamp"))
                                     ),
                                     AssignmentExpression(
                                         SyntaxKind.SimpleAssignmentExpression,

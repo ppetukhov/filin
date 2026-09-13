@@ -45,7 +45,6 @@ partial class CodeGenerator
         internal static readonly IdentifierNameSyntax EventTypesGeneratedNameSyntax = IdentifierName(EventTypesGeneratedToken);
 
         internal static readonly TypeSyntax DcbEventTypeSyntax = ParseTypeName(Constants.DcbEventTypeFullName);
-        internal static readonly TypeSyntax DateTimeOffsetTypeSyntax = ParseTypeName("global::System.DateTimeOffset");
         internal static readonly TypeSyntax IWithQueryTagsTypeSyntax = ParseTypeName(Constants.IWithQueryTags);
         internal static readonly TypeSyntax TagCollectionTypeSyntax = ParseTypeName(Constants.TagCollectionFullName);
 

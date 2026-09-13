@@ -57,14 +57,15 @@ sealed partial class EventStore(
                 return AppendResult.Conflict;
             }
 
-            var pos = new EventPosition((ulong)reader.GetInt64(reader.GetOrdinal(ColumnNames.Position)));
+            var position = new EventPosition((ulong)reader.GetInt64(reader.GetOrdinal(ColumnNames.Position)));
+            var timestamp = new DateTime(reader.GetDateTime(reader.GetOrdinal(ColumnNames.CreatedAt)).Ticks, DateTimeKind.Utc);
 
             if (_logger.IsEnabled(LogLevel.Debug))
             {
                 _logger.EventsAppended();
             }
 
-            return new(new DcbEventSequenced(pos, @event));
+            return new(new DcbEventSequenced(position, timestamp, @event));
         }
         catch (OperationCanceledException)
         {
@@ -120,15 +121,19 @@ sealed partial class EventStore(
                 await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
             }
 
-            var positions = new List<EventPosition>(capacity: count);
+            var positions = new List<(EventPosition, DateTimeOffset)>(capacity: count);
 
             using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
 
             var positionOrdinal = reader.GetOrdinal(ColumnNames.Position);
+            var createAtOrdinal = reader.GetOrdinal(ColumnNames.CreatedAt);
 
             while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
             {
-                positions.Add(new EventPosition((ulong)reader.GetInt64(positionOrdinal)));
+                var position = new EventPosition((ulong)reader.GetInt64(positionOrdinal));
+                var timestamp = new DateTime(reader.GetDateTime(createAtOrdinal).Ticks, DateTimeKind.Utc);
+
+                positions.Add((position, timestamp));
             }
 
             if (positions.Count == 0)
@@ -151,9 +156,9 @@ sealed partial class EventStore(
 
                 foreach (var evt in events)
                 {
-                    var pos = positions[i];
+                    var (position, timestamp) = positions[i];
 
-                    items[i] = new(pos, evt);
+                    items[i] = new(position, timestamp, evt);
                     i++;
                 }
 
@@ -487,10 +492,9 @@ sealed partial class EventStore(
         sbNames.Dispose();
     }
 
-    static DcbEventSequenced InitialEnumeratorEvent(EventPosition afterPosition) => new(afterPosition, new DcbEvent
+    static DcbEventSequenced InitialEnumeratorEvent(EventPosition afterPosition) => new(afterPosition, default, new DcbEvent
     {
         EventType = default,
-        Timestamp = default,
         Data = new object()
     });
 

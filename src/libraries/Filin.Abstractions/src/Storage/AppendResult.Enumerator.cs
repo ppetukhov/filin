@@ -15,7 +15,7 @@ public readonly partial struct AppendResult
         int _index = -1;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal Enumerator(DcbEvent value, EventPosition pos) => _single = new(pos, value);
+        internal Enumerator(EventPosition pos, DateTimeOffset ts, DcbEvent value) => _single = new(pos, ts, value);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal Enumerator(IReadOnlyList<DcbEventSequenced> values) => _values = values;

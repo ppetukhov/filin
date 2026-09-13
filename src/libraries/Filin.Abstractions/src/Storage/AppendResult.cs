@@ -19,6 +19,7 @@ public readonly partial struct AppendResult
 
     readonly object? _value; // Stores either a single DcbEvent or a IReadOnlyList<DcbEventSequenced> list.
     readonly EventPosition _pos;
+    readonly DateTimeOffset _ts;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AppendResult"/> struct with a single appended event.
@@ -31,6 +32,7 @@ public readonly partial struct AppendResult
 
         _value = @event.Event;
         _pos = @event.Position;
+        _ts = @event.Timestamp;
     }
 
     /// <summary>
@@ -78,7 +80,7 @@ public readonly partial struct AppendResult
 
             return _value switch
             {
-                DcbEvent evt => new(_pos, evt),
+                DcbEvent evt => new(_pos, _ts, evt),
                 IReadOnlyList<DcbEventSequenced> evts => evts[index],
                 _ => throw InvalidStateException()
             };
@@ -117,7 +119,7 @@ public readonly partial struct AppendResult
     public readonly Enumerator GetEnumerator() =>
         _value switch
         {
-            DcbEvent evt => new(evt, _pos),
+            DcbEvent evt => new(_pos, _ts, evt),
             IReadOnlyList<DcbEventSequenced> evts => new(evts),
             _ => throw InvalidStateException()
         };

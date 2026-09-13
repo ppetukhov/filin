@@ -9,11 +9,6 @@ public sealed record DcbEvent
     public required EventType EventType { get; init; }
 
     /// <summary>
-    /// Gets the date and time when the domain event occurred.
-    /// </summary>
-    public required DateTimeOffset Timestamp { get; init; }
-
-    /// <summary>
     /// Gets the collection of tags associated with this event to form execution boundaries.
     /// </summary>
     public TagCollection Tags { get; init; }
