@@ -7,23 +7,23 @@
 CREATE TYPE dcb_query_item AS
 (
 	type_hashes integer[],
-	type_names varchar[],
+	type_names text[],
 	tag_hashes bigint[],
-	tag_names varchar[]
+	tag_names text[]
 );
 
 -- Type: dcb_event_raw
 
 -- DROP TYPE IF EXISTS dcb_event_raw;
 
-CREATE TYPE dcb_event_raw AS
+CREATE TYPE dcb_event_ins AS
 (
 	timestamp_utc timestamp,
 	type_hash integer,
-	type_name varchar,
+	type_name text,
 	tag_hashes bigint[],
-	tag_names varchar[],
-	payload bytea
+	tag_names text[],
+	payload json
 );
 
 -- Type: dcb_event

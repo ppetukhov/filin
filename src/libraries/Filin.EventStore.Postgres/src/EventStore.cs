@@ -1,8 +1,7 @@
 using System.Data;
-using System.Data.Common;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading.Channels;
 
 using Filin.AdoNet;
@@ -47,40 +46,25 @@ sealed partial class EventStore(
             using var connection = CreateConnection();
             using var command = CreateAppendEventCommand(connection, @event, ref appendCondition, options.Value.StorageSerializer);
 
-            var lockTimeoutRetries = 0;
+            await connection.ConnectToEventStoreAsync(options.Value.Backoff, _logger, cancellationToken).ConfigureAwait(false);
 
-            while (lockTimeoutRetries < options.Value.MaxAppendRetries)
+            using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+
+            if (!await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
             {
-                await connection.ConnectToEventStoreAsync(options.Value.Backoff, _logger, cancellationToken).ConfigureAwait(false);
+                _logger.ConflictAppendingEvents();
 
-                try
-                {
-                    using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
-
-                    if (!await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
-                    {
-                        _logger.ConflictAppendingEvents();
-
-                        return AppendResult.Conflict;
-                    }
-
-                    var pos = new EventPosition((ulong)reader.GetInt64(reader.GetOrdinal(ColumnNames.Position)));
-
-                    if (_logger.IsEnabled(LogLevel.Debug))
-                    {
-                        _logger.EventsAppended();
-                    }
-
-                    return new(new DcbEventSequenced(pos, @event));
-                }
-                catch (DbException dbex) when (dbex.SqlState is "DCB01") // lock timeout in the event store.
-                {
-                    lockTimeoutRetries++;
-                    continue;
-                }
+                return AppendResult.Conflict;
             }
 
-            throw new InvalidOperationException("Max retries was reached");
+            var pos = new EventPosition((ulong)reader.GetInt64(reader.GetOrdinal(ColumnNames.Position)));
+
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                _logger.EventsAppended();
+            }
+
+            return new(new DcbEventSequenced(pos, @event));
         }
         catch (OperationCanceledException)
         {
@@ -136,62 +120,47 @@ sealed partial class EventStore(
                 await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
             }
 
-            var lockTimeoutRetries = 0;
+            var positions = new List<EventPosition>(capacity: count);
 
-            while (lockTimeoutRetries < options.Value.MaxAppendRetries)
+            using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+
+            var positionOrdinal = reader.GetOrdinal(ColumnNames.Position);
+
+            while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
             {
-                var positions = new List<EventPosition>(capacity: count);
-
-                try
-                {
-                    using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
-
-                    var positionOrdinal = reader.GetOrdinal(ColumnNames.Position);
-
-                    while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
-                    {
-                        positions.Add(new EventPosition((ulong)reader.GetInt64(positionOrdinal)));
-                    }
-                }
-                catch (DbException dbex) when (dbex.SqlState is "DCB01") // Time out lock event store.
-                {
-                    positions.Clear();
-                    lockTimeoutRetries++;
-                    continue;
-                }
-
-                if (positions.Count == count)
-                {
-                    if (_logger.IsEnabled(LogLevel.Debug))
-                    {
-                        _logger.EventsAppended();
-                    }
-
-                    var items = new DcbEventSequenced[count];
-
-                    var i = 0;
-
-                    foreach (var evt in events)
-                    {
-                        var pos = positions[i];
-
-                        items[i] = new(pos, evt);
-                        i++;
-                    }
-
-                    return new(items);
-                }
-                else if (positions.Count == 0)
-                {
-                    _logger.ConflictAppendingEvents();
-
-                    return AppendResult.Conflict;
-                }
-
-                ThrowUnexpectedRowsCount(ref appendCondition, count, positions.Count);
+                positions.Add(new EventPosition((ulong)reader.GetInt64(positionOrdinal)));
             }
 
-            throw new InvalidOperationException("Max retries was reached");
+            if (positions.Count == 0)
+            {
+                _logger.ConflictAppendingEvents();
+
+                return AppendResult.Conflict;
+            }
+
+            if (positions.Count == count)
+            {
+                if (_logger.IsEnabled(LogLevel.Debug))
+                {
+                    _logger.EventsAppended();
+                }
+
+                var items = new DcbEventSequenced[count];
+
+                var i = 0;
+
+                foreach (var evt in events)
+                {
+                    var pos = positions[i];
+
+                    items[i] = new(pos, evt);
+                    i++;
+                }
+
+                return new(items);
+            }
+
+            throw UnexpectedRowsCountException(ref appendCondition, count, positions.Count);
         }
         catch (OperationCanceledException)
         {
@@ -210,8 +179,7 @@ sealed partial class EventStore(
         }
     }
 
-    [DoesNotReturn]
-    static void ThrowUnexpectedRowsCount(ref AppendCondition appendCondition, int expectedCount, int count)
+    static InvalidOperationException UnexpectedRowsCountException(ref AppendCondition appendCondition, int expectedCount, int count)
     {
         var ex = new InvalidOperationException("Unexpected rows count");
 
@@ -220,7 +188,7 @@ sealed partial class EventStore(
         ex.Data["FailIfEventsMatch"] = appendCondition.FailIfEventsMatch;
         ex.Data["After"] = appendCondition.After;
 
-        throw ex;
+        return ex;
     }
 
     /// <inheritdoc/>
@@ -253,7 +221,7 @@ sealed partial class EventStore(
 #pragma warning disable CA2000 // Dispose objects before losing scope
         var sb = new ValueStringBuilder(initialCapacity: 512);
 #pragma warning restore CA2000 // Dispose objects before losing scope
-        sb.Append("SELECT * from read_events(");
+        sb.Append("SELECT * from dcb_read_events(");
         AppendAfterPosition(ref sb, afterPosition, command);
         sb.Append(", ");
         AppendQuery(ref sb, query, command);
@@ -278,12 +246,12 @@ sealed partial class EventStore(
 #pragma warning disable CA2000 // Dispose objects before losing scope
         var sb = new ValueStringBuilder(initialCapacity: 512);
 #pragma warning restore CA2000 // Dispose objects before losing scope
-        sb.Append("SELECT * from append_event(");
-        AppendEvent(ref sb, @event, null, command, serializer);
+        sb.Append("SELECT * from dcb_append_event(");
+        AppendEvent(ref sb, @event, null, command, serializer); // -- dcb_event: hash -> name -> tag_hashes -> tags -> payload
         sb.Append(", ");
-        AppendAfterPosition(ref sb, appendCondition.After, command);
+        AppendAfterPosition(ref sb, appendCondition.After, command); // -- p_cond_after
         sb.Append(", ");
-        AppendQuery(ref sb, appendCondition.FailIfEventsMatch, command);
+        AppendQuery(ref sb, appendCondition.FailIfEventsMatch, command); // -- VARIADIC p_cond_fail_if_match
         sb.Append(");");
 #pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
         command.CommandText = sb.ToString();
@@ -303,7 +271,7 @@ sealed partial class EventStore(
 #pragma warning disable CA2000 // Dispose objects before losing scope
         var sb = new ValueStringBuilder(initialCapacity: 512);
 #pragma warning restore CA2000 // Dispose objects before losing scope
-        sb.Append("SELECT * from append_events(array[");
+        sb.Append("SELECT * from dcb_append_events(array[");
 
         var idx = 0;
 
@@ -315,7 +283,7 @@ sealed partial class EventStore(
 
         sb.Length -= 1; // drop last symbol ','
 
-        sb.Append("]::dcb_event_raw[], ");
+        sb.Append("]::dcb_event[], ");
         AppendAfterPosition(ref sb, appendCondition.After, command);
         sb.Append(", ");
         AppendQuery(ref sb, appendCondition.FailIfEventsMatch, command);
@@ -336,12 +304,7 @@ sealed partial class EventStore(
     {
         string pName;
 
-        sb.Append('(');
-
-        pName = "@evt" + eventIndex;
-        sb.Append(pName);
-        sb.Append(',');
-        command.AddParameter(pName, @event.Timestamp.ToUniversalTime());
+        sb.Append("(");
 
         pName = "@evh" + eventIndex;
         sb.Append(pName);
@@ -383,14 +346,14 @@ sealed partial class EventStore(
             sb.Length -= 1; // drop last symbol ','
         }
 
-        sb.Append("], array[");
+        sb.Append("]::bigint[], array[");
         sb.Append(sbNames.AsSpan());
-        sb.Append("], ");
+        sb.Append("]::text[], ");
 
         pName = "@pl" + eventIndex;
         sb.Append(pName);
-        sb.Append(")::dcb_event_raw");
-        command.AddParameter(pName, serializer.Serialize(@event.Data).ToArray());
+        sb.Append("::json)::dcb_event");
+        command.AddParameter(pName, Encoding.UTF8.GetString(serializer.Serialize(@event.Data)));
 
         sbNames.Dispose();
     }
@@ -463,7 +426,7 @@ sealed partial class EventStore(
 
             if (eventTypes.Count == 0)
             {
-                sb.Append("::varchar[]");
+                sb.Append("::text[]");
             }
 
             sbNames.Length = 0;
@@ -510,7 +473,7 @@ sealed partial class EventStore(
 
             if (tags.Count == 0)
             {
-                sb.Append("::varchar[]");
+                sb.Append("::text[]");
             }
 
             sb.Append("),");

@@ -112,8 +112,8 @@ sealed partial class EventStore
                     break;
                 }
 
-                var timestamp = new DateTime(reader.GetDateTime(ordinals.TimestampUtc).Ticks, DateTimeKind.Utc);
-                var eventType = GetEventType(ordinalHash: ordinals.TypeHash, ordinalValue: ordinals.TypeName, reader: reader);
+                var timestamp = new DateTime(reader.GetDateTime(ordinals.CreatedAt).Ticks, DateTimeKind.Utc);
+                var eventType = GetEventType(ordinalHash: ordinals.EventTypeHash, ordinalValue: ordinals.EventType, reader: reader);
                 var tags = GetTags(reader, ordinals);
 
                 if (!options.EventTypes.TryGetValue(eventType, out var payloadType))
@@ -217,7 +217,7 @@ sealed partial class EventStore
 
         static TagCollection GetTags(DbDataReader reader, Ordinals ordinals)
         {
-            var tgNames = reader.GetFieldValue<string[]>(ordinals.TagNames);
+            var tgNames = reader.GetFieldValue<string[]>(ordinals.Tags);
 
             if (tgNames.Length == 0)
             {
@@ -278,21 +278,21 @@ sealed partial class EventStore
     sealed record Ordinals
     {
         internal int Position { get; init; }
-        internal int TimestampUtc { get; init; }
-        internal int TypeHash { get; init; }
-        internal int TypeName { get; init; }
+        internal int CreatedAt { get; init; }
+        internal int EventTypeHash { get; init; }
+        internal int EventType { get; init; }
         internal int TagHashes { get; init; }
-        internal int TagNames { get; init; }
+        internal int Tags { get; init; }
         internal int Payload { get; init; }
 
         internal static Ordinals CreateOrdinals(DbDataReader reader) => new()
         {
             Position = reader.GetOrdinal(ColumnNames.Position),
-            TimestampUtc = reader.GetOrdinal(ColumnNames.TimestampUtc),
-            TypeHash = reader.GetOrdinal(ColumnNames.TypeHash),
-            TypeName = reader.GetOrdinal(ColumnNames.TypeName),
+            CreatedAt = reader.GetOrdinal(ColumnNames.CreatedAt),
+            EventTypeHash = reader.GetOrdinal(ColumnNames.EventTypeHash),
+            EventType = reader.GetOrdinal(ColumnNames.EventType),
             TagHashes = reader.GetOrdinal(ColumnNames.TagHashes),
-            TagNames = reader.GetOrdinal(ColumnNames.TagNames),
+            Tags = reader.GetOrdinal(ColumnNames.Tags),
             Payload = reader.GetOrdinal(ColumnNames.Payload)
         };
     }

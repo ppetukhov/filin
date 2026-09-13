@@ -30,13 +30,6 @@ public sealed class EventStorePostgresOptions : IStorageProviderSerializerOption
     public string? SerializerKey { get; set; }
 
     /// <summary>
-    /// Max number of retries to append events after the lock timeout in the event store.
-    /// </summary>
-    /// <remarks>Default is 3.</remarks>
-    [Range(0, 10)]
-    public int MaxAppendRetries { get; set; } = 3;
-
-    /// <summary>
     /// Reading batch size.
     /// </summary>
     /// <remarks>Default is 1000.</remarks>
