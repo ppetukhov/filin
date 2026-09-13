@@ -144,14 +144,22 @@ _ = Task.Run(async () =>
         {
             var result = task.Result;
 
-            if (hasOneSuccess)
+            var res = result.IsSuccess
+                ? result.State.Courses.Select((k, v) => $"{k};").Aggregate((txt, item) => txt += " " + item)
+                : result.Error.ToString();
+
+            if (hasOneSuccess && result.IsSuccess)
             {
-                logger.LogError("WRONG. Command: {Command}; Result: {Result}", command.NewName, result.State.Courses.Select((k, v) => $"{k};").Aggregate((txt, item) => txt += " " + item));
+                logger.LogError("ERROR. Command: {Command}; Result: {Result}", command, res);
+            }
+            else if (result.IsSuccess)
+            {
+                hasOneSuccess = true;
+                logger.LogInformation("OK. Command: {Command}; Result: {Result}", command, res);
             }
             else
             {
-                hasOneSuccess = true;
-                logger.LogInformation("Executed.       Command: {Command}; Result: {Result}", command.NewName, result.State.Courses.Select((k, v) => $"{k};").Aggregate((txt, item) => txt += " " + item));
+                logger.LogWarning("OK. Business error. Command: {Command}; Result: {Result}", command, res);
             }
         }
         catch (AggregateException ex)
