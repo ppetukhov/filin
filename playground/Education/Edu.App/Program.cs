@@ -3,6 +3,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
+using Edu.App.Properties;
 using Edu.ReadModels;
 using Edu.UseCases;
 
@@ -65,6 +66,61 @@ var courseGuid = Guid.Parse("0F033F3C-32A6-4295-AB7B-B5F93FE56E6D");
 
 _ = Task.Run(async () =>
 {
+    const int Repeate = 1;
+
+    var courseTitles = Resources.CourseTitles.Split("\n");
+
+    var tasks = new List<Task>(capacity: courseTitles.Length * Repeate);
+
+    var sw = Stopwatch.StartNew();
+
+    foreach (var _ in Enumerable.Range(0, Repeate))
+    {
+        foreach (var course in courseTitles)
+        {
+            var task = Task.Run(async () =>
+            {
+                var command = new CreateCourse(Guid.NewGuid(), course);
+
+                var res = await executor.ExecuteAsync<CreateCourse, ActiveCourses>(command, apptLifeTime.ApplicationStopping).ConfigureAwait(false);
+
+                var timeTaken = sw.ElapsedMilliseconds;
+
+                if (res.IsSuccess)
+                {
+                    logger.LogInformation("Ok. {TimeTaken} ms, Command: {Command}; Result: Active cources: {Result}", timeTaken, command, res.State.Courses.Count);
+                }
+                else
+                {
+                    logger.LogWarning("OK. {TimeTaken} ms, Business rule validation error. Command: {Command}; Result: {Result}", timeTaken, command, res.Error);
+                }
+            });
+
+            tasks.Add(task);
+        }
+    }
+
+    try
+    {
+        await Task.WhenAll(tasks).ConfigureAwait(false);
+
+        sw.Stop();
+        logger.LogInformation("CreateCourse WhenAll. Timetaken: {Timetaken} ms.", sw.ElapsedMilliseconds);
+    }
+    catch (Exception ex)
+    {
+        sw.Stop();
+        logger.LogError(ex, "CreateCourse WhenAll exception. Timetaken: {Timetaken} ms.", sw.ElapsedMilliseconds);
+    }
+});
+
+_ = Task.Run(async () =>
+{
+    if (host is not null)
+    {
+        return;
+    }
+
     var tasks = new List<Task<ExecuteResult<ActiveCourses>>>();
 
     var getGetActiveCourses = new GetActiveCourses();
@@ -73,7 +129,7 @@ _ = Task.Run(async () =>
     {
         var activeCourses = await executor.QueryAsync<GetActiveCourses, ActiveCourses>(getGetActiveCourses, apptLifeTime.ApplicationStopping).ConfigureAwait(false);
 
-        logger.LogInformation("Active courses {ActiveCourses}", activeCourses?.Courses.Select((k, v) => $"{k};").Aggregate((txt, item) => txt += " " + item));
+        logger.LogInformation("Active courses {ActiveCourses}", activeCourses?.Courses.Count);
 
         activeCourses?.Courses.TryGetValue(courseGuid, out oldName);
     }
@@ -92,7 +148,7 @@ _ = Task.Run(async () =>
 
     var renameCommands = new List<RenameCourse>();
 
-    foreach (var course in Enumerable.Range(1, 18))
+    foreach (var course in Enumerable.Range(1, 10))
     {
         string CalcCourseName(int num) => $"Course .Net for beginner #{course}";
 
@@ -108,12 +164,12 @@ _ = Task.Run(async () =>
         await Task.WhenAll(tasks).ConfigureAwait(false);
 
         sw.Stop();
-        logger.LogInformation("Commands WhenAll. Timetaken: {Timetaken} ms.", sw.ElapsedMilliseconds);
+        logger.LogInformation("RenameCourse WhenAll. Timetaken: {Timetaken} ms.", sw.ElapsedMilliseconds);
     }
     catch (Exception ex)
     {
         sw.Stop();
-        logger.LogError(ex, "Commands WhenAll exception. Timetaken: {Timetaken} ms.", sw.ElapsedMilliseconds);
+        logger.LogError(ex, "RenameCourse WhenAll exception. Timetaken: {Timetaken} ms.", sw.ElapsedMilliseconds);
     }
 
     var idx = 0;
@@ -127,7 +183,7 @@ _ = Task.Run(async () =>
             {
                 var result = task.Result;
 
-                logger.LogInformation("Course created: {Courses}", result);
+                logger.LogInformation("Course created");
             }
             catch (Exception exc)
             {
@@ -145,7 +201,7 @@ _ = Task.Run(async () =>
             var result = task.Result;
 
             var res = result.IsSuccess
-                ? result.State.Courses.Select((k, v) => $"{k};").Aggregate((txt, item) => txt += " " + item)
+                ? result.State.Courses.Count > 5 ? $"Count: {result.State.Courses.Count}" : result.State.Courses.Select((k, v) => $"{k};").Aggregate((txt, item) => txt += " " + item)
                 : result.Error.ToString();
 
             if (hasOneSuccess && result.IsSuccess)
