@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS Filin_query
 (
-    query_key character varying(50) NOT NULL,
+    query_key text NOT NULL,
     query_text text NOT NULL
 );
 
@@ -11,9 +11,9 @@ CREATE TABLE IF NOT EXISTS Filin_query
 CREATE TABLE IF NOT EXISTS projections
 (
     id_hash bigint NOT NULL,
-    id_name varchar COLLATE pg_catalog."C.utf8",
-    type_hash integer NOT NULL,
-    type_name varchar(30) COLLATE pg_catalog."C.utf8" NOT NULL,
+    id_name text COLLATE pg_catalog."C.utf8",
+    type_hash bigint NOT NULL,
+    type_name text COLLATE pg_catalog."C.utf8" NOT NULL,
     "position" bigint NOT NULL,
     timestamp_utc timestamp NOT NULL,
     payload bytea

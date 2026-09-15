@@ -66,8 +66,6 @@ sealed class StateManager<TState>(IEventStore eventStore,
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void ApplyEvent([NotNull] ref TState? state, ref StateMetadata metadata, ref DcbEventSequenced @event)
     {
-        state = state is not null ? projector.Project(state, @event) : projector.Project(@event);
-
         if (state is null)
         {
             state = projector.Project(@event);
