@@ -1,9 +1,9 @@
 using System.Data;
 using System.Data.Common;
 
-using Microsoft.Extensions.Logging;
-
 using Filin.Configuration;
+
+using Microsoft.Extensions.Logging;
 
 namespace Filin.EventStore.Postgres;
 
@@ -23,7 +23,12 @@ static class DbConnectionExtensions
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var delay = TimeSpan.FromSeconds(Math.Pow(Math.Abs(backoff.Exponent), reconnectCount));
+                var delay = backoff.InitalDelay * Math.Pow(backoff.Exponent, reconnectCount);
+
+                if (backoff.UseJitter)
+                {
+                    delay += TimeSpan.FromMilliseconds(Random.Shared.NextDouble() * 10);
+                }
 
                 if (backoff.MaxDelay < delay)
                 {
