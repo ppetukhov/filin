@@ -57,7 +57,11 @@ public partial class OptionsLogger(ILoggerFactory loggerFactory, IServiceProvide
         {
             formatter.Format(sb.Write);
 
-            LogInformationOptions(_logger, formatter.Name, sb.ToString());
+            if (_logger.IsEnabled(LogLevel.Information))
+            {
+                var opt = sb.ToString();
+                LogInformationOptions(_logger, formatter.Name, opt);
+            }
 
             sb.Reset();
         }
@@ -82,7 +86,8 @@ public partial class OptionsLogger(ILoggerFactory loggerFactory, IServiceProvide
         Level = LogLevel.Information,
         EventId = 100,
         EventName = "Configuration",
-        Message = "Configuration {ConfigurationName}: {Options}"
+        Message = "Configuration {ConfigurationName}: {Options}",
+        SkipEnabledCheck = true
     )]
     private static partial void LogInformationOptions(ILogger logger, string ConfigurationName, string Options);
 

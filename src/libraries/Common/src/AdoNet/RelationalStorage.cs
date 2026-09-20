@@ -206,9 +206,11 @@ sealed class RelationalStorage : IRelationalStorage
         command.CommandText = query;
 #pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
 
+#pragma warning disable CA2025 // Do not pass 'IDisposable' instances into unawaited tasks
         var ret = _isSynchronousAdoNetImplementation
             ? Task.Run(() => executor(command, selector, commandBehavior, cancellationToken), cancellationToken)
             : executor(command, selector, commandBehavior, cancellationToken);
+#pragma warning restore CA2025 // Do not pass 'IDisposable' instances into unawaited tasks
         return await ret.ConfigureAwait(false);
     }
 
