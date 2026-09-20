@@ -6,16 +6,16 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <NetCoreAppCurrentVersion>9.0</NetCoreAppCurrentVersion>
+    <NetCoreAppCurrentVersion>10.0</NetCoreAppCurrentVersion>
     <NetCoreAppCurrentIdentifier>.NETCoreApp</NetCoreAppCurrentIdentifier>
     <NetCurrent>net$(NetCoreAppCurrentVersion)</NetCurrent>
 
     <!-- The previous supported .NET version. -->
-    <NetPrevious>net9.0</NetPrevious>
+    <NetPrevious>net10.0</NetPrevious>
     <NetPrevious Condition="'$(BuildSourceOnly)' == 'true'">$(NetCurrent)</NetPrevious>
 
     <!-- The minimum supported .NET version. -->
-    <NetMinimum>net9.0</NetMinimum>
+    <NetMinimum>net10.0</NetMinimum>
     <NetMinimum Condition="'$(BuildSourceOnly)' == 'true'">$(NetCurrent)</NetMinimum>
   </PropertyGroup>
  
@@ -190,4 +190,8 @@
   <PropertyGroup Condition="'$(TF_BUILD)' == 'true'">
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.ILLink.Tasks" />   
+  </ItemGroup>
 </Project>
