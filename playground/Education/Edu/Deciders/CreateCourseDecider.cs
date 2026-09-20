@@ -9,7 +9,7 @@ namespace Edu.Deciders;
 
 /// <inheritdoc cref="IDecider{CreateCourse, ActiveCourses}"/>
 [Decider]
-sealed class CreateCourseDecider : IDecider<CreateCourse, ActiveCourses>
+sealed class CreateCourseDecider : IDecider<CreateCourse, CreateCourseState /*ActiveCourses*/>
 {
     /// <inheritdoc/>
     public static DecideResult Decide(CreateCourse command) => CourseCreated(command);
@@ -27,6 +27,21 @@ sealed class CreateCourseDecider : IDecider<CreateCourse, ActiveCourses>
         if (state.Courses.FirstOrDefault(Predicate, defaultValue: new KeyValuePair<Guid, string>(default, string.Empty)) is { Value.Length: > 0 } existingCourse)
         {
             return DomainErrors.Course.DuplicateName(existingCourse.Value, existingCourse.Key);
+        }
+
+        return CourseCreated(command);
+    }
+
+    public static DecideResult Decide(CreateCourse command, CreateCourseState state)
+    {
+        if (state.CourseId == command.CourseId)
+        {
+            return DomainErrors.Course.AlreadyExists(state.CourseName!, command.CourseId);
+        }
+
+        if (state.CourseName is not null && string.Equals(state.CourseName, command.Name, StringComparison.Ordinal))
+        {
+            return DomainErrors.Course.DuplicateName(state.CourseName, state.CourseId!.Value);
         }
 
         return CourseCreated(command);

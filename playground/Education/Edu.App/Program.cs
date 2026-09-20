@@ -17,6 +17,7 @@ using Microsoft.Extensions.Logging;
 
 #pragma warning disable CA1303 // Do not pass literals as localized parameters
 #pragma warning disable CA1848 // Use the LoggerMessage delegates
+#pragma warning disable CA1873 // Avoid potentially expensive logging
 
 Console.WriteLine("Ins App 1");
 
@@ -64,9 +65,11 @@ var executor = host.Services.GetRequiredService<IMediator>();
 var oldName = (string?)null;
 var courseGuid = Guid.Parse("0F033F3C-32A6-4295-AB7B-B5F93FE56E6D");
 
-_ = Task.Run(async () =>
+long completedCount = 0;
+
+await Task.Run(async () =>
 {
-    const int Repeate = 1;
+    const int Repeate = 2;
 
     var courseTitles = Resources.CourseTitles.Split("\n");
 
@@ -82,13 +85,15 @@ _ = Task.Run(async () =>
             {
                 var command = new CreateCourse(Guid.NewGuid(), course);
 
-                var res = await executor.ExecuteAsync<CreateCourse, ActiveCourses>(command, apptLifeTime.ApplicationStopping).ConfigureAwait(false);
+                var res = await executor.ExecuteAsync<CreateCourse, CreateCourseState>(command, apptLifeTime.ApplicationStopping).ConfigureAwait(false);
+
+                Interlocked.Increment(ref completedCount);
 
                 var timeTaken = sw.ElapsedMilliseconds;
 
                 if (res.IsSuccess)
                 {
-                    logger.LogInformation("Ok. {TimeTaken} ms, Command: {Command}; Result: Active cources: {Result}", timeTaken, command, res.State.Courses.Count);
+                    logger.LogInformation("Ok. {TimeTaken} ms, Command: {Command}; Result: Current course name: {Result}", timeTaken, command, res.State.CourseName);
                 }
                 else
                 {
@@ -105,14 +110,14 @@ _ = Task.Run(async () =>
         await Task.WhenAll(tasks).ConfigureAwait(false);
 
         sw.Stop();
-        logger.LogInformation("CreateCourse WhenAll. Timetaken: {Timetaken} ms.", sw.ElapsedMilliseconds);
+        logger.LogCritical("CreateCourse WhenAll. Timetaken: {Timetaken} ms. Total tasks: {TaskCount}", sw.ElapsedMilliseconds, completedCount);
     }
     catch (Exception ex)
     {
         sw.Stop();
-        logger.LogError(ex, "CreateCourse WhenAll exception. Timetaken: {Timetaken} ms.", sw.ElapsedMilliseconds);
+        logger.LogError(ex, "CreateCourse WhenAll exception. Timetaken: {Timetaken} ms. Total tasks: {TaskCount}", sw.ElapsedMilliseconds, completedCount);
     }
-});
+}).ConfigureAwait(false);
 
 _ = Task.Run(async () =>
 {
@@ -121,7 +126,7 @@ _ = Task.Run(async () =>
         return;
     }
 
-    var tasks = new List<Task<ExecuteResult<ActiveCourses>>>();
+    var tasks = new List<Task<ExecuteResult<CreateCourseState>>>();
 
     var getGetActiveCourses = new GetActiveCourses();
 
@@ -143,7 +148,7 @@ _ = Task.Run(async () =>
     if (oldName is null)
     {
         var command = new CreateCourse(courseGuid, "Course ADO and .Net");
-        tasks.Add(executor.ExecuteAsync<CreateCourse, ActiveCourses>(command, apptLifeTime.ApplicationStopping));
+        tasks.Add(executor.ExecuteAsync<CreateCourse, CreateCourseState>(command, apptLifeTime.ApplicationStopping));
     }
 
     var renameCommands = new List<RenameCourse>();
@@ -156,7 +161,7 @@ _ = Task.Run(async () =>
 
         renameCommands.Add(renameCommand);
 
-        tasks.Add(executor.ExecuteAsync<RenameCourse, ActiveCourses>(renameCommand, apptLifeTime.ApplicationStopping));
+        tasks.Add(executor.ExecuteAsync<RenameCourse, CreateCourseState>(renameCommand, apptLifeTime.ApplicationStopping));
     }
 
     try
@@ -201,7 +206,7 @@ _ = Task.Run(async () =>
             var result = task.Result;
 
             var res = result.IsSuccess
-                ? result.State.Courses.Count > 5 ? $"Count: {result.State.Courses.Count}" : result.State.Courses.Select((k, v) => $"{k};").Aggregate((txt, item) => txt += " " + item)
+                ? $"{result.State.CourseId} {result.State.CourseName}"
                 : result.Error.ToString();
 
             if (hasOneSuccess && result.IsSuccess)
@@ -232,13 +237,14 @@ _ = Task.Run(async () =>
     {
         logger.LogError("Command: {Command}; Exception: {Ex}", command.NewName, ex.Message);
     }
-});
+}, apptLifeTime.ApplicationStopping);
 
-Console.WriteLine("Press any key to stop...");
-Console.ReadKey();
-Console.WriteLine("Key press detected. Initiating application shutdown...");
+//Console.WriteLine("Press any key to stop...");
+//Console.ReadKey();
+//Console.WriteLine("Key press detected. Initiating application shutdown...");
 
-await host.StopAsync().ConfigureAwait(false);
+//await host.StopAsync().ConfigureAwait(false);
 
+#pragma warning restore CA1873 // Avoid potentially expensive logging
 #pragma warning restore CA1848 // Use the LoggerMessage delegates
 #pragma warning restore CA1303 // Do not pass literals as localized parameters

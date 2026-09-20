@@ -7,10 +7,10 @@ static partial class DomainEvents
     internal static partial class V1
     {
         [EventType("CourseCreated")]
-        public sealed record CourseCreated([EventTag("course")] Guid CourseId, string Name);
+        public sealed record CourseCreated([EventTag("course")] Guid CourseId, [EventTag("course_name")] string Name);
 
         [EventType("CourseRenamed")]
-        public sealed record CourseRenamed([EventTag("course")] Guid CourseId, string NewName, string OldName) { }
+        public sealed record CourseRenamed([EventTag("course")] Guid CourseId, [EventTag("course_name")] string NewName, string OldName) { }
 
         [EventType("CourseCapacityChanged")]
         public sealed record CourseCapacityChanged([EventTag("course")] Guid CourseId, uint Capacity);

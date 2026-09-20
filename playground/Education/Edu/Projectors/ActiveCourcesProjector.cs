@@ -38,5 +38,5 @@ sealed partial class ActiveCoursesProjector : IProjector<ActiveCourses>
 
     static UnexpectedEventTypeException UnexpectedEventTypeException(object? evt) =>
         new UnexpectedEventTypeException(evt?.GetType())
-            .EnrichWithProjector(typeof(ActiveCourses));
+            .EnrichWithProjector(typeof(ActiveCoursesProjector));
 }

@@ -24,6 +24,8 @@ static class DomainErrors
 
         internal static DecideResult DuplicateName(string duplicateCourseName, Guid existingCourseId) => ("DUPLICATE_COURSE_NAME", $"Course '{duplicateCourseName}' already exists with ID '{existingCourseId}'.");
 
+        internal static DecideResult DuplicateName(string duplicateCourseName) => ("DUPLICATE_COURSE_NAME", $"Course '{duplicateCourseName}' already exists.");
+
         internal static DecideResult NameAlreadyCurrent(string currentCourseName) => ("COURSE_NAME_ALREADY_CURRENT", $"The course already has the name '{currentCourseName}'.");
 
         internal static DecideResult NameMismatch(Guid courseId, string courseOldName) => ("COURSE_NAME_MISMATCH", $"Cannot rename course '{courseId}' because its current name does not match the expected source name '{courseOldName}'.");

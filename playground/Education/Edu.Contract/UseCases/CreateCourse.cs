@@ -9,4 +9,4 @@ namespace Edu.UseCases;
 /// </summary>
 /// <param name="CourseId">The unique identifier of the course.</param>
 /// <param name="Name">The name of the course.</param>
-public sealed partial record CreateCourse([EventTag("course")] Guid CourseId, string Name) : ICommand<ActiveCourses>;
+public sealed partial record CreateCourse([EventTag("course")] Guid CourseId, [EventTag("course_name")] string Name) : ICommand<CreateCourseState>;
