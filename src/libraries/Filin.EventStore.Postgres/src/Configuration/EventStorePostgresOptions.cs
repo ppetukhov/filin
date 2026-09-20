@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
+using Filin.AdoNet;
 using Filin.Compliance.Classification;
 using Filin.Storage;
 
@@ -23,6 +24,17 @@ public sealed class EventStorePostgresOptions : IStorageProviderSerializerOption
     /// </summary>
     [CustomValidation(typeof(EventStorePostgresOptions), nameof(IsValidConnectionName))]
     public string? ConnectionName { get; set; }
+
+    /// <summary>
+    /// The default ADO.NET invariant used for storage if none is given. 
+    /// </summary>
+    public const string DefaultAdoNetInvariant = AdoNetInvariants.InvariantNamePostgreSql;
+
+    /// <summary>
+    /// The invariant name for storage.
+    /// </summary>
+    [Required]
+    public string Invariant { get; } = DefaultAdoNetInvariant;
 
     /// <summary>
     /// The serializer identity.

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>$(NetCurrent);$(NetPrevious);$(NetMinimum)</TargetFrameworks>
@@ -12,16 +12,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="$(CommonPath)\AdoNet\*.cs" LinkBase="Storage" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="$(CommonPath)\src\AdoNet\ICommandInterceptor.cs" />
-    <Compile Remove="$(CommonPath)\src\AdoNet\NoOpDatabaseCommandInterceptor.cs" />
-    <Compile Remove="$(CommonPath)\AdoNet\OracleDatabaseCommandInterceptor.cs" />
-    <Compile Remove="$(CommonPath)\AdoNet\FilinRelationalDownloadStream.cs" />
-    <Compile Remove="$(CommonPath)\AdoNet\RelationalOrleansQueries.cs" />
-    <Compile Remove="$(CommonPath)\AdoNet\RelationalStorageExtensions.cs" />
+    <Compile Include="$(CommonPath)\AdoNet\AdoNetInvariants.cs" LinkBase="Storage" />
+    <Compile Include="$(CommonPath)\AdoNet\DbConnectionFactory.cs" LinkBase="Storage" />
+    <Compile Include="$(CommonPath)\AdoNet\DbExtensions.cs" LinkBase="Storage" />
+    <Compile Include="$(CommonPath)\Hosting\DbDataSourseServiceCollectionExtensions.cs" LinkBase="Hosting" />
   </ItemGroup>
 
   <ItemGroup>

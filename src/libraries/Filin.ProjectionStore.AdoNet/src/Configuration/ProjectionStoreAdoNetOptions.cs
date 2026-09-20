@@ -1,10 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 
-using Microsoft.Extensions.Options;
-
 using Filin.AdoNet;
 using Filin.Compliance.Classification;
 using Filin.Storage;
+
+using Microsoft.Extensions.Options;
 
 namespace Filin.Configuration;
 
@@ -35,6 +35,11 @@ public sealed class ProjectionStoreAdoNetOptions : IStorageProviderSerializerOpt
     /// </summary>
     [Required]
     public string Invariant { get; set; } = DefaultAdoNetInvariant;
+
+    /// <summary>
+    /// The serializer identity.
+    /// </summary>
+    public string? SerializerKey { get; set; }
 
     /// <summary>
     /// Gets projection types.

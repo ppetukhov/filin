@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 
-using Microsoft.Extensions.Options;
-
 using Filin.Storage;
+
+using Microsoft.Extensions.Options;
 
 using ProjectionTuple = (Filin.Storage.Projection projection, bool create);
 
@@ -13,7 +13,7 @@ sealed class ProjectionSaveOptions
     [Required]
     public required ProjectionSavePipeline<ProjectionTuple> Pipeline { get; set; }
 
-    [Range(1, 1000)]
+    [Range(1, 20)]
     public int ConcurentWorks { get; set; } = 10;
 
     [Required]

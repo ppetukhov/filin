@@ -187,7 +187,7 @@ public static class FilinGenericHostExtensions
             services.AddSingleton<IValidateOptions<ProjectionSaveOptions>, ProjectionSaveOptionsValidator>();
             services.AddHostedService<ProjectionSaveHostedService>();
 
-            services.TryAddSingleton(_ => new LRUCache<ProjectionId, Projection>(255, TimeSpan.FromMinutes(15)));
+            services.TryAddSingleton(_ => new LRUCache<ProjectionId, Task<Projection?>>(10_000, TimeSpan.FromMinutes(5)));
 
             services.AddSingleton<HandlersFactory>();
             services.AddSingleton<IMediator, Mediator>();

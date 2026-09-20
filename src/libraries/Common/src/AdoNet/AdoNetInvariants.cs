@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+using System.Collections.Immutable;
 
 namespace Filin.AdoNet;
 
@@ -13,15 +13,14 @@ static class AdoNetInvariants
     /// <remarks>The invariant names here do not match the namespaces as is often the convention.
     /// Current exception is MySQL Connector library that uses the same invariant as MySQL compared
     /// to the official Oracle distribution.</remarks>
-    public static ICollection<string> Invariants { get; } = new Collection<string>([.. new[]
-    {
+    public static ImmutableArray<string> Invariants { get; } = [
         InvariantNameMySql,
         InvariantNamePostgreSql,
         InvariantNameSqlLite,
         InvariantNameSqlServer,
         InvariantNameSqlServerDotnetCore,
         InvariantNameMySqlConnector
-    }]);
+    ];
 
     /// <summary>
     /// Microsoft SQL Server invariant name string.

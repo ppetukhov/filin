@@ -1,11 +1,11 @@
 using System.Threading.Channels;
 
+using Filin.Configuration;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-
-using Filin.Configuration;
 
 using ProjectionTuple = (Filin.Storage.Projection projection, bool create);
 
@@ -24,7 +24,7 @@ sealed class ProjectionSaveHostedService(IServiceProvider services) : Background
 
         var options = services.GetRequiredService<IOptions<ProjectionSaveOptions>>();
 
-        var projectionStore = options.Value.ProjectionStore!;
+        var projectionStore = options.Value.ProjectionStore;
 
         var channels = CreateWorkChannels(count: options.Value.ConcurentWorks);
 

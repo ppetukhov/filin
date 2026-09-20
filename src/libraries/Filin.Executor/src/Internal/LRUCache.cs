@@ -1,5 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-
 namespace Filin.Internal;
 
 /// <summary>
@@ -7,51 +5,43 @@ namespace Filin.Internal;
 /// </summary>
 /// <typeparam name="TKey">The type of the key to the cached item.</typeparam>
 /// <typeparam name="TValue">The type of the cached item.</typeparam>
-/// <remarks>
-/// Code was taken from Microsoft Bot Framework SDK: https://github.com/microsoft/botbuilder-dotnet.
-/// Class link: https://github.com/microsoft/botbuilder-dotnet/blob/402bc02b4cbbd2f4ec359134640e99211367e4a5/libraries/AdaptiveExpressions/LRUCache.cs
-/// </remarks>
 /// <param name="capacity">Maximum number of elements to cache.</param>
 /// <param name="ttl">Time to live.</param>
 sealed class LRUCache<TKey, TValue>(int capacity, TimeSpan ttl)
     where TKey : IEquatable<TKey>
-    where TValue : class
+    where TValue : notnull
 {
     readonly Lock _lockObj = new Lock();
     readonly Dictionary<TKey, Entry> _cacheMap = [with(capacity: capacity)];
     readonly LinkedList<TKey> _cacheList = new LinkedList<TKey>();
 
-    /// <summary>
-    /// Gets the value associated with the specified key.
-    /// </summary>
-    /// <param name="key">The key of the value to get.</param>
-    /// <param name="value">When this method returns, contains the value associated with
-    /// the specified key, if the key is found; otherwise, the default value for the 
-    /// type of the <paramref name="value" /> parameter.</param>
-    /// <returns>true if contains an element with the specified key; otherwise, false.</returns>
-    public bool TryGet(TKey key, [NotNullWhen(true)] out TValue? value)
+    public TValue GetOrUpdate(TKey key, Func<TKey, TValue> addValue, Func<TKey, TValue, TValue> updateValue)
     {
         lock (_lockObj)
         {
             if (_cacheMap.TryGetValue(key, out var entry))
             {
-                if ((DateTime.Now - entry.DateAdded).Ticks > ttl.Ticks)
+                if ((DateTime.Now - entry.DateAdded).Ticks <= ttl.Ticks)
                 {
-                    _cacheList.Remove(entry.Node);
-                    _cacheMap.Remove(key);
+                    entry.Value = updateValue(key, entry.Value);
 
-                    value = default;
-                    return false;
+                    Touch(entry.Node);
+                    return entry.Value;
                 }
-
-                Touch(entry.Node);
-                value = entry.Value;
-                return true;
             }
-        }
+            else
+            {
+                entry.Node = CreateNode(key);
+            }
 
-        value = default;
-        return false;
+            var value = addValue(key);
+            entry.Value = value;
+            entry.DateAdded = DateTime.Now;
+
+            _cacheMap[key] = entry;
+
+            return value;
+        }
     }
 
     /// <summary>
@@ -63,31 +53,41 @@ sealed class LRUCache<TKey, TValue>(int capacity, TimeSpan ttl)
     {
         lock (_lockObj)
         {
-            if (!_cacheMap.TryGetValue(key, out var entry))
-            {
-                LinkedListNode<TKey> node;
-                if (_cacheMap.Count >= capacity)
-                {
-                    node = _cacheList.Last!;
-                    _cacheMap.Remove(node.Value);
-                    _cacheList.RemoveLast();
-                    node.Value = key;
-                }
-                else
-                {
-                    node = new LinkedListNode<TKey>(key);
-                }
-
-                _cacheList.AddFirst(node);
-                _cacheMap.Add(key, new Entry(node, value, DateTime.Now));
-            }
-            else
+            if (_cacheMap.TryGetValue(key, out var entry))
             {
                 entry.Value = value;
+                entry.DateAdded = DateTime.Now;
                 _cacheMap[key] = entry;
                 Touch(entry.Node);
+
+                return;
             }
+
+            entry.Node = CreateNode(key);
+            entry.Value = value;
+            entry.DateAdded = DateTime.Now;
+
+            _cacheMap[key] = entry;
         }
+    }
+
+    LinkedListNode<TKey> CreateNode(TKey key)
+    {
+        LinkedListNode<TKey> node;
+        if (_cacheMap.Count >= capacity)
+        {
+            node = _cacheList.Last!;
+            _cacheMap.Remove(node.Value);
+            _cacheList.RemoveLast();
+            node.Value = key;
+        }
+        else
+        {
+            node = new LinkedListNode<TKey>(key);
+        }
+
+        _cacheList.AddFirst(node);
+        return node;
     }
 
     void Touch(LinkedListNode<TKey> node)

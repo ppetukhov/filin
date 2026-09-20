@@ -20,13 +20,21 @@ static class FromExistingServiceCollectionExtensions
         services.AddFromExisting(typeof(TService), typeof(TImplementation));
     }
 
+    internal static void AddFromExisting<TService, TImplementation>(this IServiceCollection services, object? serviceKey) where TImplementation : TService
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.AddFromExisting(typeof(TService), typeof(TImplementation), serviceKey);
+    }
+
     /// <summary>
     /// Registers an existing registration of <paramref name="implementation"/> as a provider of service type <paramref name="service"/>.
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <param name="service">The service type being provided.</param>
     /// <param name="implementation">The implementation of <paramref name="service"/>.</param>
-    internal static void AddFromExisting(this IServiceCollection services, Type service, Type implementation)
+    /// <param name="serviceKey"></param>
+    internal static void AddFromExisting(this IServiceCollection services, Type service, Type implementation, object? serviceKey = null)
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(service);
@@ -36,7 +44,7 @@ static class FromExistingServiceCollectionExtensions
 
         foreach (var descriptor in services)
         {
-            if (descriptor.ServiceType == implementation)
+            if (descriptor.ServiceType == implementation && descriptor.ServiceKey == serviceKey)
             {
                 registration = descriptor;
                 break;
@@ -45,13 +53,15 @@ static class FromExistingServiceCollectionExtensions
 
         if (registration is null)
         {
-            throw new ArgumentNullException(nameof(implementation), $"Unable to find previously registered ServiceType of '{implementation.FullName}'");
+            var str = serviceKey is not null ? $" with service serviceKey '{serviceKey}'" : null;
+
+            throw new ArgumentNullException(nameof(implementation), $"Unable to find previously registered ServiceType of '{implementation.FullName}'{str}");
         }
 
-        var newRegistration = new ServiceDescriptor(
-            service,
-            sp => sp.GetRequiredService(implementation),
-            registration.Lifetime);
+        var newRegistration = serviceKey is null
+            ? new ServiceDescriptor(service, sp => sp.GetRequiredService(implementation), registration.Lifetime)
+            : new ServiceDescriptor(service, serviceKey, (sp, key) => sp.GetRequiredKeyedService(implementation, key), registration.Lifetime);
+
         services.Add(newRegistration);
     }
 
@@ -65,9 +75,19 @@ static class FromExistingServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        if (services.All(service => service.ServiceType != typeof(TService)))
+        if (services.All(service => !service.IsKeyedService && service.ServiceType != typeof(TService)))
         {
             services.AddFromExisting<TService, TImplementation>();
+        }
+    }
+
+    internal static void TryAddFromExisting<TService, TImplementation>(this IServiceCollection services, object? serviceKey) where TImplementation : TService
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        if (services.All(service => service.ServiceType != typeof(TService) && service.ServiceKey != serviceKey))
+        {
+            services.AddFromExisting<TService, TImplementation>(serviceKey);
         }
     }
 }

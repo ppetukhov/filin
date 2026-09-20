@@ -1,5 +1,4 @@
 using System.Buffers;
-using System.Data;
 using System.Data.Common;
 using System.Diagnostics;
 
@@ -15,6 +14,7 @@ sealed partial class EventStore
 {
     /// <inheritdoc/>
     sealed class AsyncEnumerable(
+            DbDataSource dataSource,
             DcbQuery query,
             EventPosition afterPosition,
             IOptions<EventStorePostgresOptions> options,
@@ -28,7 +28,7 @@ sealed partial class EventStore
             var opt = options.Value;
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
-            var command = CreateReadEventsCommand(CreateConnection(opt), afterPosition, query, opt.BatchSize);
+            var command = CreateReadEventsCommand(dataSource, afterPosition, query, opt.BatchSize);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
             return new AsyncEnumerator(command, InitialEnumeratorEvent(afterPosition), logger, opt, cancellationToken);
@@ -98,6 +98,9 @@ sealed partial class EventStore
                             logger.EventsReaded(_readCount);
                         }
 
+                        await reader.DisposeAsync().ConfigureAwait(false);
+                        _reader = null;
+
                         return false;
                     }
 
@@ -165,10 +168,7 @@ sealed partial class EventStore
         /// <inheritdoc/>
         public async ValueTask DisposeAsync()
         {
-            if (_disposed)
-            {
-                return;
-            }
+            ObjectDisposedException.ThrowIf(_disposed, this);
 
             _disposed = true;
             GC.SuppressFinalize(this);
@@ -184,25 +184,11 @@ sealed partial class EventStore
                 {
                 }
 #pragma warning restore CA1031 // Do not catch general exception types
+
+                _reader = null;
             }
 
-            var conn = command.Connection;
-
-            // disposing order: command then connection
-            command.Dispose();
-
-            if (conn is not null)
-            {
-#pragma warning disable CA1031 // Do not catch general exception types
-                try
-                {
-                    await conn.DisposeAsync().ConfigureAwait(false);
-                }
-                catch
-                {
-                }
-#pragma warning restore CA1031 // Do not catch general exception types
-            }
+            await command.DisposeAsync().ConfigureAwait(false);
         }
 
         static EventType GetEventType(int ordinalHash, int ordinalValue, DbDataReader reader)
@@ -256,16 +242,11 @@ sealed partial class EventStore
         {
             var reader = _reader;
 
-            if (reader is null || reader.IsClosed)
+            if (reader is null)
             {
                 if (logger.IsEnabled(LogLevel.Debug))
                 {
                     logger.ReadingEvents();
-                }
-
-                if (command.Connection is { State: ConnectionState.Closed } conn)
-                {
-                    await conn.ConnectToEventStoreAsync(options.Backoff, logger, cancellationToken).ConfigureAwait(false);
                 }
 
                 reader = _reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);

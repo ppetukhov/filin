@@ -10,14 +10,24 @@ sealed class CommandHandler<TCommand, TState>(IDeciderProxy<TCommand, TState> de
     where TCommand : notnull, ICommand<TState>
     where TState : notnull
 {
-    public async Task<ExecuteResult<TState>> ExecuteAsync(TCommand command, CancellationToken cancellationToken)
+    const int MAX_CONFLICTS_COUNT = 10;
+
+    public Task<ExecuteResult<TState>> ExecuteAsync(TCommand command, CancellationToken cancellationToken)
     {
         var tags = command.GetTags();
         var query = stateManager.Projector.GetQuery(tags);
         var projectionId = stateManager.Projector.GetProjectionId(tags);
 
-        while (true)
+        return ExecuteAsync(projectionId, query, command, cancellationToken);
+    }
+
+    async Task<ExecuteResult<TState>> ExecuteAsync(ProjectionId projectionId, DcbQuery query, TCommand command, CancellationToken cancellationToken)
+    {
+        var conflictCount = 0;
+        while (conflictCount < MAX_CONFLICTS_COUNT)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             var (state, metadata) = await stateManager.LoadStateAsync(projectionId, query, cancellationToken).ConfigureAwait(false);
 
             var decideResult = state is null ? decider.Decide(command) : decider.Decide(command, state);
@@ -36,8 +46,7 @@ sealed class CommandHandler<TCommand, TState>(IDeciderProxy<TCommand, TState> de
 
                 if (appendResult.IsConflict)
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
-
+                    conflictCount++;
                     continue;
                 }
 
@@ -51,8 +60,7 @@ sealed class CommandHandler<TCommand, TState>(IDeciderProxy<TCommand, TState> de
 
                 if (appendResult.IsConflict)
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
-
+                    conflictCount++;
                     continue;
                 }
 
@@ -70,6 +78,8 @@ sealed class CommandHandler<TCommand, TState>(IDeciderProxy<TCommand, TState> de
 
             return state;
         }
+
+        throw new DcbEventStoreException($"Too many conflicts");
     }
 
     static async Task<AppendResult> AppendAsync(DecideResult decideResult, AppendCondition appendCondition, IEventStore eventStore, CancellationToken cancellationToken)

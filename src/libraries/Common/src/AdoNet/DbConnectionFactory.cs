@@ -92,13 +92,20 @@ static class DbConnectionFactory
         return connection;
     }
 
+    public static DbDataSource CreateDataSource(string invariantName, string connectionString)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(invariantName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
+
+        var factory = FactoryCache.GetOrAdd(invariantName, GetFactory).Factory;
+        return factory.CreateDataSource(connectionString);
+    }
+
     sealed class CachedFactory(DbProviderFactory factory, string factoryName, string factoryDescription, string factoryAssemblyQualifiedNameKey)
     {
         /// <summary>
         /// The factory to provide vendor specific functionality.
         /// </summary>
-        /// <remarks>For more about <see href="http://florianreischl.blogspot.fi/2011/08/adonet-connection-pooling-internals-and.html">ConnectionPool</see>
-        /// and issues with using this factory. Take these notes into account when considering robustness of Orleans!</remarks>
         public readonly DbProviderFactory Factory = factory;
 
         /// <summary>

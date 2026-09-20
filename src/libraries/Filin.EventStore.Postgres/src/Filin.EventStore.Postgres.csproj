@@ -13,10 +13,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="$(CommonPath)\AdoNet\DbExtensions.cs" />
+    <Compile Include="$(CommonPath)\AdoNet\AdoNetInvariants.cs" LinkBase="Storage" />
+    <Compile Include="$(CommonPath)\AdoNet\DbConnectionFactory.cs" LinkBase="Storage" />
+    <Compile Include="$(CommonPath)\AdoNet\DbExtensions.cs" LinkBase="Storage" />
+    <Compile Include="$(CommonPath)\Hosting\DbDataSourseServiceCollectionExtensions.cs" LinkBase="Hosting" />
     <Compile Include="$(CommonPath)\Text\ValueStringBuilder.cs" />
+    <Compile Include="$(CommonPath)\Configuration\FromExistingServiceCollectionExtensions.cs" LinkBase="Configuration" />
   </ItemGroup>
-
+  
   <ItemGroup>
     <ProjectReference Include="$(LibrariesProjectRoot)\Filin.Compliance.Classification\src\Filin.Compliance.Classification.csproj" />
     <ProjectReference Include="$(LibrariesProjectRoot)\Filin.Executor\src\Filin.Executor.csproj" />

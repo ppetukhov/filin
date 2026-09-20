@@ -10,7 +10,7 @@ namespace Filin.Internal;
 
 sealed class StateManager<TState>(IEventStore eventStore,
     IProjectorProxy<TState> projector,
-    LRUCache<ProjectionId, Projection> cache,
+    LRUCache<ProjectionId, Task<Projection?>> cache,
     IProjectionStore? projectionStore,
     ProjectionSavePipeline<ProjectionTuple>? pipeline = null
     ) where TState : notnull
@@ -18,15 +18,43 @@ sealed class StateManager<TState>(IEventStore eventStore,
     public IEventStore EventStore => eventStore;
     public IProjectorProxy<TState> Projector => projector;
 
+    Task<Projection?> CacheItemFactory(ProjectionId projectionId) => projectionStore is not null ? projectionStore.LoadAsync(projectionId, default) : Task.FromResult<Projection?>(null);
+
+    Task<Projection?> UpdateCacheItem(ProjectionId projectionId, Task<Projection?> cacheEntry) => cacheEntry.IsFaulted ? CacheItemFactory(projectionId) : cacheEntry;
+
     public async Task<(TState? state, StateMetadata metadata)> LoadStateAsync(
         ProjectionId projectionId,
         DcbQuery query,
         CancellationToken cancellationToken)
     {
-        if (!cache.TryGet(projectionId, out var projection))
+        Projection? projection = null;
+        var attempts = 0;
+        do
         {
-            projection = projectionStore is not null ? await projectionStore.LoadAsync(projectionId, cancellationToken).ConfigureAwait(false) : null;
-        }
+            attempts++;
+            var projectionTask = cache.GetOrUpdate(projectionId, CacheItemFactory, UpdateCacheItem);
+
+            if (projectionTask.IsCompletedSuccessfully)
+            {
+                projection = projectionTask.Result;
+                break;
+            }
+
+            if (projectionTask.IsFaulted)
+            {
+                continue;
+            }
+
+            try
+            {
+                projection = await projectionTask.ConfigureAwait(false);
+                break;
+            }
+            catch
+            {
+                continue;
+            }
+        } while (attempts < 3);
 
         var (state, metadata) = projection is not null ? ((TState)projection.Payload, new StateMetadata(projection.Position, projection.Timestamp, StateStatus.Unchanged)) : default;
 
@@ -54,7 +82,9 @@ sealed class StateManager<TState>(IEventStore eventStore,
                 Payload = state
             };
 
-            cache.Set(projectionId, projection);
+            var cacheEntry = Task.FromResult<Projection?>(projection);
+
+            cache.Set(projectionId, cacheEntry);
 
             if (pipeline is not null)
             {

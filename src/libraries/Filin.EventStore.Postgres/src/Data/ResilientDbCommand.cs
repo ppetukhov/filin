@@ -31,7 +31,7 @@ class ResilientDbCommand(DbConnection conn, DbCommand inner) : DbCommand
 
     public override async ValueTask DisposeAsync()
     {
-        await inner.DisposeAsync().ConfigureAwait(false);
+        await conn.DisposeAsync().ConfigureAwait(false);
         await base.DisposeAsync().ConfigureAwait(false);
     }
 

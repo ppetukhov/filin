@@ -16,7 +16,7 @@ namespace Filin;
 sealed class HandlersFactory(
     IEventStore eventStore,
     IOptions<ExecutorOptions> options,
-    LRUCache<ProjectionId, Projection> _cache,
+    LRUCache<ProjectionId, Task<Projection?>> _cache,
     IProjectionStore? projectionStore = null,
     ProjectionSavePipeline<ProjectionTuple>? pipeline = null)
 {

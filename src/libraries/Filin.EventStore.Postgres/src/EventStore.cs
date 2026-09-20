@@ -1,6 +1,5 @@
-using System.Data;
+using System.Data.Common;
 using System.Globalization;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Channels;
 
@@ -11,17 +10,17 @@ using Filin.Storage;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-using Npgsql;
-
 namespace Filin.EventStore.Postgres;
 
 /// <summary>
 /// Реализация хранилища <see cref="IEventStore"/> в PostgreSQL.
 /// </summary>
+/// <param name="dataSource"></param>
 /// <param name="messageWriter"><inheritdoc cref="ChannelWriter{T}" path="/summary"/></param>
 /// <param name="loggerFactory"><inheritdoc cref="ILoggerFactory" path="/summary"/></param>
 /// <param name="options"><inheritdoc cref="IOptions{TOptions}" path="/summary"/></param>
 sealed partial class EventStore(
+    DbDataSource dataSource,
     ChannelWriter<Message> messageWriter,
     ILoggerFactory loggerFactory,
     IOptions<EventStorePostgresOptions> options) : IEventStore
@@ -43,10 +42,7 @@ sealed partial class EventStore(
                 _logger.AppendingEvents();
             }
 
-            using var connection = CreateConnection();
-            using var command = CreateAppendEventCommand(connection, @event, ref appendCondition, options.Value.StorageSerializer);
-
-            await connection.ConnectToEventStoreAsync(options.Value.Backoff, _logger, cancellationToken).ConfigureAwait(false);
+            using var command = CreateAppendEventCommand(dataSource, @event, ref appendCondition, options.Value.StorageSerializer);
 
             using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
 
@@ -113,13 +109,7 @@ sealed partial class EventStore(
 
             var count = events.Count;
 
-            using var connection = CreateConnection();
-            using var command = CreateAppendEventsCommand(connection, events, ref appendCondition, options.Value.StorageSerializer);
-
-            if (command.Connection is { } conn && conn.State != ConnectionState.Open)
-            {
-                await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
-            }
+            using var command = CreateAppendEventsCommand(dataSource, events, ref appendCondition, options.Value.StorageSerializer);
 
             var positions = new List<(EventPosition, DateTimeOffset)>(capacity: count);
 
@@ -197,7 +187,7 @@ sealed partial class EventStore(
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<DcbEventSequenced> ReadAsync(DcbQuery query, EventPosition afterPosition) => new AsyncEnumerable(query, afterPosition, options, _logger);
+    public IAsyncEnumerable<DcbEventSequenced> ReadAsync(DcbQuery query, EventPosition afterPosition) => new AsyncEnumerable(dataSource, query, afterPosition, options, _logger);
 
     /// <inheritdoc/>
     public IAsyncEnumerable<DcbEventSequenced> Subscribe(DcbQuery query) =>
@@ -219,9 +209,9 @@ sealed partial class EventStore(
             logger: _logger,
             storageEnumerable: ReadAsync(query, afterPosition));
 
-    static NpgsqlCommand CreateReadEventsCommand(NpgsqlConnection connection, EventPosition afterPosition, DcbQuery query, int limit)
+    static DbCommand CreateReadEventsCommand(DbDataSource dataSource, EventPosition afterPosition, DcbQuery query, int limit)
     {
-        var command = connection.CreateCommand();
+        var command = dataSource.CreateCommand();
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
         var sb = new ValueStringBuilder(initialCapacity: 512);
@@ -240,13 +230,13 @@ sealed partial class EventStore(
         return command;
     }
 
-    static NpgsqlCommand CreateAppendEventCommand(
-        NpgsqlConnection connection,
+    static DbCommand CreateAppendEventCommand(
+        DbDataSource dataSource,
         DcbEvent @event,
         ref AppendCondition appendCondition,
         IStorageSerializer serializer)
     {
-        var command = connection.CreateCommand();
+        var command = dataSource.CreateCommand();
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
         var sb = new ValueStringBuilder(initialCapacity: 512);
@@ -265,13 +255,13 @@ sealed partial class EventStore(
         return command;
     }
 
-    static NpgsqlCommand CreateAppendEventsCommand(
-        NpgsqlConnection connection,
+    static DbCommand CreateAppendEventsCommand(
+        DbDataSource dataSource,
         IEnumerable<DcbEvent> events,
         ref AppendCondition appendCondition,
         IStorageSerializer serializer)
     {
-        var command = connection.CreateCommand();
+        var command = dataSource.CreateCommand();
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
         var sb = new ValueStringBuilder(initialCapacity: 512);
@@ -304,7 +294,7 @@ sealed partial class EventStore(
         ref ValueStringBuilder sb,
         DcbEvent @event,
         string? eventIndex,
-        NpgsqlCommand command,
+        DbCommand command,
         IStorageSerializer serializer)
     {
         string pName;
@@ -363,14 +353,14 @@ sealed partial class EventStore(
         sbNames.Dispose();
     }
 
-    static void AppendAfterPosition(ref ValueStringBuilder sb, EventPosition afterPosition, NpgsqlCommand command)
+    static void AppendAfterPosition(ref ValueStringBuilder sb, EventPosition afterPosition, DbCommand command)
     {
         command.AddParameter(COMMAND_PARAMETER_NAME_AFTER, (long)afterPosition.Value);
 
         sb.Append(COMMAND_PARAMETER_NAME_AFTER);
     }
 
-    static void AppendQuery(ref ValueStringBuilder sb, DcbQuery query, NpgsqlCommand command)
+    static void AppendQuery(ref ValueStringBuilder sb, DcbQuery query, DbCommand command)
     {
         if (query.IsEmpty)
         {
@@ -499,9 +489,4 @@ sealed partial class EventStore(
     });
 
     static DcbEventStoreException EventStoreException(Exception ex) => new(message: ex.Message, innerException: ex);
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static NpgsqlConnection CreateConnection(EventStorePostgresOptions options) => new NpgsqlConnection(options.ConnectionString);
-
-    NpgsqlConnection CreateConnection() => CreateConnection(options.Value);
 }

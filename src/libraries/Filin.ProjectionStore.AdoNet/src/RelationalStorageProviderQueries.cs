@@ -4,7 +4,7 @@ namespace Filin.ProjectionStore.AdoNet;
 /// A container class for the queries currently used by the <see cref="ProjectionStore"/>.
 /// </summary>
 /// <remarks>This is provided as a separate entity in order to make these dynamically updatable.</remarks>
-public sealed record RelationalStorageProviderQueries
+sealed record RelationalStorageProviderQueries
 {
     /// <summary>
     /// The clause to create record in the storage.

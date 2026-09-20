@@ -1,4 +1,5 @@
 using System.Data;
+using System.Data.Common;
 using System.Diagnostics;
 
 using Filin.AdoNet;
@@ -15,23 +16,16 @@ namespace Filin.ProjectionStore.AdoNet;
 /// A storage provider for writing state data to relational storage.
 /// </summary>
 /// <remarks>
-/// <para>
-/// Required configuration params: <c>DataConnectionString</c>
-/// </para>
 /// </remarks>
-[DebuggerDisplay("Name = {name}, ConnectionString = {_storage.ConnectionString}")]
-public sealed class ProjectionStore(
+[DebuggerDisplay("Name = {name}, ConnectionName = {options.Value.ConnectionName}")]
+sealed class ProjectionStore(
+    DbDataSource dataSource,
     ILoggerFactory loggerFactory,
     IOptions<ProjectionStoreAdoNetOptions> options,
     string name) : IProjectionStore
 {
     readonly ILogger _logger = loggerFactory.CreateLogger("Filin.ProjectionStore.AdoNet");
     readonly IStorageSerializer _serializer = options.Value.StorageSerializer;
-
-    /// <summary>
-    /// The storage used for back-end operations.
-    /// </summary>
-    readonly IRelationalStorage _storage = RelationalStorage.CreateInstance(options.Value.Invariant, options.Value.ConnectionString);
 
     /// <summary>
     /// The queries currently used. When this is updated, the new queries will take effect immediately.
@@ -54,38 +48,38 @@ public sealed class ProjectionStore(
         {
             var opQueries = Interlocked.CompareExchange(ref _currentOperationalQueries, null, null) ?? await InitQueriesAsync(cancellationToken).ConfigureAwait(false);
 
-            var resultRecords = await _storage.ReadAsync(opQueries.ReadStorageKey, parameterProvider: command =>
+            using var conn = await dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+
+            using var command = conn.CreateCommand();
+
+            command.CommandText = opQueries.ReadStorageKey;
+
+            command.AddParameter(CommandParam.IdHash, (long)projectionId.Key.Hash);
+            command.AddParameter(CommandParam.IdName, projectionId.Key.Value);
+            command.AddParameter(CommandParam.TypeHash, (long)projectionId.ProjectorId.Hash);
+            command.AddParameter(CommandParam.TypeName, projectionId.ProjectorId.Value);
+
+            Projection? projection = null;
+
+            using var reader = await command.ExecuteReaderAsync(CommandBehavior.SingleRow | CommandBehavior.SingleResult, cancellationToken).ConfigureAwait(false);
+
+            if (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+            {
+                var payloadType = GetPayloadType(projectionId);
+
+                var ordinals = _ordinals ??= Ordinals.CreateOrdinals(reader);
+
+                if (reader.TryGetPayload(ordinal: ordinals.Payload, payloadType: payloadType, serializer: _serializer, payload: out var payload))
+                {
+                    projection = new Projection
                     {
-                        command.AddParameter(CommandParam.IdHash, (long)projectionId.Key.Hash);
-                        command.AddParameter(CommandParam.IdName, projectionId.Key.Value);
-                        command.AddParameter(CommandParam.TypeHash, (long)projectionId.ProjectorId.Hash);
-                        command.AddParameter(CommandParam.TypeName, projectionId.ProjectorId.Value);
-                    },
-                    selector: (selector, resultSetCount, token) =>
-                    {
-                        var payloadType = GetPayloadType(projectionId);
-
-                        var ordinals = _ordinals ??= Ordinals.CreateOrdinals(selector);
-
-                        if (selector.TryGetPayload(ordinal: ordinals.Payload, payloadType: payloadType, serializer: _serializer, payload: out var payload))
-                        {
-                            var projection = new Projection
-                            {
-                                Id = projectionId,
-                                Position = new EventPosition((ulong)selector.GetInt64(ordinals.Position)),
-                                Timestamp = new DateTime(selector.GetDateTime(ordinals.TimestampUtc).Ticks, DateTimeKind.Utc),
-                                Payload = payload,
-                            };
-
-                            return Task.FromResult(projection);
-                        }
-
-                        return Task.FromResult((Projection)null!);
-                    },
-                    cancellationToken: cancellationToken)
-                    .ConfigureAwait(false);
-
-            var projection = resultRecords.SingleOrDefault();
+                        Id = projectionId,
+                        Position = new EventPosition((ulong)reader.GetInt64(ordinals.Position)),
+                        Timestamp = new DateTime(reader.GetDateTime(ordinals.TimestampUtc).Ticks, DateTimeKind.Utc),
+                        Payload = payload,
+                    };
+                }
+            }
 
             if (projection is null)
             {
@@ -107,7 +101,6 @@ public sealed class ProjectionStore(
         }
     }
 
-
     /// <inheritdoc/>
     public async Task SaveAsync(Projection projection, bool create, CancellationToken cancellationToken = default)
     {
@@ -126,20 +119,23 @@ public sealed class ProjectionStore(
 
             var query = create ? opQueries.CreateStorageKey : opQueries.UpdateStorageKey;
 
-            _ = await _storage.ExecuteAsync(query, command =>
-                        {
-                            var projectionId = projection.Id;
+            using var conn = await dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
 
-                            command.AddParameter(CommandParam.IdHash, (long)projectionId.Key.Hash);
-                            command.AddParameter(CommandParam.IdName, projectionId.Key.Value);
-                            command.AddParameter(CommandParam.TypeHash, (long)projectionId.ProjectorId.Hash);
-                            command.AddParameter(CommandParam.TypeName, projectionId.ProjectorId.Value);
-                            command.AddParameter(CommandParam.Position, (long)projection.Position.Value);
-                            command.AddParameter(CommandParam.TimestampUtc, projection.Timestamp.ToUniversalTime());
-                            command.AddParameter(CommandParam.Payload, _serializer.Serialize(projection.Payload).ToArray());
-                        },
-                        cancellationToken: cancellationToken)
-                    .ConfigureAwait(false);
+            using var command = conn.CreateCommand();
+
+            command.CommandText = query;
+
+            var projectionId = projection.Id;
+
+            command.AddParameter(CommandParam.IdHash, (long)projectionId.Key.Hash);
+            command.AddParameter(CommandParam.IdName, projectionId.Key.Value);
+            command.AddParameter(CommandParam.TypeHash, (long)projectionId.ProjectorId.Hash);
+            command.AddParameter(CommandParam.TypeName, projectionId.ProjectorId.Value);
+            command.AddParameter(CommandParam.Position, (long)projection.Position.Value);
+            command.AddParameter(CommandParam.TimestampUtc, projection.Timestamp.ToUniversalTime());
+            command.AddParameter(CommandParam.Payload, _serializer.Serialize(projection.Payload).ToArray());
+
+            await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -168,16 +164,19 @@ public sealed class ProjectionStore(
         {
             var opQueries = Interlocked.CompareExchange(ref _currentOperationalQueries, null, null) ?? await InitQueriesAsync(cancellationToken).ConfigureAwait(false);
 
-            _ = await _storage.ExecuteAsync(opQueries.ClearStorageKey, command =>
-                        {
-                            command.AddParameter(CommandParam.IdHash, (long)projectionId.Key.Hash);
-                            command.AddParameter(CommandParam.IdName, projectionId.Key.Value);
-                            command.AddParameter(CommandParam.TypeHash, (long)projectionId.ProjectorId.Hash);
-                            command.AddParameter(CommandParam.TypeName, projectionId.ProjectorId.Value);
-                            command.AddParameter(CommandParam.Position, (long)position.Value);
-                        },
-                        cancellationToken: CancellationToken.None)
-                    .ConfigureAwait(false);
+            using var conn = await dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+
+            using var command = conn.CreateCommand();
+
+            command.CommandText = opQueries.ClearStorageKey;
+
+            command.AddParameter(CommandParam.IdHash, (long)projectionId.Key.Hash);
+            command.AddParameter(CommandParam.IdName, projectionId.Key.Value);
+            command.AddParameter(CommandParam.TypeHash, (long)projectionId.ProjectorId.Hash);
+            command.AddParameter(CommandParam.TypeName, projectionId.ProjectorId.Value);
+            command.AddParameter(CommandParam.Position, (long)position.Value);
+
+            await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -201,9 +200,20 @@ public sealed class ProjectionStore(
 
         const string InitializationQuery = $"SELECT query_key, query_text FROM Filin_query WHERE query_key = '{CreateStorageKey}' OR query_key = '{ReadStorageKey}' OR query_key = '{UpdateStorageKey}' OR query_key = '{ClearStorageKey}'";
 
-        var queries = await _storage.ReadAsync(InitializationQuery, static command => { }, static (selector, resultSetCount, token) =>
-                Task.FromResult((selector.GetValue<string>("query_key"), selector.GetValue<string>("query_text"))),
-            cancellationToken: cancellationToken).ConfigureAwait(false);
+        using var conn = await dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+
+        using var command = conn.CreateCommand();
+
+        command.CommandText = InitializationQuery;
+
+        using var reader = await command.ExecuteReaderAsync(CommandBehavior.SingleResult, cancellationToken).ConfigureAwait(false);
+
+        var queries = new List<(string, string)>();
+
+        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        {
+            queries.Add((reader.GetValue<string>("query_key"), reader.GetValue<string>("query_text")));
+        }
 
         var opQueries = new RelationalStorageProviderQueries
         {
@@ -220,7 +230,7 @@ public sealed class ProjectionStore(
             return oldValue;
         }
 
-        _logger.RelationalProviderInitProvider(name, _storage.InvariantName, _storage.ConnectionString);
+        _logger.RelationalProviderInitProvider(name, dataSource.GetType().FullName ?? string.Empty, dataSource.ConnectionString);
 
         return opQueries;
     }
@@ -257,11 +267,11 @@ public sealed class ProjectionStore(
         internal int TimestampUtc { get; init; }
         internal int Payload { get; init; }
 
-        internal static Ordinals CreateOrdinals(IDataRecord dataRecord) => new()
+        internal static Ordinals CreateOrdinals(DbDataReader dataReader) => new()
         {
-            Position = dataRecord.GetOrdinal("position"),
-            TimestampUtc = dataRecord.GetOrdinal("timestamp_utc"),
-            Payload = dataRecord.GetOrdinal("payload")
+            Position = dataReader.GetOrdinal("position"),
+            TimestampUtc = dataReader.GetOrdinal("timestamp_utc"),
+            Payload = dataReader.GetOrdinal("payload")
         };
     }
 }

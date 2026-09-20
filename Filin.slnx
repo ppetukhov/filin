@@ -41,6 +41,8 @@
   <Folder Name="/src/libraries/Common/" />
   <Folder Name="/src/libraries/Common/src/" />
   <Folder Name="/src/libraries/Common/src/AdoNet/">
+	<File Path="src/libraries/Common/src/AdoNet/AdoNetInvariants.cs" />
+	<File Path="src/libraries/Common/src/AdoNet/DbConnectionFactory.cs" />
     <File Path="src/libraries/Common/src/AdoNet/DbExtensions.cs" />
   </Folder>
   <Folder Name="/src/libraries/Common/src/Configuration/">
@@ -48,6 +50,7 @@
   </Folder>
   <Folder Name="/src/libraries/Common/src/Hosting/">
     <File Path="src/libraries/Common/src/Hosting/ReferencedAssemblyProvider.cs" />
+	<File Path="src/libraries/Common/src/Hosting/DbDataSourseServiceCollectionExtensions.cs" />
   </Folder>
   <Folder Name="/src/libraries/Common/src/Roslyn/">
     <File Path="src/libraries/Common/src/Roslyn/GetBestTypeByMetadataName.cs" />

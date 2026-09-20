@@ -1,12 +1,12 @@
 using System.Threading.Channels;
 
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options;
-
 using Filin.Configuration;
 using Filin.EventStore.Postgres;
 using Filin.Storage;
+
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 
 namespace Filin.Hosting;
 
@@ -22,28 +22,33 @@ public static class EventStorePostgresServiceCollectionExtensions
         this IServiceCollection services,
         Action<OptionsBuilder<EventStorePostgresOptions>>? configureOptions = null)
     {
+        var opt = services.AddOptions<EventStorePostgresOptions>();
+
         configureOptions?.Invoke(services.AddOptions<EventStorePostgresOptions>());
         services.ConfigureOptionsForLogging<EventStorePostgresOptions>();
         services.AddTransient<IPostConfigureOptions<EventStorePostgresOptions>, EventStorePostgresOptionsProvider>();
         services.AddTransient<IPostConfigureOptions<EventStorePostgresOptions>, DefaultStorageProviderSerializerOptionsConfigurator<EventStorePostgresOptions>>();
         services.AddSingleton<IValidateOptions<EventStorePostgresOptions>, EventStorePostgresOptionsValidator>();
 
-        if (!services.Any(d => d.ServiceType.Equals(typeof(MarkerSreamingService))
-                               && d.ImplementationInstance is MarkerSreamingService marker))
+        if (services.Contains(MarkerSreamingService.ServiceDescriptor))
         {
-            var streamChannel = Channel.CreateUnboundedPrioritized(new UnboundedPrioritizedChannelOptions<Message> { SingleReader = true, SingleWriter = false });
-
-            services.TryAddSingleton(streamChannel);
-
-            services.AddEventStore(EventStoreFactory.CreateEventStore);
-
-            services.AddHostedService(EventStoreFactory.CreateEventStreamingService);
-
-            services.AddSingleton(new MarkerSreamingService());
+            return services;
         }
+
+        services.Add(MarkerSreamingService.ServiceDescriptor);
+
+        var streamChannel = Channel.CreateUnboundedPrioritized(new UnboundedPrioritizedChannelOptions<Message> { SingleReader = true, SingleWriter = false });
+
+        services.TryAddSingleton(streamChannel);
+
+        services.AddEventStore(EventStoreFactory.CreateEventStore);
+
+        services.AddHostedService(EventStoreFactory.CreateEventStreamingService);
 
         return services;
     }
-
-    sealed record MarkerSreamingService();
+    sealed class MarkerSreamingService
+    {
+        public static readonly ServiceDescriptor ServiceDescriptor = ServiceDescriptor.Singleton(new MarkerSreamingService());
+    }
 }
