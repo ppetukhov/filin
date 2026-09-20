@@ -9,6 +9,7 @@
  
   <ItemGroup>
     <PackageReference Include="Npgsql" />
+    <PackageReference Include="Microsoft.Extensions.Resilience" />
   </ItemGroup>
 
   <ItemGroup>
