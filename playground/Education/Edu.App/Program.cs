@@ -62,44 +62,80 @@ _ = Task.Run(async () =>
 
 var executor = host.Services.GetRequiredService<IMediator>();
 
-var oldName = (string?)null;
-var courseGuid = Guid.Parse("0F033F3C-32A6-4295-AB7B-B5F93FE56E6D");
-
 long completedCount = 0;
+
+var allCources = new List<(Guid Id, string Name)>(capacity: 5000);
+{
+    var all = Resources.AllCourses.AsSpan();
+
+    var lineRanges = all.Split('\n');
+
+    foreach (var lineRange in lineRanges)
+    {
+        var textLine = all[lineRange];
+
+        var idx = textLine.IndexOf(',');
+
+        var guid = Guid.Parse(textLine[..idx]);
+        var name = new string(textLine[(idx + 1)..]);
+
+        allCources.Add((guid, name));
+    }
+}
+
+var sw = Stopwatch.StartNew();
 
 await Task.Run(async () =>
 {
-    const int Repeate = 2;
+    const int PARALLEL_TASKS = 1; // best perfomance with 1 parallel task
 
-    var courseTitles = Resources.CourseTitles.Split("\n");
+    const int ITERATIONS_COUNT = 1;
 
-    var tasks = new List<Task>(capacity: courseTitles.Length * Repeate);
+    const int CREATE_COURSES_COUNT = 5000;
 
-    var sw = Stopwatch.StartNew();
+    int CREATE_COURSES_CHUNK_SIZE = (int)double.Round((double)(CREATE_COURSES_COUNT * ITERATIONS_COUNT) / PARALLEL_TASKS, MidpointRounding.AwayFromZero);
 
-    foreach (var _ in Enumerable.Range(0, Repeate))
+    var tasks = new List<Task>(capacity: allCources.Count * ITERATIONS_COUNT);
+
+    sw.Restart();
+
+    foreach (var _ in Enumerable.Range(0, ITERATIONS_COUNT))
     {
-        foreach (var course in courseTitles)
+        foreach (var courses_chunk in allCources.Take(CREATE_COURSES_COUNT).Chunk(CREATE_COURSES_CHUNK_SIZE))
         {
             var task = Task.Run(async () =>
             {
-                var command = new CreateCourse(Guid.NewGuid(), course);
-
-                var res = await executor.ExecuteAsync<CreateCourse, CreateCourseState>(command, apptLifeTime.ApplicationStopping).ConfigureAwait(false);
-
-                Interlocked.Increment(ref completedCount);
-
-                var timeTaken = sw.ElapsedMilliseconds;
-
-                if (res.IsSuccess)
+                foreach (var course in courses_chunk)
                 {
-                    logger.LogInformation("Ok. {TimeTaken} ms, Command: {Command}; Result: Current course name: {Result}", timeTaken, command, res.State.CourseName);
+                    var command = new CreateCourse(course.Id, course.Name);
+
+                    try
+                    {
+                        apptLifeTime.ApplicationStopping.ThrowIfCancellationRequested();
+
+                        var startAt = sw.ElapsedMilliseconds;
+
+                        var res = await executor.ExecuteAsync<CreateCourse, CreateCourseState>(command, apptLifeTime.ApplicationStopping).ConfigureAwait(false);
+
+                        var timeTaken = sw.ElapsedMilliseconds - startAt;
+
+                        Interlocked.Increment(ref completedCount);
+
+                        if (res.IsSuccess)
+                        {
+                            logger.LogInformation("Ok. {TimeTaken} ms, Command: {Command}; Result: Current courses_chunk name: {Result}", timeTaken, command, res.State.CourseName);
+                        }
+                        else
+                        {
+                            logger.LogWarning("OK. {TimeTaken} ms, Business rule validation error. Command: {Command}; Result: {Result}", timeTaken, command, res.Error);
+                        }
+                    }
+                    catch (Exception e) when (e is not OperationCanceledException)
+                    {
+                        logger.LogError(e.Message);
+                    }
                 }
-                else
-                {
-                    logger.LogWarning("OK. {TimeTaken} ms, Business rule validation error. Command: {Command}; Result: {Result}", timeTaken, command, res.Error);
-                }
-            });
+            }, apptLifeTime.ApplicationStopping);
 
             tasks.Add(task);
         }
@@ -110,7 +146,7 @@ await Task.Run(async () =>
         await Task.WhenAll(tasks).ConfigureAwait(false);
 
         sw.Stop();
-        logger.LogCritical("CreateCourse WhenAll. Timetaken: {Timetaken} ms. Total tasks: {TaskCount}", sw.ElapsedMilliseconds, completedCount);
+        logger.LogInformation("CreateCourse WhenAll. Timetaken: {Timetaken} ms. Total tasks: {TaskCount}", sw.ElapsedMilliseconds, completedCount);
     }
     catch (Exception ex)
     {
@@ -119,125 +155,36 @@ await Task.Run(async () =>
     }
 }).ConfigureAwait(false);
 
-_ = Task.Run(async () =>
+await Task.Run(async () =>
 {
-    if (host is not null)
+    if (completedCount > -1)
     {
+        Console.WriteLine("No GetActiveCourses ...");
         return;
     }
 
-    var tasks = new List<Task<ExecuteResult<CreateCourseState>>>();
-
-    var getGetActiveCourses = new GetActiveCourses();
-
     try
     {
-        var activeCourses = await executor.QueryAsync<GetActiveCourses, ActiveCourses>(getGetActiveCourses, apptLifeTime.ApplicationStopping).ConfigureAwait(false);
+        var activeCourses = await executor.QueryAsync<GetActiveCourses, ActiveCourses>(new GetActiveCourses(), apptLifeTime.ApplicationStopping).ConfigureAwait(false);
 
         logger.LogInformation("Active courses {ActiveCourses}", activeCourses?.Courses.Count);
-
-        activeCourses?.Courses.TryGetValue(courseGuid, out oldName);
     }
     catch (Exception e)
     {
         logger.LogError(e, "GetActiveCourses error");
     }
+}).ConfigureAwait(false);
 
-    var sw = Stopwatch.StartNew();
+Console.WriteLine();
+Console.WriteLine();
+Console.WriteLine("Timetaken: {0} ms. Total tasks completed: {1}", sw.ElapsedMilliseconds, completedCount);
+Console.WriteLine();
+Console.WriteLine();
 
-    if (oldName is null)
-    {
-        var command = new CreateCourse(courseGuid, "Course ADO and .Net");
-        tasks.Add(executor.ExecuteAsync<CreateCourse, CreateCourseState>(command, apptLifeTime.ApplicationStopping));
-    }
+var dur = TimeSpan.FromSeconds(4);
 
-    var renameCommands = new List<RenameCourse>();
-
-    foreach (var course in Enumerable.Range(1, 10))
-    {
-        string CalcCourseName(int num) => $"Course .Net for beginner #{course}";
-
-        var renameCommand = new RenameCourse(courseGuid, CalcCourseName(Random.Shared.Next(1, 11)), oldName ?? "Course ADO and .Net");
-
-        renameCommands.Add(renameCommand);
-
-        tasks.Add(executor.ExecuteAsync<RenameCourse, CreateCourseState>(renameCommand, apptLifeTime.ApplicationStopping));
-    }
-
-    try
-    {
-        await Task.WhenAll(tasks).ConfigureAwait(false);
-
-        sw.Stop();
-        logger.LogInformation("RenameCourse WhenAll. Timetaken: {Timetaken} ms.", sw.ElapsedMilliseconds);
-    }
-    catch (Exception ex)
-    {
-        sw.Stop();
-        logger.LogError(ex, "RenameCourse WhenAll exception. Timetaken: {Timetaken} ms.", sw.ElapsedMilliseconds);
-    }
-
-    var idx = 0;
-
-    foreach (var task in tasks)
-    {
-        // task create cource
-        if (idx == 0 && oldName is null)
-        {
-            try
-            {
-                var result = task.Result;
-
-                logger.LogInformation("Course created");
-            }
-            catch (Exception exc)
-            {
-                logger.LogError(exc, "Create course error");
-            }
-
-            continue;
-        }
-
-        var command = renameCommands[idx++];
-
-        var hasOneSuccess = false;
-        try
-        {
-            var result = task.Result;
-
-            var res = result.IsSuccess
-                ? $"{result.State.CourseId} {result.State.CourseName}"
-                : result.Error.ToString();
-
-            if (hasOneSuccess && result.IsSuccess)
-            {
-                logger.LogError("ERROR. Command: {Command}; Result: {Result}", command, res);
-            }
-            else if (result.IsSuccess)
-            {
-                hasOneSuccess = true;
-                logger.LogInformation("OK. Command: {Command}; Result: {Result}", command, res);
-            }
-            else
-            {
-                logger.LogWarning("OK. Business error. Command: {Command}; Result: {Result}", command, res);
-            }
-        }
-        catch (AggregateException ex)
-        {
-            LogExeption(command, ex.Flatten().InnerExceptions.First());
-        }
-        catch (Exception ex)
-        {
-            LogExeption(command, ex);
-        }
-    }
-
-    void LogExeption(RenameCourse command, Exception ex)
-    {
-        logger.LogError("Command: {Command}; Exception: {Ex}", command.NewName, ex.Message);
-    }
-}, apptLifeTime.ApplicationStopping);
+Console.WriteLine($"Stop after {dur}");
+await Task.Delay(dur).ConfigureAwait(false);
 
 //Console.WriteLine("Press any key to stop...");
 //Console.ReadKey();

@@ -61,26 +61,18 @@ namespace Edu.App.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Essential Full-Stack Bootcamp
-        ///Foundational React Analytics
-        ///Essential Python Systems
-        ///Essential Cybersecurity Design
-        ///Hands-On AI Security
-        ///Applied Cloud Computing Applications
-        ///Comprehensive Cloud Computing Design
-        ///Ultimate AI Analytics
-        ///Foundational Deep Learning Analytics
-        ///Introductory Deep Learning Architecture
-        ///Comprehensive Machine Learning Optimization
-        ///Professional Deep Learning for Beginners
-        ///Practical Business Analytics Fundamentals
-        ///Professional JavaScript Engineering
-        ///Foundational Full-Stack Development
-        ///Ulti [rest of string was truncated]&quot;;.
+        ///   Looks up a localized string similar to 5518d35f-39f4-48a8-9f1d-64b707450f19,Essential Full-Stack Bootcamp
+        ///31885fe0-1edf-4b7e-bad5-634a945059f1,Foundational React Analytics
+        ///76dfcf02-54da-447e-b6bd-779f3c2a00d6,Essential Python Systems
+        ///f1e7dd8e-70fe-4bea-b6b5-ad9842c9a7d2,Essential Cybersecurity Design
+        ///14cbf242-75e6-4f31-9dc3-253ca3ad81b5,Hands-On AI Security
+        ///8a076fea-4f0d-4618-9370-f4cdf1ab5ecc,Applied Cloud Computing Applications
+        ///48c0cc94-3d94-4419-a919-9fe508ce28bd,Comprehensive Cloud Computing Design
+        ///54d19586-0269-4227-bd4a-618cadb00886,Ultima [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string CourseTitles {
+        internal static string AllCourses {
             get {
-                return ResourceManager.GetString("CourseTitles", resourceCulture);
+                return ResourceManager.GetString("AllCourses", resourceCulture);
             }
         }
     }
