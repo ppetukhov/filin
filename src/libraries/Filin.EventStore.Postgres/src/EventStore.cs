@@ -23,61 +23,23 @@ sealed partial class EventStore(
     DbDataSource dataSource,
     ChannelWriter<Message> messageWriter,
     ILoggerFactory loggerFactory,
-    IOptions<EventStorePostgresOptions> options) : IEventStore
+    IOptions<EventStorePostgresOptions> options) : IEventStore, IAsyncDisposable
 {
     const string COMMAND_PARAMETER_NAME_AFTER = "@aft";
     const string COMMAND_PARAMETER_NAME_LIMIT = "@limit";
 
     readonly ILogger _logger = loggerFactory.CreateLogger("Filin.EventStore.Postgres");
 
+    readonly AppendEventsProcessor _appenEventsProcessor = new(options.Value.AppendBoundedCapacity, loggerFactory.CreateLogger("Filin.EventStore.Postgres"));
+
     /// <inheritdoc/>
-    public async Task<AppendResult> AppendAsync(DcbEvent @event, AppendCondition appendCondition, CancellationToken cancellationToken)
+    public Task<AppendResult> AppendAsync(DcbEvent @event, AppendCondition appendCondition, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(@event);
 
-        try
-        {
-            if (_logger.IsEnabled(LogLevel.Debug))
-            {
-                _logger.AppendingEvents();
-            }
+        var command = CreateAppendEventCommand(dataSource, @event, ref appendCondition, options.Value.StorageSerializer);
 
-            using var command = CreateAppendEventCommand(dataSource, @event, ref appendCondition, options.Value.StorageSerializer);
-
-            using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
-
-            if (!await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
-            {
-                _logger.ConflictAppendingEvents();
-
-                return AppendResult.Conflict;
-            }
-
-            var position = new EventPosition((ulong)reader.GetInt64(reader.GetOrdinal(ColumnNames.Position)));
-            var timestamp = new DateTime(reader.GetDateTime(reader.GetOrdinal(ColumnNames.CreatedAt)).Ticks, DateTimeKind.Utc);
-
-            if (_logger.IsEnabled(LogLevel.Debug))
-            {
-                _logger.EventsAppended();
-            }
-
-            return new(new DcbEventSequenced(position, timestamp, @event));
-        }
-        catch (OperationCanceledException)
-        {
-            if (_logger.IsEnabled(LogLevel.Debug))
-            {
-                _logger.AppendingEventsCancelled();
-            }
-
-            throw;
-        }
-        catch (Exception ex)
-        {
-            _logger.ErrorAppendEvents(ex);
-
-            throw EventStoreException(ex);
-        }
+        return _appenEventsProcessor.AppendEvent(command, @event, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -96,94 +58,6 @@ sealed partial class EventStore(
             1 => AppendAsync(collection.First(), appendCondition, cancellationToken),
             _ => AppendAsync(collection, appendCondition, cancellationToken),
         };
-    }
-
-    async Task<AppendResult> AppendAsync(ICollection<DcbEvent> events, AppendCondition appendCondition, CancellationToken cancellationToken)
-    {
-        try
-        {
-            if (_logger.IsEnabled(LogLevel.Debug))
-            {
-                _logger.AppendingEvents();
-            }
-
-            var count = events.Count;
-
-            using var command = CreateAppendEventsCommand(dataSource, events, ref appendCondition, options.Value.StorageSerializer);
-
-            var positions = new List<(EventPosition, DateTimeOffset)>(capacity: count);
-
-            using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
-
-            var positionOrdinal = reader.GetOrdinal(ColumnNames.Position);
-            var createAtOrdinal = reader.GetOrdinal(ColumnNames.CreatedAt);
-
-            while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
-            {
-                var position = new EventPosition((ulong)reader.GetInt64(positionOrdinal));
-                var timestamp = new DateTime(reader.GetDateTime(createAtOrdinal).Ticks, DateTimeKind.Utc);
-
-                positions.Add((position, timestamp));
-            }
-
-            if (positions.Count == 0)
-            {
-                _logger.ConflictAppendingEvents();
-
-                return AppendResult.Conflict;
-            }
-
-            if (positions.Count == count)
-            {
-                if (_logger.IsEnabled(LogLevel.Debug))
-                {
-                    _logger.EventsAppended();
-                }
-
-                var items = new DcbEventSequenced[count];
-
-                var i = 0;
-
-                foreach (var evt in events)
-                {
-                    var (position, timestamp) = positions[i];
-
-                    items[i] = new(position, timestamp, evt);
-                    i++;
-                }
-
-                return new(items);
-            }
-
-            throw UnexpectedRowsCountException(ref appendCondition, count, positions.Count);
-        }
-        catch (OperationCanceledException)
-        {
-            if (_logger.IsEnabled(LogLevel.Debug))
-            {
-                _logger.AppendingEventsCancelled();
-            }
-
-            throw;
-        }
-        catch (Exception ex)
-        {
-            _logger.ErrorAppendEvents(ex);
-
-            throw EventStoreException(ex);
-        }
-    }
-
-    static InvalidOperationException UnexpectedRowsCountException(ref AppendCondition appendCondition, int expectedCount, int count)
-    {
-        var ex = new InvalidOperationException("Unexpected rows count");
-
-        ex.Data["Count"] = count;
-        ex.Data["ExpectedCount"] = expectedCount;
-        ex.Data["FailIfEventsMatch"] = appendCondition.FailIfEventsMatch;
-        ex.Data["After"] = appendCondition.After;
-
-        return ex;
     }
 
     /// <inheritdoc/>
@@ -208,6 +82,8 @@ sealed partial class EventStore(
             options: options,
             logger: _logger,
             storageEnumerable: ReadAsync(query, afterPosition));
+
+    public ValueTask DisposeAsync() => _appenEventsProcessor.DisposeAsync();
 
     static DbCommand CreateReadEventsCommand(DbDataSource dataSource, EventPosition afterPosition, DcbQuery query, int limit)
     {
@@ -489,4 +365,11 @@ sealed partial class EventStore(
     });
 
     static DcbEventStoreException EventStoreException(Exception ex) => new(message: ex.Message, innerException: ex);
+
+    Task<AppendResult> AppendAsync(ICollection<DcbEvent> events, AppendCondition appendCondition, CancellationToken cancellationToken)
+    {
+        var command = CreateAppendEventsCommand(dataSource, events, ref appendCondition, options.Value.StorageSerializer);
+
+        return _appenEventsProcessor.AppendEvents(command, events, cancellationToken);
+    }
 }

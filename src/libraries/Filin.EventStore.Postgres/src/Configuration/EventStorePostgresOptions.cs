@@ -56,6 +56,13 @@ public sealed class EventStorePostgresOptions : IStorageProviderSerializerOption
     public int SubscriptionEventBuffer { get; set; } = 1000;
 
     /// <summary>
+    /// Appending queue size.
+    /// </summary>
+    /// <remarks>-1 unlimited capacity. Default is 1000.</remarks>
+    [Range(-1, int.MaxValue)]
+    public int AppendBoundedCapacity { get; set; } = 1000;
+
+    /// <summary>
     /// <inheritdoc cref="EventStorePostgresBackoff" path="/summary"/>
     /// </summary>
     [Required]

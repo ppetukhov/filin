@@ -87,7 +87,7 @@ var sw = Stopwatch.StartNew();
 
 await Task.Run(async () =>
 {
-    const int PARALLEL_TASKS = 1; // best perfomance with 1 parallel task
+    const int PARALLEL_TASKS = 500;
 
     const int ITERATIONS_COUNT = 1;
 
@@ -101,11 +101,11 @@ await Task.Run(async () =>
 
     foreach (var _ in Enumerable.Range(0, ITERATIONS_COUNT))
     {
-        foreach (var courses_chunk in allCources.Take(CREATE_COURSES_COUNT).Chunk(CREATE_COURSES_CHUNK_SIZE))
+        foreach (var chunk in allCources.Take(CREATE_COURSES_COUNT).Chunk(CREATE_COURSES_CHUNK_SIZE))
         {
             var task = Task.Run(async () =>
             {
-                foreach (var course in courses_chunk)
+                foreach (var course in chunk)
                 {
                     var command = new CreateCourse(course.Id, course.Name);
 
@@ -123,7 +123,7 @@ await Task.Run(async () =>
 
                         if (res.IsSuccess)
                         {
-                            logger.LogInformation("Ok. {TimeTaken} ms, Command: {Command}; Result: Current courses_chunk name: {Result}", timeTaken, command, res.State.CourseName);
+                            logger.LogInformation("Ok. {TimeTaken} ms, Command: {Command}; Result: Current chunk name: {Result}", timeTaken, command, res.State.CourseName);
                         }
                         else
                         {
