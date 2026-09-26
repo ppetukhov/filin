@@ -1,7 +1,9 @@
 using System.Threading.Channels;
 
 using Filin.Configuration;
+using Filin.DataFlow;
 using Filin.EventStore.Postgres;
+using Filin.EventStore.Postgres.DataFlow;
 using Filin.Storage;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -40,6 +42,10 @@ public static class EventStorePostgresServiceCollectionExtensions
         var streamChannel = Channel.CreateUnboundedPrioritized(new UnboundedPrioritizedChannelOptions<Message> { SingleReader = true, SingleWriter = false });
 
         services.TryAddSingleton(streamChannel);
+
+        services.TryAddSingleton(EventStoreFactory.CreateAppendEventsBlock);
+
+        services.TryAddFromExisting<IAppendEventsBlock, AppendEventsBlock>();
 
         services.AddEventStore(EventStoreFactory.CreateEventStore);
 

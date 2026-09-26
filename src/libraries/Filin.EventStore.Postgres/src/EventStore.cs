@@ -5,6 +5,7 @@ using System.Threading.Channels;
 
 using Filin.AdoNet;
 using Filin.Configuration;
+using Filin.EventStore.Postgres.DataFlow;
 using Filin.Storage;
 
 using Microsoft.Extensions.Logging;
@@ -16,30 +17,28 @@ namespace Filin.EventStore.Postgres;
 /// Реализация хранилища <see cref="IEventStore"/> в PostgreSQL.
 /// </summary>
 /// <param name="dataSource"></param>
+/// <param name="appendEventsBlock"><inheritdoc cref="AppendEventsBlock" path="/summary"/></param>
 /// <param name="messageWriter"><inheritdoc cref="ChannelWriter{T}" path="/summary"/></param>
 /// <param name="loggerFactory"><inheritdoc cref="ILoggerFactory" path="/summary"/></param>
 /// <param name="options"><inheritdoc cref="IOptions{TOptions}" path="/summary"/></param>
 sealed partial class EventStore(
     DbDataSource dataSource,
+    AppendEventsBlock appendEventsBlock,
     ChannelWriter<Message> messageWriter,
     ILoggerFactory loggerFactory,
-    IOptions<EventStorePostgresOptions> options) : IEventStore, IAsyncDisposable
+    IOptions<EventStorePostgresOptions> options) : IEventStore
 {
     const string COMMAND_PARAMETER_NAME_AFTER = "@aft";
     const string COMMAND_PARAMETER_NAME_LIMIT = "@limit";
 
     readonly ILogger _logger = loggerFactory.CreateLogger("Filin.EventStore.Postgres");
 
-    readonly AppendEventsProcessor _appenEventsProcessor = new(options.Value.AppendBoundedCapacity, loggerFactory.CreateLogger("Filin.EventStore.Postgres"));
-
     /// <inheritdoc/>
     public Task<AppendResult> AppendAsync(DcbEvent @event, AppendCondition appendCondition, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(@event);
 
-        var command = CreateAppendEventCommand(dataSource, @event, ref appendCondition, options.Value.StorageSerializer);
-
-        return _appenEventsProcessor.AppendEvent(command, @event, cancellationToken);
+        return appendEventsBlock.AppendAventAsync(@event, appendCondition, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -83,8 +82,6 @@ sealed partial class EventStore(
             logger: _logger,
             storageEnumerable: ReadAsync(query, afterPosition));
 
-    public ValueTask DisposeAsync() => _appenEventsProcessor.DisposeAsync();
-
     static DbCommand CreateReadEventsCommand(DbDataSource dataSource, EventPosition afterPosition, DcbQuery query, int limit)
     {
         var command = dataSource.CreateCommand();
@@ -106,7 +103,7 @@ sealed partial class EventStore(
         return command;
     }
 
-    static DbCommand CreateAppendEventCommand(
+    internal static DbCommand CreateAppendEventCommand(
         DbDataSource dataSource,
         DcbEvent @event,
         ref AppendCondition appendCondition,
@@ -131,7 +128,7 @@ sealed partial class EventStore(
         return command;
     }
 
-    static DbCommand CreateAppendEventsCommand(
+    internal static DbCommand CreateAppendEventsCommand(
         DbDataSource dataSource,
         IEnumerable<DcbEvent> events,
         ref AppendCondition appendCondition,
@@ -366,10 +363,5 @@ sealed partial class EventStore(
 
     static DcbEventStoreException EventStoreException(Exception ex) => new(message: ex.Message, innerException: ex);
 
-    Task<AppendResult> AppendAsync(ICollection<DcbEvent> events, AppendCondition appendCondition, CancellationToken cancellationToken)
-    {
-        var command = CreateAppendEventsCommand(dataSource, events, ref appendCondition, options.Value.StorageSerializer);
-
-        return _appenEventsProcessor.AppendEvents(command, events, cancellationToken);
-    }
+    Task<AppendResult> AppendAsync(ICollection<DcbEvent> events, AppendCondition appendCondition, CancellationToken cancellationToken) => appendEventsBlock.AppendEventsAsync(events, appendCondition, cancellationToken);
 }

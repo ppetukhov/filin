@@ -15,6 +15,7 @@ public interface IMediator
     /// <exception cref="DcbEventStoreException"/>
     /// <exception cref="DcbProjectorException"/>
     /// <exception cref="DcbProjectionStoreException"/>
+    /// <exception cref="MediatorException"/>
     /// <returns>
     /// A <see cref="ValueTask{TResult}"/> wrapping a <see cref="ExecuteResult{TState}"/>, yielding the brand-new 
     /// state <typeparamref name="TState"/> if successful, or a structured domain business error on failure.
@@ -33,6 +34,7 @@ public interface IMediator
     /// <exception cref="DcbEventStoreException"/>
     /// <exception cref="DcbProjectorException"/>
     /// <exception cref="DcbProjectionStoreException"/>
+    /// <exception cref="MediatorException"/>
     /// <returns>
     /// A <see cref="ValueTask{TResult}"/> containing the resolved read-model <typeparamref name="TProjection"/>, 
     /// or <see langword="null"/> if no matching state projection exists.

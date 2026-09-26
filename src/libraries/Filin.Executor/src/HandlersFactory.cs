@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 using Filin.Configuration;
+using Filin.DataFlow;
 using Filin.Internal;
 using Filin.Storage;
 
@@ -15,6 +16,7 @@ namespace Filin;
 [RequiresDynamicCode("Calls System.Type.MakeGenericType(params Type[])")]
 sealed class HandlersFactory(
     IEventStore eventStore,
+    IAppendEventsBlock appendEventsBlock,
     IOptions<ExecutorOptions> options,
     LRUCache<ProjectionId, Task<Projection?>> _cache,
     IProjectionStore? projectionStore = null,
@@ -59,7 +61,7 @@ sealed class HandlersFactory(
 
         var projector = CreateProjectorInvokerInstance(stateType);
 
-        return Activator.CreateInstance(type, ConstructorDefault, null, [eventStore, projector, _cache, projectionStore, pipeline], null) ?? throw new InvalidOperationException($"Fail create instance of {type.FullName}");
+        return Activator.CreateInstance(type, ConstructorDefault, null, [eventStore, appendEventsBlock, projector, _cache, projectionStore, pipeline], null) ?? throw new InvalidOperationException($"Fail create instance of {type.FullName}");
     }
 
     object CreateProjectorInvokerInstance(Type stateType) =>

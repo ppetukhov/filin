@@ -17,7 +17,7 @@ public readonly partial struct AppendResult
     /// </summary>
     public static readonly AppendResult Empty = new(false);
 
-    readonly object? _value; // Stores either a single DcbEvent or a IReadOnlyList<DcbEventSequenced> list.
+    readonly object? _value; // Stores either a single DcbEvent or a IReadOnlyList<DcbEventSequenced> list or Exception.
     readonly EventPosition _pos;
     readonly DateTimeOffset _ts;
 
@@ -60,6 +60,13 @@ public readonly partial struct AppendResult
         }
 
         _value = events;
+    }
+
+    public AppendResult(Exception exception)
+    {
+        ArgumentNullException.ThrowIfNull(exception);
+
+        _value = exception;
     }
 
     AppendResult(bool hasConflict) => _value = hasConflict ? null : (IReadOnlyList<DcbEventSequenced>)Array.Empty<DcbEventSequenced>().AsReadOnly();
@@ -107,12 +114,16 @@ public readonly partial struct AppendResult
     /// <summary>
     /// Gets a value indicating whether the event append operation completed successfully.
     /// </summary>
-    public readonly bool IsSuccess => _value is not null;
+    public readonly bool IsSuccess => _value is DcbEvent or IReadOnlyList<DcbEventSequenced>;
 
     /// <summary>
     /// Gets a value indicating whether a conflict occurred.
     /// </summary>
-    public readonly bool IsConflict => !IsSuccess;
+    public readonly bool IsConflict => _value is null;
+
+    public readonly bool IsError => _value is Exception;
+
+    public readonly Exception? Exception => _value as Exception;
 
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
