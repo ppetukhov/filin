@@ -19,6 +19,7 @@ using Microsoft.Extensions.Logging;
 #pragma warning disable CA1848 // Use the LoggerMessage delegates
 #pragma warning disable CA1873 // Avoid potentially expensive logging
 
+Console.Clear();
 Console.WriteLine("Ins App 1");
 
 #pragma warning disable IL3002 // Avoid calling members marked with 'RequiresAssemblyFilesAttribute' when publishing as a single-file
@@ -48,16 +49,19 @@ var eventStore = host.Services.GetRequiredService<IEventStore>();
 
 _ = Task.Run(async () =>
 {
-    logger.LogInformation("Subscribed. Started");
+    if (logger.IsEnabled(LogLevel.Information))
+        logger.LogInformation("Subscribed. Started");
 
     var queryStream = new DcbQuery([new DcbQueryItem(["CourseRenamed"], [])]);
 
     await foreach (var @event in eventStore.Subscribe(queryStream, default).WithCancellation(apptLifeTime.ApplicationStopping))
     {
-        logger.LogInformation("Subscribed. Recived Event {Event}", @event);
+        if (logger.IsEnabled(LogLevel.Information))
+            logger.LogInformation("Subscribed. Recived Event {Event}", @event);
     }
 
-    logger.LogInformation("Subscribed. Finished");
+    if (logger.IsEnabled(LogLevel.Information))
+        logger.LogInformation("Subscribed. Finished");
 });
 
 var executor = host.Services.GetRequiredService<IMediator>();
@@ -87,7 +91,7 @@ var sw = Stopwatch.StartNew();
 
 await Task.Run(async () =>
 {
-    const int PARALLEL_TASKS = 500;
+    const int PARALLEL_TASKS = 100;
 
     const int ITERATIONS_COUNT = 1;
 
@@ -95,7 +99,15 @@ await Task.Run(async () =>
 
     int CREATE_COURSES_CHUNK_SIZE = (int)double.Round((double)(CREATE_COURSES_COUNT * ITERATIONS_COUNT) / PARALLEL_TASKS, MidpointRounding.AwayFromZero);
 
-    var tasks = new List<Task>(capacity: allCources.Count * ITERATIONS_COUNT);
+    Console.WriteLine();
+    Console.WriteLine($"Execute {nameof(CreateCourse)} commands: {{0}}", CREATE_COURSES_COUNT * ITERATIONS_COUNT);
+    Console.WriteLine("Parallel tasks: {0}", PARALLEL_TASKS);
+    Console.WriteLine(" . - Success added");
+    Console.WriteLine(" ! - Business rule error");
+    Console.WriteLine(" x - Exception");
+    Console.WriteLine();
+
+    var tasks = new List<Task<List<(object command, long timeTaken, object result)>>>(capacity: allCources.Count * ITERATIONS_COUNT);
 
     sw.Restart();
 
@@ -105,6 +117,8 @@ await Task.Run(async () =>
         {
             var task = Task.Run(async () =>
             {
+                var list = new List<(object command, long timeTaken, object result)>(capacity: chunk.Length);
+
                 foreach (var course in chunk)
                 {
                     var command = new CreateCourse(course.Id, course.Name);
@@ -121,20 +135,25 @@ await Task.Run(async () =>
 
                         Interlocked.Increment(ref completedCount);
 
+                        list.Add((command, timeTaken, res));
+
                         if (res.IsSuccess)
                         {
-                            logger.LogInformation("Ok. {TimeTaken} ms, Command: {Command}; Result: Current chunk name: {Result}", timeTaken, command, res.State.CourseName);
+                            Console.Write('.');
                         }
                         else
                         {
-                            logger.LogWarning("OK. {TimeTaken} ms, Business rule validation error. Command: {Command}; Result: {Result}", timeTaken, command, res.Error);
+                            Console.Write('!');
                         }
                     }
                     catch (Exception e) when (e is not OperationCanceledException)
                     {
-                        logger.LogError(e.Message);
+                        Console.Write('x');
                     }
                 }
+
+                return list;
+
             }, apptLifeTime.ApplicationStopping);
 
             tasks.Add(task);
@@ -145,13 +164,56 @@ await Task.Run(async () =>
     {
         await Task.WhenAll(tasks).ConfigureAwait(false);
 
+        Console.WriteLine();
+
         sw.Stop();
-        logger.LogInformation("CreateCourse WhenAll. Timetaken: {Timetaken} ms. Total tasks: {TaskCount}", sw.ElapsedMilliseconds, completedCount);
+
+        if (logger.IsEnabled(LogLevel.Information))
+        {
+            foreach (var task in tasks)
+            {
+                if (task.Exception is Exception e)
+                {
+                    if (logger.IsEnabled(LogLevel.Error))
+                    {
+                        Console.WriteLine();
+                        logger.LogError(e.Message);
+                    }
+
+                    continue;
+                }
+
+                var list = task.Result;
+
+                foreach (var (command, timeTaken, result) in list)
+                {
+                    if (result is ExecuteResult<CreateCourseState> res)
+                    {
+                        if (res.IsSuccess)
+                        {
+                            if (logger.IsEnabled(LogLevel.Information))
+                                logger.LogInformation("Ok. {TimeTaken} ms, Command: {Command}; Result: Current chunk name: {Result}", timeTaken, command, res.State.CourseName);
+                        }
+                        else
+                        {
+                            if (logger.IsEnabled(LogLevel.Warning))
+                                logger.LogWarning("OK. {TimeTaken} ms, Business rule validation error. Command: {Command}; Result: {Result}", timeTaken, command, res.Error);
+                        }
+                    }
+                }
+            }
+        }
+
+        Console.WriteLine("CreateCourse WhenAll. Timetaken: {0} ms. Total tasks: {1}", sw.ElapsedMilliseconds, completedCount);
     }
     catch (Exception ex)
     {
         sw.Stop();
-        logger.LogError(ex, "CreateCourse WhenAll exception. Timetaken: {Timetaken} ms. Total tasks: {TaskCount}", sw.ElapsedMilliseconds, completedCount);
+
+        Console.WriteLine();
+
+        if (logger.IsEnabled(LogLevel.Error))
+            logger.LogError(ex, "CreateCourse WhenAll exception. Timetaken: {Timetaken} ms. Total tasks: {TaskCount}", sw.ElapsedMilliseconds, completedCount);
     }
 }).ConfigureAwait(false);
 
@@ -159,7 +221,8 @@ await Task.Run(async () =>
 {
     if (completedCount > -1)
     {
-        Console.WriteLine("No GetActiveCourses ...");
+        if (logger.IsEnabled(LogLevel.Information))
+            logger.LogInformation("No GetActiveCourses ...");
         return;
     }
 
@@ -167,11 +230,13 @@ await Task.Run(async () =>
     {
         var activeCourses = await executor.QueryAsync<GetActiveCourses, ActiveCourses>(new GetActiveCourses(), apptLifeTime.ApplicationStopping).ConfigureAwait(false);
 
-        logger.LogInformation("Active courses {ActiveCourses}", activeCourses?.Courses.Count);
+        if (logger.IsEnabled(LogLevel.Information))
+            logger.LogInformation("Active courses {ActiveCourses}", activeCourses?.Courses.Count);
     }
     catch (Exception e)
     {
-        logger.LogError(e, "GetActiveCourses error");
+        if (logger.IsEnabled(LogLevel.Error))
+            logger.LogError(e, "GetActiveCourses error");
     }
 }).ConfigureAwait(false);
 
@@ -180,17 +245,6 @@ Console.WriteLine();
 Console.WriteLine("Timetaken: {0} ms. Total tasks completed: {1}", sw.ElapsedMilliseconds, completedCount);
 Console.WriteLine();
 Console.WriteLine();
-
-var dur = TimeSpan.FromSeconds(4);
-
-Console.WriteLine($"Stop after {dur}");
-await Task.Delay(dur).ConfigureAwait(false);
-
-//Console.WriteLine("Press any key to stop...");
-//Console.ReadKey();
-//Console.WriteLine("Key press detected. Initiating application shutdown...");
-
-//await host.StopAsync().ConfigureAwait(false);
 
 #pragma warning restore CA1873 // Avoid potentially expensive logging
 #pragma warning restore CA1848 // Use the LoggerMessage delegates
