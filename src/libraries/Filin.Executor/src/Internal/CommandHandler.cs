@@ -32,7 +32,7 @@ sealed class CommandHandler<TCommand, TState> : IDisposable
 
         var toRetryLoadStateBlock = new TransformBlock<AppendedEvents, LoadStateRequest<TState>>(static request => request.LoadedState.LoadStateResponse.AddConflict(), execOpt);
 
-        var applyEventsBlock = new TransformBlock<AppendedEvents, (TState, ProjectionId, StateMetadata)>(ApplyEventsToState, execOpt);
+        var applyEventsBlock = new TransformBlock<AppendedEvents, SaveStateRequest<TState>>(ApplyEventsToState, execOpt);
 
         var stateLoadedBlock = new TransformBlock<LoadStateResponse<TState>, LoadedState>(ToLoadedState, execOpt);
 
@@ -60,7 +60,7 @@ sealed class CommandHandler<TCommand, TState> : IDisposable
             appendedEventsBlock.LinkTo(toRetryLoadStateBlock, linkOpt, static resp => resp.Result.IsConflict),
             appendedEventsBlock.LinkTo(new ActionBlock<AppendedEvents>(DropCompletedOrError, execOpt), linkOpt, IsCompletedOrError), // drop error result
 
-            applyEventsBlock.LinkTo(new ActionBlock<(TState, ProjectionId, StateMetadata)>(SaveState, execOpt), linkOpt)
+            applyEventsBlock.LinkTo(stateManager.SaveStateBlock, linkOpt)
         ];
     }
 
@@ -199,7 +199,7 @@ sealed class CommandHandler<TCommand, TState> : IDisposable
         }
     }
 
-    (TState, ProjectionId, StateMetadata) ApplyEventsToState(AppendedEvents request)
+    SaveStateRequest<TState> ApplyEventsToState(AppendedEvents request)
     {
         var (appendResult, (state, metadata, loadStateRequest)) = request;
 
@@ -225,16 +225,6 @@ sealed class CommandHandler<TCommand, TState> : IDisposable
             loadStateRequest.TrySetException(ex);
 
             return new(default!, default, default);
-        }
-    }
-
-    void SaveState((TState, ProjectionId, StateMetadata) request)
-    {
-        var (state, projectionId, metadata) = request;
-
-        if (state is not null)
-        {
-            _stateManager.Save(state, projectionId, ref metadata);
         }
     }
 

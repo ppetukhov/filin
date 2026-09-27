@@ -63,8 +63,7 @@ sealed class QueryHandler<TQuery, TState> : IDisposable
 
         if (response.State is not null)
         {
-            var metadata = response.Metadata;
-            _stateManager.Save(response.State, loadRequest.ProjectionId, ref metadata);
+            _ = _stateManager.SaveStateBlock.Post(new(response.State, loadRequest.ProjectionId, response.Metadata));
         }
     }
 

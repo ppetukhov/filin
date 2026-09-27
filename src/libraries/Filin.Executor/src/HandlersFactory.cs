@@ -7,9 +7,8 @@ using Filin.DataFlow;
 using Filin.Internal;
 using Filin.Storage;
 
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-
-using ProjectionTuple = (Filin.Storage.Projection projection, bool create);
 
 namespace Filin;
 
@@ -19,20 +18,63 @@ sealed class HandlersFactory(
     IAppendEventsBlock appendEventsBlock,
     IOptions<ExecutorOptions> options,
     LRUCache<ProjectionId, Task<Projection?>> _cache,
-    IProjectionStore? projectionStore = null,
-    ProjectionSavePipeline<ProjectionTuple>? pipeline = null)
+    ILoggerFactory loggerFactory,
+    IProjectionStore? projectionStore = null) : IDisposable
 {
     const BindingFlags ConstructorDefault = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.CreateInstance;
 
     readonly ConcurrentDictionary<Type, object> _stateManagers = [];
     readonly ConcurrentDictionary<(Type Command, Type State), object> _commandHandlers = [];
     readonly ConcurrentDictionary<(Type QueryType, Type State), object> _queryHandlers = [];
+    bool _disposed;
 
-    public CommandHandler<TCommand, TState> CreateCommandHandler<TCommand, TState>() where TCommand : notnull, ICommand<TState> where TState : notnull =>
-        (CommandHandler<TCommand, TState>)_commandHandlers.GetOrAdd((typeof(TCommand), typeof(TState)), CreateCommandHandler);
+    public CommandHandler<TCommand, TState> CreateCommandHandler<TCommand, TState>() where TCommand : notnull, ICommand<TState> where TState : notnull
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        return (CommandHandler<TCommand, TState>)_commandHandlers.GetOrAdd((typeof(TCommand), typeof(TState)), CreateCommandHandler);
+    }
 
     public QueryHandler<TQuery, TProjection> CreateQueryHandler<TQuery, TProjection>() where TQuery : notnull, IQuery<TProjection>
-        where TProjection : notnull => (QueryHandler<TQuery, TProjection>)_queryHandlers.GetOrAdd((typeof(TQuery), typeof(TProjection)), CreateQueryHandler);
+        where TProjection : notnull
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        return (QueryHandler<TQuery, TProjection>)_queryHandlers.GetOrAdd((typeof(TQuery), typeof(TProjection)), CreateQueryHandler);
+    }
+
+    public void Dispose()
+    {
+        if (_disposed) return;
+
+        foreach (var item in _commandHandlers.Values)
+        {
+            if (item is IDisposable disp)
+            {
+                disp.Dispose();
+            }
+        }
+
+        foreach (var item in _queryHandlers.Values)
+        {
+            if (item is IDisposable disp)
+            {
+                disp.Dispose();
+            }
+        }
+
+        foreach (var item in _stateManagers.Values)
+        {
+            if (item is IDisposable disp)
+            {
+                disp.Dispose();
+            }
+        }
+
+        _commandHandlers.Clear();
+        _queryHandlers.Clear();
+        _stateManagers.Clear();
+
+        _disposed = true;
+    }
 
     object CreateQueryHandler((Type QueryType, Type StateType) key)
     {
@@ -61,7 +103,7 @@ sealed class HandlersFactory(
 
         var projector = CreateProjectorInvokerInstance(stateType);
 
-        return Activator.CreateInstance(type, ConstructorDefault, null, [eventStore, appendEventsBlock, projector, _cache, projectionStore, pipeline], null) ?? throw new InvalidOperationException($"Fail create instance of {type.FullName}");
+        return Activator.CreateInstance(type, ConstructorDefault, null, [eventStore, appendEventsBlock, projector, _cache, loggerFactory, projectionStore], null) ?? throw new InvalidOperationException($"Fail create instance of {type.FullName}");
     }
 
     object CreateProjectorInvokerInstance(Type stateType) =>

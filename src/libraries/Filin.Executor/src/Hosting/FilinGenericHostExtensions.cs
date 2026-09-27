@@ -11,8 +11,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
-using ProjectionTuple = (Filin.Storage.Projection projection, bool create);
-
 namespace Microsoft.Extensions.Hosting;
 
 /// <summary>
@@ -181,11 +179,7 @@ public static class FilinGenericHostExtensions
 
             builder.AddDefaultServices();
 
-            services.TryAddSingleton<ProjectionSavePipeline<ProjectionTuple>>();
             services.TryAddSingleton<IConfigureOptions<ExecutorOptions>, ExecutorOptionsProvider>();
-            services.TryAddSingleton<IPostConfigureOptions<ProjectionSaveOptions>, ProjectionSaveOptionsProvider>();
-            services.AddSingleton<IValidateOptions<ProjectionSaveOptions>, ProjectionSaveOptionsValidator>();
-            services.AddHostedService<ProjectionSaveHostedService>();
 
             services.TryAddSingleton(_ => new LRUCache<ProjectionId, Task<Projection?>>(10_000, TimeSpan.FromMinutes(5)));
 
