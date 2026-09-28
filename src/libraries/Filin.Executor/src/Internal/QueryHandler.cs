@@ -74,11 +74,13 @@ sealed class QueryHandler<TQuery, TState> : IDisposable
         ProjectionId projectionId,
         DcbQuery query,
         CancellationToken cancellationToken,
-        TaskCompletionSource<TState?> tcs) : LoadStateRequest<TState>(projectionId, query, cancellationToken)
+        TaskCompletionSource<TState?> tcs) : LoadStateRequest<TState>(projectionId, query)
     {
         public QueryHandler<TQuery, TState> Owner => owner;
+        public override CancellationToken CancellationToken => cancellationToken;
+
         public bool TrySetResult(TState? result) => tcs.TrySetResult(result);
-        public override bool TrySetCanceled() => tcs.TrySetCanceled(CancellationToken);
+        public override bool TrySetCanceled(CancellationToken cancellationToken) => tcs.TrySetCanceled(cancellationToken);
         public override bool TrySetException(Exception exception) => tcs.TrySetException(exception);
     }
 }

@@ -17,7 +17,7 @@ public readonly partial struct AppendResult
     /// </summary>
     public static readonly AppendResult Empty = new(false);
 
-    readonly object? _value; // Stores either a single DcbEvent or a IReadOnlyList<DcbEventSequenced> list or Exception.
+    readonly object? _value; // Stores either a single DcbEvent or a IReadOnlyList<DcbEventSequenced> list.
     readonly EventPosition _pos;
     readonly DateTimeOffset _ts;
 
@@ -60,13 +60,6 @@ public readonly partial struct AppendResult
         }
 
         _value = events;
-    }
-
-    public AppendResult(Exception exception)
-    {
-        ArgumentNullException.ThrowIfNull(exception);
-
-        _value = exception;
     }
 
     AppendResult(bool hasConflict) => _value = hasConflict ? null : (IReadOnlyList<DcbEventSequenced>)Array.Empty<DcbEventSequenced>().AsReadOnly();
@@ -120,10 +113,6 @@ public readonly partial struct AppendResult
     /// Gets a value indicating whether a conflict occurred.
     /// </summary>
     public readonly bool IsConflict => _value is null;
-
-    public readonly bool IsError => _value is Exception;
-
-    public readonly Exception? Exception => _value as Exception;
 
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

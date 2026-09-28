@@ -30,7 +30,7 @@ sealed class CommandHandler<TCommand, TState> : IDisposable
 
         var toAppendEventsRequestBlock = new TransformBlock<DecideResponse, AppendEventsRequest>(ToAppendEventsRequest, execOpt);
 
-        var toRetryLoadStateBlock = new TransformBlock<AppendedEvents, LoadStateRequest<TState>>(static request => request.LoadedState.LoadStateResponse.AddConflict(), execOpt);
+        var toRetryLoadStateBlock = new TransformBlock<AppendedEvents, LoadStateRequest<TState>>(static request => request.LoadedState.LoadStateRequest.AddConflict(), execOpt);
 
         var applyEventsBlock = new TransformBlock<AppendedEvents, SaveStateRequest<TState>>(ApplyEventsToState, execOpt);
 
@@ -58,7 +58,7 @@ sealed class CommandHandler<TCommand, TState> : IDisposable
 
             appendedEventsBlock.LinkTo(applyEventsBlock, linkOpt, static resp => resp.Result.IsSuccess),
             appendedEventsBlock.LinkTo(toRetryLoadStateBlock, linkOpt, static resp => resp.Result.IsConflict),
-            appendedEventsBlock.LinkTo(new ActionBlock<AppendedEvents>(DropCompletedOrError, execOpt), linkOpt, IsCompletedOrError), // drop error result
+            appendedEventsBlock.LinkTo(new ActionBlock<AppendedEvents>(Drop, execOpt), linkOpt, IsCompleted), // drop completed
 
             applyEventsBlock.LinkTo(stateManager.SaveStateBlock, linkOpt)
         ];
@@ -102,28 +102,13 @@ sealed class CommandHandler<TCommand, TState> : IDisposable
         _disposed = true;
     }
 
-    static void DropCompletedOrError(AppendedEvents append)
-    {
-        if (append.Result.IsError)
-        {
-            var ex = append.Result.Exception;
-
-            Debug.Assert(ex is not null);
-
-            append.LoadedState.LoadStateResponse.TrySetException(ex);
-        }
-        else
-        {
-            Debug.Assert(append.LoadedState.LoadStateResponse.IsCompleted);
-        }
-    }
-
+    static void Drop(AppendedEvents _) { }
     static void Drop(LoadedState _) { }
     static void Drop(DecideResponse _) { }
 
-    static bool IsCompleted(LoadedState resp) => resp.LoadStateResponse.IsCompleted;
+    static bool IsCompleted(LoadedState resp) => resp.LoadStateRequest.IsCompleted;
     static bool IsCompleted(DecideResponse resp) => IsCompleted(resp.LoadState);
-    static bool IsCompletedOrError(AppendedEvents resp) => IsCompleted(resp.LoadedState);
+    static bool IsCompleted(AppendedEvents resp) => IsCompleted(resp.LoadedState);
 
     static AppendedEvents ToAppendedEvents(AppendEventsResponse resp) => new AppendedEvents(resp.Result, (LoadedState)resp.Context);
 
@@ -136,7 +121,7 @@ sealed class CommandHandler<TCommand, TState> : IDisposable
 
         var @event = decideResult[0];
 
-        return new AppendEventRequest(@event, appendCondition, loadedState, loadStateRequest.CancellationToken);
+        return new AppendEventRequest(@event, appendCondition, loadedState);
     }
 
     static AppendEventsRequest ToAppendEventsRequest(DecideResponse request)
@@ -155,7 +140,7 @@ sealed class CommandHandler<TCommand, TState> : IDisposable
             events[idx++] = evt;
         }
 
-        return new AppendEventsRequest(events, appendCondition, loadStateResponse, loadStateRequest.CancellationToken);
+        return new AppendEventsRequest(events, appendCondition, loadStateResponse);
     }
 
     static LoadedState ToLoadedState(LoadStateResponse<TState> resp)
@@ -165,7 +150,7 @@ sealed class CommandHandler<TCommand, TState> : IDisposable
     }
 
     bool IsOwnedResponse(LoadStateResponse<TState> resp) => resp.LoadRequest is LoadStateRequest req && ReferenceEquals(this, req.Owner);
-    bool IsOwnedResponse(AppendEventsResponse resp) => resp.Context is LoadedState ctx && ReferenceEquals(ctx.LoadStateResponse.Owner, this);
+    bool IsOwnedResponse(AppendEventsResponse resp) => resp.Context is LoadedState ctx && ReferenceEquals(ctx.LoadStateRequest.Owner, this);
 
     DecideResponse Decide(LoadedState loadedState)
     {
@@ -230,7 +215,22 @@ sealed class CommandHandler<TCommand, TState> : IDisposable
 
     readonly record struct AppendedEvents(AppendResult Result, LoadedState LoadedState);
     readonly record struct DecideResponse(DecideResult DecideResult, LoadedState LoadState);
-    sealed record LoadedState(TState? State, StateMetadata Metadata, LoadStateRequest LoadStateResponse);
+    sealed class LoadedState(TState? state, StateMetadata metadata, LoadStateRequest loadStateRequest) : IContext
+    {
+        public TState? State => state;
+        public StateMetadata Metadata => metadata;
+        public LoadStateRequest LoadStateRequest => loadStateRequest;
+        public CancellationToken CancellationToken => loadStateRequest.CancellationToken;
+
+        public bool TrySetCanceled(CancellationToken cancellationToken) => throw new NotImplementedException();
+        public bool TrySetException(Exception exception) => throw new NotImplementedException();
+        internal void Deconstruct(out TState? state, out StateMetadata metadata, out LoadStateRequest loadStateRequest)
+        {
+            state = State;
+            metadata = Metadata;
+            loadStateRequest = LoadStateRequest;
+        }
+    }
 
     sealed class LoadStateRequest(
         CommandHandler<TCommand, TState> owner,
@@ -239,15 +239,16 @@ sealed class CommandHandler<TCommand, TState> : IDisposable
         DcbQuery query,
         TCommand command,
         CancellationToken cancellationToken,
-        TaskCompletionSource<ExecuteResult<TState>> tcs) : LoadStateRequest<TState>(projectionId, query, cancellationToken)
+        TaskCompletionSource<ExecuteResult<TState>> tcs) : LoadStateRequest<TState>(projectionId, query)
     {
         public CommandHandler<TCommand, TState> Owner => owner;
         public int ConflictCount => conflictCount;
         public TCommand Command => command;
         public bool IsCompleted => tcs.Task.IsCompleted;
+        public override CancellationToken CancellationToken => cancellationToken;
         public LoadStateRequest AddConflict() => new LoadStateRequest(owner, conflictCount + 1, ProjectionId, Query, command, CancellationToken, tcs);
         public bool TrySetResult(ExecuteResult<TState> result) => tcs.TrySetResult(result);
-        public override bool TrySetCanceled() => tcs.TrySetCanceled(CancellationToken);
+        public override bool TrySetCanceled(CancellationToken cancellationToken) => tcs.TrySetCanceled(cancellationToken);
         public override bool TrySetException(Exception exception) => tcs.TrySetException(exception);
     }
 }

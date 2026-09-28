@@ -126,7 +126,7 @@ sealed class StateManager<TState> : IDisposable
     {
         if (request.CancellationToken.IsCancellationRequested)
         {
-            _ = request.TrySetCanceled();
+            _ = request.TrySetCanceled(request.CancellationToken);
 
             return new LoadStateResponse<TState>(default, default, request);
         }
