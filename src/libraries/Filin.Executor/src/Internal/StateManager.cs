@@ -5,22 +5,20 @@ using System.Threading.Tasks.Dataflow;
 using Filin.DataFlow;
 using Filin.Storage;
 
-using Microsoft.Extensions.Logging;
-
 namespace Filin.Internal;
 
 sealed class StateManager<TState> : IDisposable
     where TState : notnull
 {
     const int MAX_ATTEMPTS_COUNT = 3;
-    readonly TransformBlock<SaveStateRequest<TState>, (Projection?, bool)> _saveStateBlock;
+
+    readonly BufferBlock<SaveStateRequest<TState>> _bufferBlock = new(new DataflowBlockOptions { EnsureOrdered = false });
     readonly TransformBlock<LoadStateRequest<TState>, LoadStateResponse<TState>> _loadStateBlock;
     readonly IEventStore _eventStore;
     readonly IAppendEventsBlock _appendEventsBlock;
     readonly IProjectorProxy<TState> _projector;
     readonly LRUCache<ProjectionId, Task<Projection?>> _cache;
     readonly IProjectionStore? _projectionStore;
-    readonly ILogger _logger;
     readonly List<IDisposable> _disposable;
     bool _disposed;
 
@@ -28,11 +26,10 @@ sealed class StateManager<TState> : IDisposable
         IAppendEventsBlock appendEventsBlock,
         IProjectorProxy<TState> projector,
         LRUCache<ProjectionId, Task<Projection?>> cache,
-        ILoggerFactory loggerFactory,
+        ISaveProjectionBlock saveProjectionBlock,
         IProjectionStore? projectionStore
     )
     {
-        _logger = loggerFactory.CreateLogger("Filin.StateManager");
         _eventStore = eventStore;
         _appendEventsBlock = appendEventsBlock;
         _projector = projector;
@@ -40,16 +37,11 @@ sealed class StateManager<TState> : IDisposable
         _projectionStore = projectionStore;
         _loadStateBlock = new(LoadStateAsync);
 
-        var saveBlock = new ActionBlock<(Projection?, bool)>(SaveAsync, new ExecutionDataflowBlockOptions { SingleProducerConstrained = true });
+        var execOpt = new ExecutionDataflowBlockOptions { SingleProducerConstrained = true, EnsureOrdered = false, MaxDegreeOfParallelism = Environment.ProcessorCount };
 
-        _saveStateBlock = new(request =>
+        var saveStateBlock = new TransformBlock<SaveStateRequest<TState>, Projection>(request =>
         {
             var (state, projectionId, metadata) = request;
-
-            if (metadata.Status == StateStatus.Unchanged)
-            {
-                return (default, default);
-            }
 
             var projection = new Projection
             {
@@ -63,22 +55,31 @@ sealed class StateManager<TState> : IDisposable
 
             _cache.Set(projectionId, cacheEntry);
 
-            return (projection, metadata.Status == StateStatus.Created);
+            return projection;
         },
-        new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = Environment.ProcessorCount });
+        execOpt);
+
+        var dropUnchanged = new ActionBlock<SaveStateRequest<TState>>(Drop, execOpt);
+
+        var linkOpt = new DataflowLinkOptions { PropagateCompletion = true };
 
         _disposable =
         [
-            _saveStateBlock.LinkTo(saveBlock, new DataflowLinkOptions { Append = false, PropagateCompletion = true }, static resp => resp.Item2), // created first
-            _saveStateBlock.LinkTo(saveBlock, new DataflowLinkOptions { Append = true, PropagateCompletion = true }),
+            _bufferBlock.LinkTo(dropUnchanged, linkOpt, IsUnchanged),
+            _bufferBlock.LinkTo(saveStateBlock, linkOpt),
+            saveStateBlock.LinkTo(saveProjectionBlock),
         ];
     }
+
+    void Drop(SaveStateRequest<TState> _) { }
+
+    bool IsUnchanged(SaveStateRequest<TState> request) => request.Metadata.Status == StateStatus.Unchanged;
 
     internal IAppendEventsBlock AppendEventsBlock => _appendEventsBlock;
 
     internal IPropagatorBlock<LoadStateRequest<TState>, LoadStateResponse<TState>> LoadStateBlock => _loadStateBlock;
 
-    internal ITargetBlock<SaveStateRequest<TState>> SaveStateBlock => _saveStateBlock;
+    internal ITargetBlock<SaveStateRequest<TState>> SaveStateBlock => _bufferBlock;
 
     internal IProjectorProxy<TState> Projector => _projector;
 
@@ -112,8 +113,6 @@ sealed class StateManager<TState> : IDisposable
         {
             item.Dispose();
         }
-
-        _disposable.Clear();
 
         _disposed = true;
     }
@@ -178,26 +177,6 @@ sealed class StateManager<TState> : IDisposable
             _ = request.TrySetException(ex);
 
             return new LoadStateResponse<TState>(default, default, request);
-        }
-    }
-
-    async Task SaveAsync((Projection?, bool) request)
-    {
-        var (projection, created) = request;
-
-        if (projection is not null && _projectionStore is not null)
-        {
-            try
-            {
-                await _projectionStore.SaveAsync(projection, created, default).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                if (_logger.IsEnabled(LogLevel.Error))
-                {
-                    _logger.LogError(exception: ex, message: "Failed to save projection");
-                }
-            }
         }
     }
 }

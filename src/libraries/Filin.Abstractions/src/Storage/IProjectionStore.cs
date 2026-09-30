@@ -18,11 +18,29 @@ public interface IProjectionStore
     /// Сохранить проекцию.
     /// </summary>
     /// <param name="projection"><inheritdoc cref="Projection" path="/summary"/></param>
+    /// <exception cref="DcbProjectionStoreException"/>
+    /// <returns><inheritdoc cref="Task" path="/summary"/></returns>
+    /// <param name="cancellationToken"><inheritdoc cref="CancellationToken" path="/summary"/></param>
+    Task SaveAsync(Projection projection, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Сохранить проекцию.
+    /// </summary>
+    /// <param name="projection"><inheritdoc cref="Projection" path="/summary"/></param>
     /// <param name="create">Создать запись проекции.</param>
     /// <exception cref="DcbProjectionStoreException"/>
     /// <returns><inheritdoc cref="Task" path="/summary"/></returns>
     /// <param name="cancellationToken"><inheritdoc cref="CancellationToken" path="/summary"/></param>
     Task SaveAsync(Projection projection, bool create, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Сохранить проекции.
+    /// </summary>
+    /// <param name="projections"><inheritdoc cref="Projection" path="/summary"/></param>
+    /// <exception cref="DcbProjectionStoreException"/>
+    /// <returns><inheritdoc cref="Task" path="/summary"/></returns>
+    /// <param name="cancellationToken"><inheritdoc cref="CancellationToken" path="/summary"/></param>
+    Task SaveAsync(IEnumerable<Projection> projections, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Удалить/очистить данные проекции.

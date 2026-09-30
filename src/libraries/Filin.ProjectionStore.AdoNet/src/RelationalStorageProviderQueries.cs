@@ -22,6 +22,16 @@ sealed record RelationalStorageProviderQueries
     public required string UpdateStorageKey { get; init; }
 
     /// <summary>
+    /// The clause to write to the storage.
+    /// </summary>
+    public required string UpsertStorageKey { get; init; }
+
+    /// <summary>
+    /// The clause to write to the storage.
+    /// </summary>
+    public required string UpsertBatchStorageKey { get; init; }
+
+    /// <summary>
     /// The clause to clear the storage.
     /// </summary>
     public required string ClearStorageKey { get; init; }

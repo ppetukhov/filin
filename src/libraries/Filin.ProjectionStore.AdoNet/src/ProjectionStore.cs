@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Data;
 using System.Data.Common;
 using System.Diagnostics;
@@ -26,6 +27,7 @@ sealed class ProjectionStore(
 {
     readonly ILogger _logger = loggerFactory.CreateLogger("Filin.ProjectionStore.AdoNet");
     readonly IStorageSerializer _serializer = options.Value.StorageSerializer;
+    readonly ConcurrentDictionary<int, string> _upsertBatchQueries = new();
 
     /// <summary>
     /// The queries currently used. When this is updated, the new queries will take effect immediately.
@@ -37,8 +39,6 @@ sealed class ProjectionStore(
     /// <inheritdoc/>
     public async Task<Projection?> LoadAsync(ProjectionId projectionId, CancellationToken cancellationToken = default)
     {
-        //It assumed these parameters are always valid. If not, an exception will be thrown, even if not as clear
-        //as with explicitly checked parameters.
         if (_logger.IsEnabled(LogLevel.Trace))
         {
             _logger.RelationalProviderReading(name, projectionId);
@@ -102,12 +102,55 @@ sealed class ProjectionStore(
     }
 
     /// <inheritdoc/>
+    public async Task SaveAsync(Projection projection, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(projection);
+
+        if (_logger.IsEnabled(LogLevel.Trace))
+        {
+            _logger.RelationalProviderWriting(name, projection.Id, projection.Position);
+        }
+
+        try
+        {
+            var opQueries = Interlocked.CompareExchange(ref _currentOperationalQueries, null, null) ?? await InitQueriesAsync(cancellationToken).ConfigureAwait(false);
+
+            using var conn = await dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+
+            using var command = conn.CreateCommand();
+
+            command.CommandText = opQueries.UpsertStorageKey;
+
+            var projectionId = projection.Id;
+
+            command.AddParameter(CommandParam.IdHash, (long)projectionId.Key.Hash);
+            command.AddParameter(CommandParam.IdName, projectionId.Key.Value);
+            command.AddParameter(CommandParam.TypeHash, (long)projectionId.ProjectorId.Hash);
+            command.AddParameter(CommandParam.TypeName, projectionId.ProjectorId.Value);
+            command.AddParameter(CommandParam.Position, (long)projection.Position.Value);
+            command.AddParameter(CommandParam.TimestampUtc, projection.Timestamp.ToUniversalTime());
+            command.AddParameter(CommandParam.Payload, _serializer.Serialize(projection.Payload).ToArray());
+
+            await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.RelationalProviderWriteError(ex, name, projection.Id, projection.Position);
+
+            throw;
+        }
+
+        if (_logger.IsEnabled(LogLevel.Trace))
+        {
+            _logger.RelationalProviderWrote(name, projection.Id, projection.Position);
+        }
+    }
+
+    /// <inheritdoc/>
     public async Task SaveAsync(Projection projection, bool create, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(projection);
 
-        //It assumed these parameters are always valid. If not, an exception will be thrown, even if not as clear
-        //as with explicitly checked parameters.
         if (_logger.IsEnabled(LogLevel.Trace))
         {
             _logger.RelationalProviderWriting(name, projection.Id, projection.Position);
@@ -151,10 +194,63 @@ sealed class ProjectionStore(
     }
 
     /// <inheritdoc/>
+    public async Task SaveAsync(IEnumerable<Projection> projections, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(projections);
+
+        var count = Enumerable.TryGetNonEnumeratedCount(projections, out var cnt) ? cnt : projections.Count();
+
+        if (_logger.IsEnabled(LogLevel.Trace))
+        {
+            _logger.RelationalProviderBatchWriting(name, count);
+        }
+
+        try
+        {
+            var opQueries = Interlocked.CompareExchange(ref _currentOperationalQueries, null, null) ?? await InitQueriesAsync(cancellationToken).ConfigureAwait(false);
+
+            var commandText = GetUpsertBatchQuery(count);
+
+            using var conn = await dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+
+            using var command = conn.CreateCommand();
+
+            command.CommandText = commandText;
+
+            var i = 0;
+            foreach (var projection in projections)
+            {
+                var projectionId = projection.Id;
+
+                command.AddParameter(BatchCommandParams.IdHash(i), (long)projectionId.Key.Hash);
+                command.AddParameter(BatchCommandParams.IdName(i), projectionId.Key.Value);
+                command.AddParameter(BatchCommandParams.TypeHash(i), (long)projectionId.ProjectorId.Hash);
+                command.AddParameter(BatchCommandParams.TypeName(i), projectionId.ProjectorId.Value);
+                command.AddParameter(BatchCommandParams.Position(i), (long)projection.Position.Value);
+                command.AddParameter(BatchCommandParams.TimestampUtc(i), projection.Timestamp.ToUniversalTime());
+                command.AddParameter(BatchCommandParams.Payload(i), _serializer.Serialize(projection.Payload).ToArray());
+
+                i++;
+            }
+
+            await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.RelationalProviderBatchWriteError(ex, name);
+
+            throw;
+        }
+
+        if (_logger.IsEnabled(LogLevel.Trace))
+        {
+            _logger.RelationalProviderBatchWrote(name);
+        }
+    }
+
+    /// <inheritdoc/>
     public async Task ClearAsync(ProjectionId projectionId, EventPosition position, CancellationToken cancellationToken = default)
     {
-        //It assumed these parameters are always valid. If not, an exception will be thrown, even if not as clear
-        //as with explicitly checked parameters.
         if (_logger.IsEnabled(LogLevel.Trace))
         {
             _logger.RelationalProviderClearing(name, projectionId, position);
@@ -196,9 +292,11 @@ sealed class ProjectionStore(
         const string CreateStorageKey = nameof(RelationalStorageProviderQueries.CreateStorageKey);
         const string ReadStorageKey = nameof(RelationalStorageProviderQueries.ReadStorageKey);
         const string UpdateStorageKey = nameof(RelationalStorageProviderQueries.UpdateStorageKey);
+        const string UpsertStorageKey = nameof(RelationalStorageProviderQueries.UpsertStorageKey);
+        const string UpsertBatchStorageKey = nameof(RelationalStorageProviderQueries.UpsertBatchStorageKey);
         const string ClearStorageKey = nameof(RelationalStorageProviderQueries.ClearStorageKey);
 
-        const string InitializationQuery = $"SELECT query_key, query_text FROM Filin_query WHERE query_key = '{CreateStorageKey}' OR query_key = '{ReadStorageKey}' OR query_key = '{UpdateStorageKey}' OR query_key = '{ClearStorageKey}'";
+        const string InitializationQuery = $"SELECT query_key, query_text FROM Filin_query WHERE query_key IN ('{CreateStorageKey}','{ReadStorageKey}','{UpdateStorageKey}','{UpsertStorageKey}','{UpsertBatchStorageKey}','{ClearStorageKey}')";
 
         using var conn = await dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
 
@@ -220,6 +318,8 @@ sealed class ProjectionStore(
             CreateStorageKey = queries.Single(i => i.Item1 == CreateStorageKey).Item2,
             ReadStorageKey = queries.Single(i => i.Item1 == ReadStorageKey).Item2,
             UpdateStorageKey = queries.Single(i => i.Item1 == UpdateStorageKey).Item2,
+            UpsertStorageKey = queries.Single(i => i.Item1 == UpsertStorageKey).Item2,
+            UpsertBatchStorageKey = queries.Single(i => i.Item1 == UpsertBatchStorageKey).Item2,
             ClearStorageKey = queries.Single(i => i.Item1 == ClearStorageKey).Item2
         };
 
@@ -250,6 +350,25 @@ sealed class ProjectionStore(
         return type;
     }
 
+    string GetUpsertBatchQuery(int paramsCount)
+    {
+        string CreateUpsertBatchQuery(int paramsCount)
+        {
+            var queries = Volatile.Read(ref _currentOperationalQueries) ?? throw new InvalidOperationException($"{nameof(_currentOperationalQueries)} is null");
+
+            return queries.UpsertBatchStorageKey
+                .Replace(CommandParam.IdHash, string.Join(',', Enumerable.Range(0, paramsCount).Select(BatchCommandParams.IdHash)))
+                .Replace(CommandParam.IdName, string.Join(',', Enumerable.Range(0, paramsCount).Select(BatchCommandParams.IdName)))
+                .Replace(CommandParam.TypeHash, string.Join(',', Enumerable.Range(0, paramsCount).Select(BatchCommandParams.TypeHash)))
+                .Replace(CommandParam.TypeName, string.Join(',', Enumerable.Range(0, paramsCount).Select(BatchCommandParams.TypeName)))
+                .Replace(CommandParam.Position, string.Join(',', Enumerable.Range(0, paramsCount).Select(BatchCommandParams.Position)))
+                .Replace(CommandParam.TimestampUtc, string.Join(',', Enumerable.Range(0, paramsCount).Select(BatchCommandParams.TimestampUtc)))
+                .Replace(CommandParam.Payload, string.Join(',', Enumerable.Range(0, paramsCount).Select(BatchCommandParams.Payload)));
+        }
+
+        return _upsertBatchQueries.GetOrAdd(paramsCount, CreateUpsertBatchQuery);
+    }
+
     static class CommandParam
     {
         internal const string IdHash = "@id_hash";
@@ -259,6 +378,17 @@ sealed class ProjectionStore(
         internal const string Position = "@position";
         internal const string TimestampUtc = "@timestamp_utc";
         internal const string Payload = "@payload";
+    }
+
+    static class BatchCommandParams
+    {
+        internal static string IdHash(int index) => "@ih" + index;
+        internal static string IdName(int index) => "@in" + index;
+        internal static string TypeHash(int index) => "@th" + index;
+        internal static string TypeName(int index) => "@tn" + index;
+        internal static string Position(int index) => "@p" + index;
+        internal static string TimestampUtc(int index) => "@t" + index;
+        internal static string Payload(int index) => "@pl" + index;
     }
 
     sealed record Ordinals
@@ -317,11 +447,24 @@ static partial class AdoNetProjectionStoreLogger
         Message = "Writing state: ProviderName={ProviderName} ProjectionId={ProjectionId} Position={Position}.")]
     internal static partial void RelationalProviderWriting(this ILogger logger, string ProviderName, ProjectionId ProjectionId, EventPosition Position);
 
+    [LoggerMessage(LogLevel.Trace,
+        EventId = (int)ProjectionStoreCode.ProjectionBatchWriting,
+        EventName = "StateBatchWriting",
+        SkipEnabledCheck = true,
+        Message = "Writing state: ProviderName={ProviderName} ProjectionsCount={ProjectionsCount}.")]
+    internal static partial void RelationalProviderBatchWriting(this ILogger logger, string ProviderName, int ProjectionsCount);
+
     [LoggerMessage(LogLevel.Error,
         EventId = (int)ProjectionStoreCode.ProjectionWriteError,
         EventName = "StateWriteError",
         Message = "Error writing state: ProviderName={ProviderName} ProjectionId={ProjectionId} Position={Position}.")]
     internal static partial void RelationalProviderWriteError(this ILogger logger, Exception Exception, string ProviderName, ProjectionId ProjectionId, EventPosition Position);
+
+    [LoggerMessage(LogLevel.Error,
+        EventId = (int)ProjectionStoreCode.ProjectionBatchWriteError,
+        EventName = "ProjectionBatchWriteError",
+        Message = "Error writing state: ProviderName={ProviderName}.")]
+    internal static partial void RelationalProviderBatchWriteError(this ILogger logger, Exception Exception, string ProviderName);
 
     [LoggerMessage(LogLevel.Trace,
         EventId = (int)ProjectionStoreCode.ProjectionWrote,
@@ -329,6 +472,13 @@ static partial class AdoNetProjectionStoreLogger
         SkipEnabledCheck = true,
         Message = "Wrote state: ProviderName={ProviderName} ProjectionId={ProjectionId} Position={Position}.")]
     internal static partial void RelationalProviderWrote(this ILogger logger, string ProviderName, ProjectionId ProjectionId, EventPosition Position);
+
+    [LoggerMessage(LogLevel.Trace,
+        EventId = (int)ProjectionStoreCode.ProjectionBatchWrote,
+        EventName = "StateBatchWrote",
+        SkipEnabledCheck = true,
+        Message = "Wrote state: ProviderName={ProviderName}.")]
+    internal static partial void RelationalProviderBatchWrote(this ILogger logger, string ProviderName);
 
     [LoggerMessage(LogLevel.Trace,
         EventId = (int)ProjectionStoreCode.ProjectionClearing,

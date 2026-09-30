@@ -246,6 +246,17 @@ Console.WriteLine("Timetaken: {0} ms. Total tasks completed: {1}", sw.ElapsedMil
 Console.WriteLine();
 Console.WriteLine();
 
+if (!apptLifeTime.ApplicationStopping.IsCancellationRequested)
+{
+    Console.WriteLine("Stopped after 5s");
+
+    try
+    {
+        await Task.Delay(TimeSpan.FromSeconds(5), apptLifeTime.ApplicationStopping).ConfigureAwait(false);
+    }
+    catch (OperationCanceledException) { }
+}
+
 #pragma warning restore CA1873 // Avoid potentially expensive logging
 #pragma warning restore CA1848 // Use the LoggerMessage delegates
 #pragma warning restore CA1303 // Do not pass literals as localized parameters

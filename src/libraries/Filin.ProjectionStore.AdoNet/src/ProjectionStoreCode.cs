@@ -22,5 +22,9 @@ enum ProjectionStoreCode
 
     ProjectionClearing = ProjectionStoreBase + 31,
     ProjectionCleared = ProjectionStoreBase + 32,
-    ProjectionClearingError = ProjectionStoreBase + 33
+    ProjectionClearingError = ProjectionStoreBase + 33,
+
+    ProjectionBatchWriting = ProjectionStoreBase + 34,
+    ProjectionBatchWrote = ProjectionStoreBase + 35,
+    ProjectionBatchWriteError = ProjectionStoreBase + 36,
 }

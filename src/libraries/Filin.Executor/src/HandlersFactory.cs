@@ -7,7 +7,6 @@ using Filin.DataFlow;
 using Filin.Internal;
 using Filin.Storage;
 
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Filin;
@@ -18,7 +17,7 @@ sealed class HandlersFactory(
     IAppendEventsBlock appendEventsBlock,
     IOptions<ExecutorOptions> options,
     LRUCache<ProjectionId, Task<Projection?>> _cache,
-    ILoggerFactory loggerFactory,
+    ISaveProjectionBlock saveProjectionBlock,
     IProjectionStore? projectionStore = null) : IDisposable
 {
     const BindingFlags ConstructorDefault = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.CreateInstance;
@@ -103,7 +102,7 @@ sealed class HandlersFactory(
 
         var projector = CreateProjectorInvokerInstance(stateType);
 
-        return Activator.CreateInstance(type, ConstructorDefault, null, [eventStore, appendEventsBlock, projector, _cache, loggerFactory, projectionStore], null) ?? throw new InvalidOperationException($"Fail create instance of {type.FullName}");
+        return Activator.CreateInstance(type, ConstructorDefault, null, [eventStore, appendEventsBlock, projector, _cache, saveProjectionBlock, projectionStore], null) ?? throw new InvalidOperationException($"Fail create instance of {type.FullName}");
     }
 
     object CreateProjectorInvokerInstance(Type stateType) =>

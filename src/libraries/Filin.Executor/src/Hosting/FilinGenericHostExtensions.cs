@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 
 using Filin;
 using Filin.Configuration;
+using Filin.DataFlow;
 using Filin.Hosting;
 using Filin.Internal;
 using Filin.Storage;
@@ -182,6 +183,8 @@ public static class FilinGenericHostExtensions
             services.TryAddSingleton<IConfigureOptions<ExecutorOptions>, ExecutorOptionsProvider>();
 
             services.TryAddSingleton(_ => new LRUCache<ProjectionId, Task<Projection?>>(10_000, TimeSpan.FromMinutes(5)));
+
+            services.TryAddSingleton<ISaveProjectionBlock, SaveProjectionBlock>();
 
             services.AddSingleton<HandlersFactory>();
             services.AddSingleton<IMediator, Mediator>();
