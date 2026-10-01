@@ -11,7 +11,7 @@ using Microsoft.Extensions.Options;
 
 namespace Filin.EventStore.Postgres.DataFlow;
 
-sealed class AppendEventsBlock : IAppendEventsBlock
+sealed class AppendEventsBlock : IAppendEventsBlock, IDisposable
 {
     readonly record struct ExecuteRequest(Func<DbCommand, object, CancellationToken, Task<AppendResult>> handler, DbCommand command, object state, IContext context);
 
@@ -21,6 +21,8 @@ sealed class AppendEventsBlock : IAppendEventsBlock
     readonly TransformBlock<AppendEventsRequest, ExecuteRequest> _appendEventsBlock;
     readonly TransformBlock<ExecuteRequest, AppendEventsResponse> _executeBlock;
     readonly ILogger _logger;
+    readonly List<IDisposable> _disposable;
+    bool _disposed;
 
     public Task Completion => _executeBlock.Completion;
 
@@ -28,7 +30,12 @@ sealed class AppendEventsBlock : IAppendEventsBlock
     {
         _logger = loggerFactory.CreateLogger("Filin.EventStore.Postgres");
 
-        var execOpt = new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = Environment.ProcessorCount };
+        var execOpt = new ExecutionDataflowBlockOptions
+        {
+            MaxDegreeOfParallelism = Environment.ProcessorCount,
+            BoundedCapacity = options.Value.AppendBoundedCapacity,
+            EnsureOrdered = false
+        };
 
         _appendEventBlock = new(request =>
         {
@@ -48,82 +55,43 @@ sealed class AppendEventsBlock : IAppendEventsBlock
             return new ExecuteRequest { handler = AppendEventsInner, command = command, state = events, context = context };
         }, execOpt);
 
-        _executeBlock = new(async request =>
-        {
-            var (handler, command, state, context) = request;
-
-            var retry = 0;
-
-            TimeSpan delay = default;
-
-            using (command)
+        _executeBlock = new(ExecuteAsync,
+            new ExecutionDataflowBlockOptions
             {
-                if (_logger.IsEnabled(LogLevel.Debug))
-                {
-                    _logger.AppendingEvents();
-                }
-
-                while (true)
-                {
-                    try
-                    {
-                        if (delay != default)
-                        {
-                            await Task.Delay(delay, context.CancellationToken).ConfigureAwait(true);
-                        }
-
-                        var result = await handler(command, state, context.CancellationToken).ConfigureAwait(true);
-
-                        return new AppendEventsResponse(result, context);
-                    }
-                    catch (DbException e) when (e.IsTransient)
-                    {
-                        if (retry < _retryDelays.Length)
-                        {
-                            delay = _retryDelays[retry];
-                        }
-
-                        retry++;
-
-                        if (_logger.IsEnabled(LogLevel.Debug))
-                        {
-                            _logger.EventStoreConnectingDelay(delay);
-                        }
-                    }
-                    catch (OperationCanceledException ex)
-                    {
-                        if (_logger.IsEnabled(LogLevel.Debug))
-                        {
-                            _logger.AppendingEventsCancelled();
-                        }
-
-                        _ = context.TrySetCanceled(ex.CancellationToken);
-
-                        return new AppendEventsResponse(AppendResult.Empty, context);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.ErrorAppendEvents(ex);
-
-                        _ = context.TrySetException(ex);
-
-                        return new AppendEventsResponse(AppendResult.Empty, context);
-                    }
-                }
-            }
-        },
-        new ExecutionDataflowBlockOptions
-        {
-            MaxDegreeOfParallelism = 1,
-            BoundedCapacity = options.Value.AppendBoundedCapacity
-        });
+                MaxDegreeOfParallelism = 1,
+                EnsureOrdered = false
+            });
 
         var linkOption = new DataflowLinkOptions { PropagateCompletion = true };
 
-        _ = _appendEventBlock.LinkTo(_executeBlock, linkOption);
-        _ = _appendEventsBlock.LinkTo(_executeBlock, linkOption);
+        var execSingleOpt = new ExecutionDataflowBlockOptions
+        {
+            EnsureOrdered = false,
+            MaxDegreeOfParallelism = Environment.ProcessorCount,
+            SingleProducerConstrained = true
+        };
 
-        _ = _executeBlock.LinkTo(new ActionBlock<AppendEventsResponse>(SetResult), linkOption, IsOwnedResponse);
+        _disposable =
+        [
+            _appendEventBlock.LinkTo(_executeBlock, linkOption),
+            _appendEventsBlock.LinkTo(_executeBlock, linkOption),
+
+            _executeBlock.LinkTo(new ActionBlock<AppendEventsResponse>(SetResult, execSingleOpt), linkOption, IsOwnedResponse)
+        ];
+    }
+
+    public void Dispose()
+    {
+        if (_disposed) return;
+
+        foreach (var item in _disposable)
+        {
+            item.Dispose();
+        }
+
+        _disposable.Clear();
+
+        _disposed = true;
     }
 
     internal Task<AppendResult> AppendAventAsync(DcbEvent @event, AppendCondition appendCondition, CancellationToken cancellationToken)
@@ -235,6 +203,71 @@ sealed class AppendEventsBlock : IAppendEventsBlock
         }
 
         return new(items);
+    }
+
+    async Task<AppendEventsResponse> ExecuteAsync(ExecuteRequest request)
+    {
+        var (handler, command, state, context) = request;
+
+        var retry = 0;
+
+        TimeSpan delay = default;
+
+        using (command)
+        {
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                _logger.AppendingEvents();
+            }
+
+            while (true)
+            {
+                try
+                {
+                    if (delay != default)
+                    {
+                        await Task.Delay(delay, context.CancellationToken).ConfigureAwait(true);
+                    }
+
+                    var result = await handler(command, state, context.CancellationToken).ConfigureAwait(true);
+
+                    return new AppendEventsResponse(result, context);
+                }
+                catch (DbException e) when (e.IsTransient)
+                {
+                    if (retry < _retryDelays.Length)
+                    {
+                        delay = _retryDelays[retry];
+                    }
+
+                    retry++;
+
+                    if (_logger.IsEnabled(LogLevel.Debug))
+                    {
+                        _logger.EventStoreConnectingDelay(delay);
+                    }
+                }
+                catch (OperationCanceledException ex)
+                {
+                    if (_logger.IsEnabled(LogLevel.Debug))
+                    {
+                        _logger.AppendingEventsCancelled();
+                    }
+
+                    _ = context.TrySetCanceled(ex.CancellationToken);
+
+                    return new AppendEventsResponse(AppendResult.Empty, context);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorAppendEvents(ex);
+
+                    _ = context.TrySetException(ex);
+
+                    return new AppendEventsResponse(AppendResult.Empty, context);
+                }
+            }
+        }
     }
 
     static void SetResult(AppendEventsResponse resp) => ((LocalContext)resp.Context).TrySetResult(resp.Result);
