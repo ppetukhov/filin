@@ -38,6 +38,8 @@ sealed class CommandHandler<TCommand, TState> : IDisposable
 
         var appendedEventsBlock = new TransformBlock<AppendEventsResponse, AppendedEvents>(ToAppendedEvents, execOpt);
 
+        var toSaveState = new TransformBlock<DecideResponse, SaveStateRequest<TState>>(ToSaveStateRequest, execOpt);
+
         _disposables =
         [
             toRetryLoadStateBlock.LinkTo(stateManager.LoadStateBlock),
@@ -49,6 +51,7 @@ sealed class CommandHandler<TCommand, TState> : IDisposable
 
             decideBlock.LinkTo(toAppendEventRequestBlock, linkOpt, static resp => resp.DecideResult.Count == 1),
             decideBlock.LinkTo(toAppendEventsRequestBlock, linkOpt, static resp => resp.DecideResult.IsSuccess),
+            decideBlock.LinkTo(toSaveState, linkOpt, IsCreatedStatus), // business error but state was created
             decideBlock.LinkTo(new ActionBlock<DecideResponse>(Drop, execOpt), linkOpt, IsCompleted), // drop completed
 
             toAppendEventRequestBlock.LinkTo(stateManager.AppendEventsBlock, linkOpt),
@@ -60,7 +63,8 @@ sealed class CommandHandler<TCommand, TState> : IDisposable
             appendedEventsBlock.LinkTo(toRetryLoadStateBlock, linkOpt, static resp => resp.Result.IsConflict),
             appendedEventsBlock.LinkTo(new ActionBlock<AppendedEvents>(Drop, execOpt), linkOpt, IsCompleted), // drop completed
 
-            applyEventsBlock.LinkTo(stateManager.SaveStateBlock, linkOpt)
+            applyEventsBlock.LinkTo(stateManager.SaveStateBlock, linkOpt),
+            toSaveState.LinkTo(stateManager.SaveStateBlock, linkOpt)
         ];
     }
 
@@ -151,6 +155,7 @@ sealed class CommandHandler<TCommand, TState> : IDisposable
 
     bool IsOwnedResponse(LoadStateResponse<TState> resp) => resp.LoadRequest is LoadStateRequest req && ReferenceEquals(this, req.Owner);
     bool IsOwnedResponse(AppendEventsResponse resp) => resp.Context is LoadedState ctx && ReferenceEquals(ctx.LoadStateRequest.Owner, this);
+    bool IsCreatedStatus(DecideResponse request) => request.LoadState.Metadata.Status == StateStatus.Created && request.LoadState.State is not null;
 
     DecideResponse Decide(LoadedState loadedState)
     {
@@ -211,6 +216,13 @@ sealed class CommandHandler<TCommand, TState> : IDisposable
 
             return new(default!, default, default);
         }
+    }
+
+    SaveStateRequest<TState> ToSaveStateRequest(DecideResponse request)
+    {
+        var (state, metadata, loadStateRequest) = request.LoadState;
+
+        return new(state!, loadStateRequest.ProjectionId, metadata);
     }
 
     readonly record struct AppendedEvents(AppendResult Result, LoadedState LoadedState);
