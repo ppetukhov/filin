@@ -15,7 +15,7 @@ sealed class AppendEventsBlock : IAppendEventsBlock, IDisposable
 {
     readonly record struct ExecuteRequest(Func<DbCommand, object, CancellationToken, Task<AppendResult>> handler, DbCommand command, object state, IContext context);
 
-    static readonly TimeSpan[] _retryDelays = [.. Enumerable.Range(0, 15).Select(i => double.Pow(2.0, i) * TimeSpan.FromMilliseconds(3))];
+    static readonly TimeSpan[] _retryDelays = [.. Enumerable.Range(1, 15).Select(i => double.Pow(2.0, i) * TimeSpan.FromMilliseconds(3))];
 
     readonly TransformBlock<AppendEventRequest, ExecuteRequest> _appendEventBlock;
     readonly TransformBlock<AppendEventsRequest, ExecuteRequest> _appendEventsBlock;
