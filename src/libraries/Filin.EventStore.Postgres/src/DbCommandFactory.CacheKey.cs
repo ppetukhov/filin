@@ -3,9 +3,9 @@ using System.Runtime.InteropServices;
 
 namespace Filin.EventStore.Postgres;
 
-sealed partial class EventStore
+partial class DbCommandFactory
 {
-    readonly struct CommandTextCacheKey : IEquatable<CommandTextCacheKey>
+    readonly struct CacheKey : IEquatable<CacheKey>
     {
         const int MAX_SIZE = 16;
 
@@ -21,16 +21,16 @@ sealed partial class EventStore
         byte FailIfMatchQueryByteCount => _buffer[1];
         int TotalBytes => 2 + EventsCount + FailIfMatchQueryByteCount;
 
-        CommandTextCacheKey(ReadOnlySpan<byte> payload)
+        CacheKey(ReadOnlySpan<byte> payload)
         {
             payload.CopyTo(_buffer);
         }
 
-        internal static ReadOnlySpan<byte> EventTagsCount(ref CommandTextCacheKey item) => item._buffer[2..][..item.EventsCount];
-        internal static ReadOnlySpan<(byte EventTypesCount, byte TagsCount)> FailIfMatch(ref CommandTextCacheKey item) =>
+        internal static ReadOnlySpan<byte> EventTagsCount(ref CacheKey item) => item._buffer[2..][..item.EventsCount];
+        internal static ReadOnlySpan<(byte EventTypesCount, byte TagsCount)> FailIfMatch(ref CacheKey item) =>
             MemoryMarshal.Cast<byte, (byte, byte)>(item._buffer[(2 + item.EventsCount)..][..item.FailIfMatchQueryByteCount]);
 
-        internal static bool TryCreate(ICollection<DcbEvent> dcbEvents, DcbQuery failIfMatchQuery, out CommandTextCacheKey queryKey)
+        internal static bool TryCreate(ICollection<DcbEvent> dcbEvents, DcbQuery failIfMatchQuery, out CacheKey queryKey)
         {
             var bytesCount = 2 + dcbEvents.Count + (2 * failIfMatchQuery.Count);
 
@@ -58,12 +58,12 @@ sealed partial class EventStore
                 totalBytes[i++] = (byte)item.Tags.Count;
             }
 
-            queryKey = new CommandTextCacheKey(totalBytes);
+            queryKey = new CacheKey(totalBytes);
 
             return true;
         }
 
-        internal static bool TryCreate(DcbEvent dcbEvent, DcbQuery failIfMatchQuery, out CommandTextCacheKey queryKey)
+        internal static bool TryCreate(DcbEvent dcbEvent, DcbQuery failIfMatchQuery, out CacheKey queryKey)
         {
             var bytesCount = 2 + 1 + (2 * failIfMatchQuery.Count);
 
@@ -88,12 +88,12 @@ sealed partial class EventStore
                 totalBytes[i++] = (byte)item.Tags.Count;
             }
 
-            queryKey = new CommandTextCacheKey(totalBytes);
+            queryKey = new CacheKey(totalBytes);
 
             return true;
         }
 
-        internal static bool TryCreate(DcbQuery query, out CommandTextCacheKey queryKey)
+        internal static bool TryCreate(DcbQuery query, out CacheKey queryKey)
         {
             var bytesCount = 2 + 0 + (2 * query.Count);
 
@@ -116,7 +116,7 @@ sealed partial class EventStore
                 totalBytes[i++] = (byte)item.Tags.Count;
             }
 
-            queryKey = new CommandTextCacheKey(totalBytes);
+            queryKey = new CacheKey(totalBytes);
 
             return true;
         }
@@ -134,7 +134,7 @@ sealed partial class EventStore
             return hash.ToHashCode();
         }
 
-        public bool Equals(CommandTextCacheKey other)
+        public bool Equals(CacheKey other)
         {
             if (EventsCount != other.EventsCount || FailIfMatchQueryByteCount != other.FailIfMatchQueryByteCount) return false;
 
@@ -144,11 +144,9 @@ sealed partial class EventStore
             return thisSpan[..TotalBytes].SequenceEqual(otherSpan[..TotalBytes]);
         }
 
-        public override bool Equals(object? obj) => obj is CommandTextCacheKey other && Equals(other);
+        public override bool Equals(object? obj) => obj is CacheKey other && Equals(other);
 
-        public static bool operator ==(CommandTextCacheKey left, CommandTextCacheKey right) => left.Equals(right);
-        public static bool operator !=(CommandTextCacheKey left, CommandTextCacheKey right) => !left.Equals(right);
-
-
+        public static bool operator ==(CacheKey left, CacheKey right) => left.Equals(right);
+        public static bool operator !=(CacheKey left, CacheKey right) => !left.Equals(right);
     }
 }

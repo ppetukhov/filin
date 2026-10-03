@@ -234,7 +234,7 @@ ref partial struct ValueStringBuilder
         _pos += count;
     }
 
-    public void Append(ReadOnlySpan<char> value)
+    public void Append(scoped ReadOnlySpan<char> value)
     {
         int pos = _pos;
         if (pos > _chars.Length - value.Length)
@@ -260,7 +260,7 @@ ref partial struct ValueStringBuilder
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-void GrowAndAppend(char c)
+    void GrowAndAppend(char c)
     {
         Grow(1);
         Append(c);
@@ -275,7 +275,7 @@ void GrowAndAppend(char c)
     /// Number of chars requested beyond current position.
     /// </param>
     [MethodImpl(MethodImplOptions.NoInlining)]
-void Grow(int additionalCapacityBeyondPos)
+    void Grow(int additionalCapacityBeyondPos)
     {
         Debug.Assert(additionalCapacityBeyondPos > 0);
         Debug.Assert(_pos > _chars.Length - additionalCapacityBeyondPos, "Grow called incorrectly, no resize is needed.");

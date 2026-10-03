@@ -26,7 +26,7 @@ sealed class AppendEventsBlock : IAppendEventsBlock, IDisposable
 
     public Task Completion => _executeBlock.Completion;
 
-    public AppendEventsBlock(DbDataSource dataSource, IOptions<EventStorePostgresOptions> options, ILoggerFactory loggerFactory)
+    public AppendEventsBlock(DbCommandFactory commandFactory, IOptions<EventStorePostgresOptions> options, ILoggerFactory loggerFactory)
     {
         _logger = loggerFactory.CreateLogger("Filin.EventStore.Postgres");
 
@@ -41,7 +41,7 @@ sealed class AppendEventsBlock : IAppendEventsBlock, IDisposable
         {
             var (@event, appendCondition, context) = request;
 
-            var command = EventStore.CreateAppendEventCommand(dataSource, @event, ref appendCondition, options.Value.StorageSerializer);
+            var command = commandFactory.CreateAppendEventCommand(@event, appendCondition);
 
             return new ExecuteRequest { handler = AppendEventInner, command = command, state = @event, context = context };
         }, execOpt);
@@ -50,7 +50,7 @@ sealed class AppendEventsBlock : IAppendEventsBlock, IDisposable
         {
             var (events, appendCondition, context) = request;
 
-            var command = EventStore.CreateAppendEventsCommand(dataSource, events, ref appendCondition, options.Value.StorageSerializer);
+            var command = commandFactory.CreateAppendEventsCommand(events, appendCondition);
 
             return new ExecuteRequest { handler = AppendEventsInner, command = command, state = events, context = context };
         }, execOpt);

@@ -1,5 +1,7 @@
+using System.Data.Common;
 using System.Threading.Channels;
 
+using Filin.AdoNet;
 using Filin.Configuration;
 using Filin.DataFlow;
 using Filin.EventStore.Postgres;
@@ -42,14 +44,25 @@ public static class EventStorePostgresServiceCollectionExtensions
         var streamChannel = Channel.CreateUnboundedPrioritized(new UnboundedPrioritizedChannelOptions<Message> { SingleReader = true, SingleWriter = false });
 
         services.TryAddSingleton(streamChannel);
+        services.TryAddSingleton(streamChannel.Writer);
 
-        services.TryAddSingleton(EventStoreFactory.CreateAppendEventsBlock);
+        services.TryAddSingleton(sp =>
+        {
+            var opt = sp.GetRequiredService<IOptions<EventStorePostgresOptions>>();
 
+            var dbSource = string.IsNullOrEmpty(opt.Value.ConnectionName)
+                ? DbConnectionFactory.CreateDataSource(opt.Value.Invariant, opt.Value.ConnectionString)
+                : sp.GetRequiredKeyedService<DbDataSource>(opt.Value.ConnectionName);
+
+            return ActivatorUtilities.CreateInstance<DbCommandFactory>(sp, dbSource, opt.Value.StorageSerializer);
+        });
+
+        services.TryAddSingleton<AppendEventsBlock>();
         services.TryAddFromExisting<IAppendEventsBlock, AppendEventsBlock>();
 
-        services.AddEventStore(EventStoreFactory.CreateEventStore);
+        services.TryAddSingleton<IEventStore, EventStore.Postgres.EventStore>();
 
-        services.AddHostedService(EventStoreFactory.CreateEventStreamingService);
+        services.AddHostedService<EventStreamingService>();
 
         return services;
     }

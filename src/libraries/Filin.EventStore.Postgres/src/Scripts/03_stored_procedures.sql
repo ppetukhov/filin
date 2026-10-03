@@ -11,8 +11,8 @@
 
 -- --- 1. ATOMIC BATCH INSERT WITH INLINE BOUNDARY INTERSECTION VALIDATION ---
 CREATE OR REPLACE FUNCTION dcb_append_events(
-    p_events dcb_event[],                             -- Array of structured business event payloads
     p_cond_after bigint,                              -- Exact transactional barrier sequence marker
+    p_events dcb_event[],                             -- Array of structured business event payloads
     VARIADIC p_cond_fail_if_match dcb_query_item[]    -- Variable list of intersection constraint rules
 ) 
 RETURNS TABLE("position" bigint, "created_at" timestamp without time zone) AS $$
@@ -84,8 +84,8 @@ $$ LANGUAGE plpgsql;
 
 -- --- 2. ATOMIC SINGLE ENTRY WITH INLINE BOUNDARY INTERSECTION VALIDATION ---
 CREATE OR REPLACE FUNCTION dcb_append_event(
-    p_event dcb_event,                                -- Single target entry business payload
     p_cond_after bigint,                              -- Sequential consistency horizon point
+    p_event dcb_event,                                -- Single target entry business payload
     VARIADIC p_cond_fail_if_match dcb_query_item[]    -- Variable list of intersection constraint rules
 ) 
 RETURNS TABLE("position" bigint, "created_at" timestamp without time zone) AS $$

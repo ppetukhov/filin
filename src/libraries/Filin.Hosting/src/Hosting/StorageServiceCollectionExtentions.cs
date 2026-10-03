@@ -1,7 +1,7 @@
+using Filin.Storage;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-
-using Filin.Storage;
 
 namespace Filin.Hosting;
 

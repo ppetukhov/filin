@@ -14,7 +14,7 @@ sealed partial class EventStore
 {
     /// <inheritdoc/>
     sealed class AsyncEnumerable(
-            DbDataSource dataSource,
+            DbCommandFactory commandFactory,
             DcbQuery query,
             EventPosition afterPosition,
             IOptions<EventStorePostgresOptions> options,
@@ -28,7 +28,7 @@ sealed partial class EventStore
             var opt = options.Value;
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
-            var command = CreateReadEventsCommand(dataSource, afterPosition, query, opt.BatchSize);
+            var command = commandFactory.CreateReadEventsCommand(afterPosition, query, opt.BatchSize);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
             return new AsyncEnumerator(command, InitialEnumeratorEvent(afterPosition), logger, opt, cancellationToken);
@@ -84,7 +84,7 @@ sealed partial class EventStore
 
                             _reader = null;
 
-                            var afterParam = command.Parameters[COMMAND_PARAMETER_NAME_AFTER];
+                            var afterParam = command.Parameters[0]; // First param // [COMMAND_PARAMETER_NAME_AFTER];
 
                             afterParam.Value = (long)Current.Position.Value;
 

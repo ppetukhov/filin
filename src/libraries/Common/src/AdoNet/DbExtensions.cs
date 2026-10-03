@@ -63,6 +63,29 @@ static class DbExtensions
     /// <typeparam name="T">The type of the parameter.</typeparam>
     /// <param name="command">The command to use to create the parameter.</param>
     /// <param name="direction">The direction of the parameter.</param>
+    /// <param name="value">The value of the parameter.</param>
+    /// <param name="size">The size of the parameter value.</param>
+    /// <param name="dbType">the <see cref="DbType"/> of the parameter.</param>
+    /// <returns>A parameter created using the given arguments.</returns>
+    public static IDbDataParameter CreateParameter<T>(this IDbCommand command, ParameterDirection direction, T value, int? size = null, DbType? dbType = null)
+    {
+        //There should be no boxing for value types. See at:
+        //http://stackoverflow.com/questions/8823239/comparing-a-generic-against-null-that-could-be-a-value-or-reference-type
+        var parameter = command.CreateParameter();
+        parameter.Value = (object?)value ?? DBNull.Value;
+        parameter.DbType = dbType ?? TypeMap[typeof(T)];
+        parameter.Direction = direction;
+        if (size != null) { parameter.Size = size.Value; }
+
+        return parameter;
+    }
+
+    /// <summary>
+    /// Creates a new SQL parameter using the given arguments.
+    /// </summary>
+    /// <typeparam name="T">The type of the parameter.</typeparam>
+    /// <param name="command">The command to use to create the parameter.</param>
+    /// <param name="direction">The direction of the parameter.</param>
     /// <param name="parameterName">The name of the parameter.</param>
     /// <param name="value">The value of the parameter.</param>
     /// <param name="size">The size of the parameter value.</param>
@@ -81,6 +104,17 @@ static class DbExtensions
 
         return parameter;
     }
+
+    /// <summary>
+    /// Creates and adds a new SQL parameter to the command.
+    /// </summary>
+    /// <typeparam name="T">The type of the parameter.</typeparam>
+    /// <param name="command">The command to use to create the parameter.</param>
+    /// <param name="value">The value of the parameter.</param>
+    /// <param name="direction">The direction of the parameter.</param>
+    /// <param name="size">The size of the parameter value.</param>
+    /// <param name="dbType">the <see cref="DbType"/> of the parameter.</param>
+    public static void AddParameter<T>(this IDbCommand command, T value, ParameterDirection direction = ParameterDirection.Input, int? size = null, DbType? dbType = null) => command.Parameters.Add(command.CreateParameter(direction, value, size, dbType));
 
     /// <summary>
     /// Creates and adds a new SQL parameter to the command.
