@@ -99,7 +99,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.ILLink.Tasks" />
     <None Include="$(SourceRoot)assets/icon.png" Pack="true" Visible="false" PackagePath="/" />
 
     <PackageReference Include="Microsoft.SourceLink.GitHub">

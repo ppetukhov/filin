@@ -189,8 +189,6 @@ public static class FilinGenericHostExtensions
             services.AddSingleton<HandlersFactory>();
             services.AddSingleton<IMediator, Mediator>();
 
-            services.ConfigureFormatter<ExecutorOptions>();
-
             services.AddSingleton(builder);
         }
 

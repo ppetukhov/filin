@@ -38,7 +38,6 @@ public static class ProjectionStoreAdoNetServiceCollectionExtensions
         Action<OptionsBuilder<ProjectionStoreAdoNetOptions>>? configureOptions = null)
     {
         configureOptions?.Invoke(services.AddOptions<ProjectionStoreAdoNetOptions>(name));
-        services.ConfigureOptionsForLogging<ProjectionStoreAdoNetOptions>(name);
         services.AddTransient<IPostConfigureOptions<ProjectionStoreAdoNetOptions>, ProjectionStoreAdoNetOptionsProvider>();
         services.AddTransient<IPostConfigureOptions<ProjectionStoreAdoNetOptions>, DefaultStorageProviderSerializerOptionsConfigurator<ProjectionStoreAdoNetOptions>>();
         services.AddSingleton<IValidateOptions<ProjectionStoreAdoNetOptions>, ProjectionStoreAdoNetOptionsValidator>();

@@ -4,7 +4,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 using Filin.Compliance.Classification;
-using Filin.Configuration;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,10 +36,6 @@ public static class ExecutorBuilderDefaultServicesExtensions
 
         services.AddLogging(builder => builder.EnableRedaction());
         services.AddRedaction(builder => builder.SetRedactor<ConnectionStringRedactor>(AppConfigClassifications.ConnectionString));
-
-        services.TryAddSingleton(typeof(IOptionsFormatter<>), typeof(OptionsFormatter<>));
-        services.TryAddSingleton(typeof(IOptionsFormatterResolver<>), typeof(OptionsFormatterResolver<>));
-        services.TryAddSingleton<OptionsLogger>();
 
         services.AddStorageSerialization();
 

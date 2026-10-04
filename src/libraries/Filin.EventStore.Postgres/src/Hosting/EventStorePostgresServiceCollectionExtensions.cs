@@ -29,7 +29,6 @@ public static class EventStorePostgresServiceCollectionExtensions
         var opt = services.AddOptions<EventStorePostgresOptions>();
 
         configureOptions?.Invoke(services.AddOptions<EventStorePostgresOptions>());
-        services.ConfigureOptionsForLogging<EventStorePostgresOptions>();
         services.AddTransient<IPostConfigureOptions<EventStorePostgresOptions>, EventStorePostgresOptionsProvider>();
         services.AddTransient<IPostConfigureOptions<EventStorePostgresOptions>, DefaultStorageProviderSerializerOptionsConfigurator<EventStorePostgresOptions>>();
         services.AddSingleton<IValidateOptions<EventStorePostgresOptions>, EventStorePostgresOptionsValidator>();

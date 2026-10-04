@@ -8,7 +8,6 @@ using Edu.ReadModels;
 using Edu.UseCases;
 
 using Filin;
-using Filin.Configuration;
 using Filin.Storage;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -37,11 +36,6 @@ var host = hostBuilder.Build();
 host.Start();
 
 var logger = host.Services.GetRequiredService<ILogger<Program>>();
-
-
-var optionsLogger = host.Services.GetRequiredService<OptionsLogger>();
-
-optionsLogger.LogOptions();
 
 var apptLifeTime = host.Services.GetRequiredService<IHostApplicationLifetime>();
 
