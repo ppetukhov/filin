@@ -69,13 +69,16 @@ sealed class ProjectionStore(
 
                 var ordinals = _ordinals ??= Ordinals.CreateOrdinals(reader);
 
+                var position = new EventPosition((ulong)reader.GetInt64(ordinals.Position));
+                var timestamp = new DateTime(reader.GetDateTime(ordinals.TimestampUtc).Ticks, DateTimeKind.Utc);
+
                 if (reader.TryGetPayload(ordinal: ordinals.Payload, payloadType: payloadType, serializer: _serializer, payload: out var payload))
                 {
                     projection = new Projection
                     {
                         Id = projectionId,
-                        Position = new EventPosition((ulong)reader.GetInt64(ordinals.Position)),
-                        Timestamp = new DateTime(reader.GetDateTime(ordinals.TimestampUtc).Ticks, DateTimeKind.Utc),
+                        Position = position,
+                        Timestamp = timestamp,
                         Payload = payload,
                     };
                 }
