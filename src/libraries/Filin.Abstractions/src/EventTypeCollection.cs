@@ -17,11 +17,25 @@ public readonly struct EventTypeCollection : IEquatable<EventTypeCollection>, IC
 {
     readonly EventType[]? _eventTypes;
 
+    /// <summary>
+    /// Gets a value indicating whether the collection is empty.
+    /// </summary>
+    /// <value><see langword="true"/> if the collection contains no elements; otherwise, <see langword="false"/>.</value>
     [MemberNotNullWhen(false, nameof(_eventTypes))]
     public bool IsEmpty => _eventTypes is not { Length: > 0 };
 
+    /// <summary>
+    /// Gets the total number of event types contained in the collection.
+    /// </summary>
+    /// <value>The count of unique event types.</value>
     public int Count => _eventTypes?.Length ?? 0;
 
+    /// <summary>
+    /// Gets the <see cref="EventType"/> at the specified index within the sorted collection.
+    /// </summary>
+    /// <param name="index">The zero-based index of the event type to get.</param>
+    /// <returns>The <see cref="EventType"/> element at the specified index.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="index"/> is negative or out of bounds.</exception>
     public EventType this[int index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -56,17 +70,25 @@ public readonly struct EventTypeCollection : IEquatable<EventTypeCollection>, IC
     }
 
     /// <summary>
-    /// Factory method utilized automatically by the C# compiler to construct the type from collection expressions.
+    /// Factory method utilized automatically by the C# compiler to construct the collection type from collection expressions.
     /// </summary>
+    /// <param name="eventTypes">The span of event types supplied by the compiler or environment.</param>
+    /// <returns>A new <see cref="EventTypeCollection"/> containing the sorted, unique event types.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static EventTypeCollection Create(ReadOnlySpan<EventType> eventTypes) => new(eventTypes);
 
     /// <summary>
     /// Determines whether the collection contains a specific event type using high-performance binary search.
     /// </summary>
+    /// <param name="eventType">The event type to locate in the collection.</param>
+    /// <returns><see langword="true"/> if the event type is found; otherwise, <see langword="false"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public readonly bool Contains(EventType eventType) => IsEmpty ? false : AsSpan().BinarySearch(eventType) >= 0;
 
+    /// <summary>
+    /// Returns a read-only span representation of the underlying sorted event types array.
+    /// </summary>
+    /// <returns>A <see cref="ReadOnlySpan{T}"/> over the elements of the collection.</returns>
     public ReadOnlySpan<EventType> AsSpan() => _eventTypes.AsSpan();
 
     public Enumerator GetEnumerator() => new(_eventTypes);
@@ -273,11 +295,18 @@ public readonly struct EventTypeCollection : IEquatable<EventTypeCollection>, IC
     /// <returns><see langword="true"/> if the left instance follows or equals the right instance; otherwise, <see langword="false"/>.</returns>
     public static bool operator >=(EventTypeCollection left, EventTypeCollection right) => left.CompareTo(right) >= 0;
 
+    /// <summary>
+    /// Enumerates the elements of an <see cref="EventTypeCollection"/> using a stack-allocated structure.
+    /// </summary>
     public ref struct Enumerator
     {
         int _index;
         readonly ReadOnlySpan<EventType> _span;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Enumerator"/> struct with the specified span of event types.
+        /// </summary>
+        /// <param name="values">The underlying span sequence to iterate over.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal Enumerator(ReadOnlySpan<EventType> values)
         {
@@ -285,6 +314,13 @@ public readonly struct EventTypeCollection : IEquatable<EventTypeCollection>, IC
             _index = -1;
         }
 
+        /// <summary>
+        /// Advances the enumerator to the next element of the collection.
+        /// </summary>
+        /// <returns>
+        /// <see langword="true"/> if the enumerator was successfully advanced to the next element; 
+        /// <see langword="false"/> if the enumerator has passed the end of the collection.
+        /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext()
         {
@@ -299,6 +335,11 @@ public readonly struct EventTypeCollection : IEquatable<EventTypeCollection>, IC
             return false;
         }
 
+        /// <summary>
+        /// Gets the element in the collection at the current position of the enumerator.
+        /// </summary>
+        /// <value>The <see cref="EventType"/> element in the collection at the current position of the enumerator.</value>
+        /// <exception cref="InvalidOperationException">Thrown if the enumerator is positioned before the first element or after the last element.</exception>
         public readonly EventType Current
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]

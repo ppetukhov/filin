@@ -16,11 +16,25 @@ public readonly struct TagCollection : IEquatable<TagCollection>, IComparable<Ta
 {
     readonly Tag[]? _tags;
 
+    /// <summary>
+    /// Gets a value indicating whether the collection is empty.
+    /// </summary>
+    /// <value><see langword="true"/> if the collection contains no tags; otherwise, <see langword="false"/>.</value>
     [MemberNotNullWhen(false, nameof(_tags))]
     public bool IsEmpty => _tags is not { Length: > 0 };
 
+    /// <summary>
+    /// Gets the total number of tags contained in the collection.
+    /// </summary>
+    /// <value>The count of unique tags.</value>
     public int Count => _tags?.Length ?? 0;
 
+    /// <summary>
+    /// Gets the <see cref="Tag"/> at the specified index within the sorted collection.
+    /// </summary>
+    /// <param name="index">The zero-based index of the tag to get.</param>
+    /// <returns>The <see cref="Tag"/> element at the specified index.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="index"/> is negative or out of bounds.</exception>
     public Tag this[int index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

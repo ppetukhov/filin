@@ -87,8 +87,9 @@ public readonly struct DecideResult
     }
 
     /// <summary>
-    /// Gets the total number of events.
+    /// Gets the total number of successfully produced domain events.
     /// </summary>
+    /// <value>The count of domain events if the operation succeeded; otherwise, 0.</value>
     public int Count
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -103,9 +104,17 @@ public readonly struct DecideResult
         }
     }
 
+    /// <summary>
+    /// Gets a value indicating whether the operation completed successfully and yielded domain events.
+    /// </summary>
+    /// <value><see langword="true"/> if the operation was successful; otherwise, <see langword="false"/>.</value>
     [MemberNotNullWhen(true, nameof(_value))]
     public bool IsSuccess => _errorMessage is null && _value is not null;
 
+    /// <summary>
+    /// Gets a value indicating whether the operation failed due to a business error.
+    /// </summary>
+    /// <value><see langword="true"/> if the operation failed; otherwise, <see langword="false"/>.</value>
     [MemberNotNullWhen(true, nameof(_errorMessage), nameof(_value))]
     public bool IsFailure => _errorMessage is not null && _value is string;
 

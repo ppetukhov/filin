@@ -3,32 +3,44 @@ using System.Text;
 namespace Filin;
 
 /// <summary>
-/// Представляет тэг события.
+/// Represents a unique metadata tag associated with domain events or queries.
 /// </summary>
 public readonly struct Tag : IEquatable<Tag>, IComparable<Tag>, ISpanFormattable, IUtf8SpanFormattable
 {
     readonly IdSpan _value;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="Tag"/> struct. 
+    /// Initializes a new instance of the <see cref="Tag"/> struct using a string name.
     /// </summary>
-    /// <param name="name">Название тэга.</param>
+    /// <param name="name">The string representation of the tag name.</param>
     public Tag(string name) => _value = new(name);
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="Tag"/> struct.
+    /// Initializes a new instance of the <see cref="Tag"/> struct using a raw <see cref="IdSpan"/>.
     /// </summary>
-    /// <param name="value">Идентификатор тэга.</param>
+    /// <param name="value">The underlying raw identifier span value.</param>
     Tag(IdSpan value) => _value = value;
 
-    /// <inheritdoc cref="IdSpan.IsDefault"/>
+    /// <summary>
+    /// Gets a value indicating whether the tag is the default uninitialized instance.
+    /// </summary>
+    /// <value><see langword="true"/> if the tag is uninitialized; otherwise, <see langword="false"/>.</value>
     public bool IsDefault => _value.IsDefault;
 
+    /// <summary>
+    /// Gets the string representation of the tag value.
+    /// </summary>
     public string Value => _value.Value;
 
+    /// <summary>
+    /// Gets the precomputed hash value of the tag.
+    /// </summary>
     public ulong Hash => _value.Hash;
 
-    /// <inheritdoc cref="IdSpan.AsSpan()"/>
+    /// <summary>
+    /// Returns a read-only character span representation of the underlying tag value.
+    /// </summary>
+    /// <returns>A <see cref="ReadOnlySpan{Char}"/> over the tag data.</returns>
     public ReadOnlySpan<char> AsSpan() => _value.AsSpan();
 
     /// <inheritdoc/>
@@ -113,10 +125,9 @@ public readonly struct Tag : IEquatable<Tag>, IComparable<Tag>, ISpanFormattable
     }
 
     /// <summary>
-    /// Конвертирует <see cref="Tag"/> в <see cref="string"/>.
+    /// Implicitly converts a <see cref="Tag"/> to its <see cref="string"/> representation.
     /// </summary>
-    /// <param name="tag"><inheritdoc cref="Tag" path="/summary"/></param>
-    /// <returns>Соответствующий <see cref="string"/>.</returns>
+    /// <param name="tag">The <see cref="Tag"/> instance to convert.</param>
     public static implicit operator string?(Tag tag) => tag.ToString();
 
     /// <inheritdoc cref="FromString(string)"/>
@@ -129,24 +140,24 @@ public readonly struct Tag : IEquatable<Tag>, IComparable<Tag>, ISpanFormattable
     public static explicit operator Tag(IdSpan id) => new(id);
 
     /// <summary>
-    /// Конвертирует <see cref="string"/> в <see cref="Tag"/>.
+    /// Factory method that constructs a <see cref="Tag"/> from a string representation.
     /// </summary>
-    /// <param name="name"><inheritdoc cref="Tag(string)" path="/param[@name]"/></param>
-    /// <returns>Соответствующий <see cref="Tag"/>.</returns>
+    /// <param name="name">The string representation of the tag name.</param>
+    /// <returns>A new <see cref="Tag"/> instance.</returns>
     public static Tag FromString(string name) => new(name);
 
     /// <summary>
-    /// Конвертирует <see cref="Tag"/> в <see cref="IdSpan"/>.
+    /// Extracts the underlying <see cref="IdSpan"/> from a <see cref="Tag"/>.
     /// </summary>
-    /// <param name="tag"><inheritdoc cref="Tag(IdSpan)" path="/param[@rawIdSpan]"/></param>
-    /// <returns>Соответствующий <see cref="Tag"/>.</returns>
+    /// <param name="tag">The tag instance.</param>
+    /// <returns>The underlying <see cref="IdSpan"/> wrapper.</returns>
     public static IdSpan ToIdSpan(Tag tag) => tag._value;
 
     /// <summary>
-    /// Конвертирует <see cref="IdSpan"/> в <see cref="Tag"/>.
+    /// Constructs a <see cref="Tag"/> from a raw <see cref="IdSpan"/>.
     /// </summary>
-    /// <param name="rawIdSpan"><inheritdoc cref="Tag(IdSpan)" path="/param[@rawIdSpan]"/></param>
-    /// <returns>Соответствующий <see cref="Tag"/>.</returns>
+    /// <param name="rawIdSpan">The underlying raw identifier span value.</param>
+    /// <returns>A new <see cref="Tag"/> instance wrapper.</returns>
     public static Tag FromIdSpan(IdSpan rawIdSpan) => new(rawIdSpan);
 
     /// <summary>
@@ -165,15 +176,35 @@ public readonly struct Tag : IEquatable<Tag>, IComparable<Tag>, ISpanFormattable
     /// <returns><see langword="true"/> if the provided values are not equal, otherwise <see langword="false"/>.</returns>
     public static bool operator !=(Tag left, Tag right) => !(left == right);
 
-    /// <inheritdoc cref="IComparable{T}" path="/summary"/>
+    /// <summary>
+    /// Determines whether one <see cref="Tag"/> instance is strictly less than another.
+    /// </summary>
+    /// <param name="left">The left operand.</param>
+    /// <param name="right">The right operand.</param>
+    /// <returns><see langword="true"/> if the left operand is less than the right operand; otherwise, <see langword="false"/>.</returns>
     public static bool operator <(Tag left, Tag right) => left.CompareTo(right) < 0;
 
-    /// <inheritdoc cref="IComparable{T}" path="/summary"/>
+    /// <summary>
+    /// Determines whether one <see cref="Tag"/> instance is less than or equal to another.
+    /// </summary>
+    /// <param name="left">The left operand.</param>
+    /// <param name="right">The right operand.</param>
+    /// <returns><see langword="true"/> if the left operand is less than or equal to the right operand; otherwise, <see langword="false"/>.</returns>
     public static bool operator <=(Tag left, Tag right) => left.CompareTo(right) <= 0;
 
-    /// <inheritdoc cref="IComparable{T}" path="/summary"/>
+    /// <summary>
+    /// Determines whether one <see cref="Tag"/> instance is strictly greater than another.
+    /// </summary>
+    /// <param name="left">The left operand.</param>
+    /// <param name="right">The right operand.</param>
+    /// <returns><see langword="true"/> if the left operand is greater than the right operand; otherwise, <see langword="false"/>.</returns>
     public static bool operator >(Tag left, Tag right) => left.CompareTo(right) > 0;
 
-    /// <inheritdoc cref="IComparable{T}" path="/summary"/>
+    /// <summary>
+    /// Determines whether one <see cref="Tag"/> instance is greater than or equal to another.
+    /// </summary>
+    /// <param name="left">The left operand.</param>
+    /// <param name="right">The right operand.</param>
+    /// <returns><see langword="true"/> if the left operand is greater than or equal to the right operand; otherwise, <see langword="false"/>.</returns>
     public static bool operator >=(Tag left, Tag right) => left.CompareTo(right) >= 0;
 }

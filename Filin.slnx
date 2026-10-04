@@ -25,13 +25,8 @@
     <File Path="eng/CodeAnalysis.test.globalconfig" />
     <File Path="eng/GeneratorProjects.targets" />
     <File Path="eng/NoTargetsSdk.BeforeTargets.targets" />
-    <File Path="eng/OuterBuild.targets" />
-    <File Path="eng/ResolveContract.targets" />
     <File Path="eng/Resources.targets" />
-	<File Path="eng/Slngen.targets" />
     <File Path="eng/Versioning.targets" />
-    <File Path="eng/Version.Details.props" />
-    <File Path="eng/Versions.props" />
   </Folder>
   <Folder Name="/src/" />
   <Folder Name="/src/libraries/">
@@ -67,7 +62,6 @@
   <Folder Name="/src/libraries/Filin.Abstractions/gen/">
     <Project Path="src/libraries/Filin.Abstractions/gen/Filin.Generators.csproj" Id="b5cb9853-24b6-4813-99f9-f38489eafb7c" />
   </Folder>
-  <Folder Name="/src/libraries/Filin.Abstractions/ref/" />
   <Folder Name="/src/libraries/Filin.Abstractions/src/">
     <Project Path="src/libraries/Filin.Abstractions/src/Filin.Abstractions.csproj" Id="b0a37696-6e5c-4928-8270-439c12d7d5bf" />
   </Folder>
@@ -75,9 +69,6 @@
     <Project Path="src/libraries/Filin.Abstractions/tests/Filin.Abstractions.Tests.csproj" />
   </Folder>
   <Folder Name="/src/libraries/Filin.Compliance.Classification/" />
-  <Folder Name="/src/libraries/Filin.Compliance.Classification/ref/">
-    <Project Path="src/libraries/Filin.Compliance.Classification/ref/Filin.Compliance.Classification.csproj" />
-  </Folder>
   <Folder Name="/src/libraries/Filin.Compliance.Classification/src/">
     <Project Path="src/libraries/Filin.Compliance.Classification/src/Filin.Compliance.Classification.csproj" Id="f250fc49-1a6e-454f-82c5-48c7b0c1c7b5" />
   </Folder>

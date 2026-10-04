@@ -3,31 +3,51 @@ using System.Text;
 namespace Filin;
 
 /// <summary>
-/// Идентификатор проектора.
+/// Represents a unique identifier for an event projector.
 /// </summary>
 public readonly struct ProjectorId : IEquatable<ProjectorId>, IComparable<ProjectorId>, ISpanFormattable, IUtf8SpanFormattable
 {
     readonly IdSpan _value;
 
-    /// <inheritdoc cref="ProjectorId"/>
-    /// <param name="id">Идентификатор проектора.</param>
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ProjectorId"/> struct using a string identifier.
+    /// </summary>
+    /// <param name="id">The string representation of the projector identifier.</param>
     public ProjectorId(string id) : this(new IdSpan(id)) { }
 
-    /// <inheritdoc cref="ProjectorId"/>
-    /// <param name="id">Идентификатор проектора.</param>
-    /// <param name="version">Версия проектора.</param>
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ProjectorId"/> struct using a string identifier and a specific version.
+    /// </summary>
+    /// <param name="id">The string representation of the projector identifier.</param>
+    /// <param name="version">The version of the projector projection logic.</param>
     public ProjectorId(string id, uint version) : this(version != 0 ? new IdSpan($"{id}@{version}") : new IdSpan(id)) { }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ProjectorId"/> struct using a raw <see cref="IdSpan"/>.
+    /// </summary>
+    /// <param name="rawIdSpan">The underlying raw identifier span.</param>
     ProjectorId(IdSpan rawIdSpan) => _value = rawIdSpan;
 
-    /// <inheritdoc cref="IdSpan.IsDefault"/>
+    /// <summary>
+    /// Gets a value indicating whether the identifier is the default uninitialized instance.
+    /// </summary>
+    /// <value><see langword="true"/> if the identifier is uninitialized; otherwise, <see langword="false"/>.</value>
     public bool IsDefault => _value.IsDefault;
 
+    /// <summary>
+    /// Gets the string value of the projector identifier.
+    /// </summary>
     public string Value => _value.Value;
 
+    /// <summary>
+    /// Gets the precomputed hash value of the identifier.
+    /// </summary>
     public ulong Hash => _value.Hash;
 
-    /// <inheritdoc cref="IdSpan.AsSpan()"/>
+    /// <summary>
+    /// Returns a read-only character span representation of the underlying identifier value.
+    /// </summary>
+    /// <returns>A <see cref="ReadOnlySpan{Char}"/> over the identifier data.</returns>
     public ReadOnlySpan<char> AsSpan() => _value.AsSpan();
 
     /// <inheritdoc/>
@@ -112,10 +132,9 @@ public readonly struct ProjectorId : IEquatable<ProjectorId>, IComparable<Projec
     }
 
     /// <summary>
-    /// Конвертирует <see cref="ProjectorId"/> в <see cref="string"/>.
+    /// Implicitly converts a <see cref="ProjectorId"/> to its <see cref="string"/> representation.
     /// </summary>
-    /// <param name="projectorId"><inheritdoc cref="ProjectorId" path="/summary"/></param>
-    /// <returns>Соответствующий <see cref="string"/>.</returns>
+    /// <param name="projectorId">The <see cref="ProjectorId"/> instance to convert.</param>
     public static implicit operator string?(ProjectorId projectorId) => projectorId.ToString();
 
     /// <inheritdoc cref="FromString(string)"/>
@@ -128,47 +147,71 @@ public readonly struct ProjectorId : IEquatable<ProjectorId>, IComparable<Projec
     public static explicit operator ProjectorId(IdSpan id) => new(id);
 
     /// <summary>
-    /// Конвертирует <see cref="ProjectorId"/> в <see cref="ProjectorId"/>.
+    /// Factory method that constructs a <see cref="ProjectorId"/> from a string representation.
     /// </summary>
-    /// <param name="id"><inheritdoc cref="ProjectorId(string)" path="/param[@name]"/></param>
-    /// <returns>Соответствующий <see cref="ProjectorId"/>.</returns>
+    /// <param name="id">The string representation of the projector identifier.</param>
+    /// <returns>A new <see cref="ProjectorId"/> instance.</returns>
     public static ProjectorId FromString(string id) => new(id);
 
     /// <summary>
-    /// Конвертирует <see cref="ProjectorId"/> в <see cref="IdSpan"/>.
+    /// Extracts the underlying <see cref="IdSpan"/> from a <see cref="ProjectorId"/>.
     /// </summary>
-    /// <param name="projectorId"><inheritdoc cref="ProjectorId(IdSpan)" path="/param[@rawIdSpan]"/></param>
-    /// <returns>Соответствующий <see cref="ProjectorId"/>.</returns>
+    /// <param name="projectorId">The projector identifier instance.</param>
+    /// <returns>The underlying <see cref="IdSpan"/> wrapper.</returns>
     public static IdSpan ToIdSpan(ProjectorId projectorId) => projectorId._value;
 
     /// <summary>
-    /// Конвертирует <see cref="IdSpan"/> в <see cref="ProjectorId"/>.
+    /// Constructs a <see cref="ProjectorId"/> from a raw <see cref="IdSpan"/>.
     /// </summary>
-    /// <param name="rawIdSpan"><inheritdoc cref="ProjectorId(IdSpan)" path="/param[@rawIdSpan]"/></param>
-    /// <returns>Соответствующий <see cref="ProjectorId"/>.</returns>
+    /// <param name="rawIdSpan">The underlying raw identifier span.</param>
+    /// <returns>A new <see cref="ProjectorId"/> instance wrapper.</returns>
     public static ProjectorId FromIdSpan(IdSpan rawIdSpan) => new(rawIdSpan);
 
     /// <summary>
-    /// Сравнивает предоставленные операнды на равенство.
-    /// </summary>
-    /// <param name="left">Левый операнд.</param>
-    /// <param name="right">Правый операнд.</param>
-    /// <returns><see langword="true"/> если предоставленные значения равны, в противном случае <see langword="false"/>.</returns>
-    public static bool operator ==(ProjectorId left, ProjectorId right) => left.Equals(right);
-
-    /// <summary>
-    /// Сравнивает предоставленные операнды на неравенство.
+    /// Compares two <see cref="ProjectorId"/> values for equality.
     /// </summary>
     /// <param name="left">The left operand.</param>
     /// <param name="right">The right operand.</param>
-    /// <returns><see langword="true"/> если предоставленные значения не равны, в противном случае <see langword="false"/>.</returns>
+    /// <returns><see langword="true"/> if the instances are equal; otherwise, <see langword="false"/>.</returns>
+    public static bool operator ==(ProjectorId left, ProjectorId right) => left.Equals(right);
+
+    /// <summary>
+    /// Compares two <see cref="ProjectorId"/> values for inequality.
+    /// </summary>
+    /// <param name="left">The left operand.</param>
+    /// <param name="right">The right operand.</param>
+    /// <returns><see langword="true"/> if the instances are not equal; otherwise, <see langword="false"/>.</returns>
     public static bool operator !=(ProjectorId left, ProjectorId right) => !(left == right);
 
+    /// <summary>
+    /// Determines whether one <see cref="ProjectorId"/> instance is strictly less than another.
+    /// </summary>
+    /// <param name="left">The left operand.</param>
+    /// <param name="right">The right operand.</param>
+    /// <returns><see langword="true"/> if the left operand is less than the right operand; otherwise, <see langword="false"/>.</returns>
     public static bool operator <(ProjectorId left, ProjectorId right) => left.CompareTo(right) < 0;
 
+    /// <summary>
+    /// Determines whether one <see cref="ProjectorId"/> instance is less than or equal to another.
+    /// </summary>
+    /// <param name="left">The left operand.</param>
+    /// <param name="right">The right operand.</param>
+    /// <returns><see langword="true"/> if the left operand is less than or equal to the right operand; otherwise, <see langword="false"/>.</returns>
     public static bool operator <=(ProjectorId left, ProjectorId right) => left.CompareTo(right) <= 0;
 
+    /// <summary>
+    /// Determines whether one <see cref="ProjectorId"/> instance is strictly greater than another.
+    /// </summary>
+    /// <param name="left">The left operand.</param>
+    /// <param name="right">The right operand.</param>
+    /// <returns><see langword="true"/> if the left operand is greater than the right operand; otherwise, <see langword="false"/>.</returns>
     public static bool operator >(ProjectorId left, ProjectorId right) => left.CompareTo(right) > 0;
 
+    /// <summary>
+    /// Determines whether one <see cref="ProjectorId"/> instance is greater than or equal to another.
+    /// </summary>
+    /// <param name="left">The left operand.</param>
+    /// <param name="right">The right operand.</param>
+    /// <returns><see langword="true"/> if the left operand is greater than or equal to the right operand; otherwise, <see langword="false"/>.</returns>
     public static bool operator >=(ProjectorId left, ProjectorId right) => left.CompareTo(right) >= 0;
 }

@@ -1,7 +1,7 @@
 namespace Filin;
 
 /// <summary>
-/// Исполнитель команды домена.
+/// Marks a class or struct as a domain command decider (handler).
 /// </summary>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, Inherited = false, AllowMultiple = false)]
 public sealed class DeciderAttribute : Attribute { }

@@ -3,9 +3,12 @@ using Microsoft.Extensions.Compliance.Redaction;
 namespace Filin.Compliance.Classification;
 
 /// <summary>
-/// Редактор строки подключения.
+/// Provides functional capabilities to redact or sanitize sensitive credentials within database and service connection strings.
 /// </summary>
-public sealed partial class ConnectionStringRedactor : Redactor
+/// <remarks>
+/// This redactor targets security-sensitive elements like passwords, tokens, or private keys before connection strings are written to logs or telemetry.
+/// </remarks>
+public sealed class ConnectionStringRedactor : Redactor
 {
     const string Redacted = "***Redacted***";
     const int NotFoundRedactIndex = int.MaxValue;

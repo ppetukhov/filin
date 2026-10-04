@@ -3,10 +3,10 @@ using System.Threading.Channels;
 
 using Filin.AdoNet;
 using Filin.Configuration;
-using Filin.DataFlow;
 using Filin.EventStore.Postgres;
 using Filin.EventStore.Postgres.DataFlow;
 using Filin.Storage;
+using Filin.Storage.DataFlow;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -20,7 +20,7 @@ namespace Filin.Hosting;
 public static class EventStorePostgresServiceCollectionExtensions
 {
     /// <summary>
-    /// Configure AdoNet event storage for <see cref="IEventStore"/>.
+    /// Configure Postgres event storage for <see cref="IEventStore"/>.
     /// </summary>
     public static IServiceCollection AddEventStorePostgres(
         this IServiceCollection services,

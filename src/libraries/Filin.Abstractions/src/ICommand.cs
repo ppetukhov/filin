@@ -1,12 +1,12 @@
 namespace Filin;
 
 /// <summary>
-/// Команда (намериние) изменить состояние <typeparamref name="TState"/>.
+/// Defines a domain command representing an intent to mutate the state of a <typeparamref name="TState"/> model.
 /// </summary>
 /// <remarks>
-/// Команда выполняется по бизнес правилам на основе состояния <typeparamref name="TState"/>.
-/// <see cref="ProjectorIdAttribute"/>
+/// Commands are processed against a specific state instance according to business rules, 
+/// resulting in either new domain events or a failed state transition.
 /// </remarks>
-/// <typeparam name="TState">Тим модели данных состояния.</typeparam>
+/// <typeparam name="TState">The type of the domain state model target for this command.</typeparam>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1040:Avoid empty interfaces", Justification = "Идентификация команд должна выполняться во время компиляции.")]
 public interface ICommand<TState> : IWithQueryTags where TState : notnull;

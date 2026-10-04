@@ -2,7 +2,7 @@
   <Import Project="$(RepositoryEngineeringDir)Resources.targets" Condition="'$(IsSourceProject)' == 'true'" />
 
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" Condition="'' != $([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
-
+ 
   <!-- Add a meaningless "-project" suffix to the package id for non-packable source projects.
        NuGet uses PackageId regardless of whether the project is packable as the key for restore
        graph project nodes. This is important so that NuGet doesn't get confused when a transitive

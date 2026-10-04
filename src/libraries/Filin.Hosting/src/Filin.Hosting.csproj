@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <RootNamespace>Filin</RootNamespace>
-    <TargetFrameworks>$(NetCurrent);$(NetPrevious);$(NetMinimum)</TargetFrameworks>
+    <TargetFrameworks>$(NetCurrent);$(NetMinimum)</TargetFrameworks>
     <IsPackable>true</IsPackable>
   </PropertyGroup>
 

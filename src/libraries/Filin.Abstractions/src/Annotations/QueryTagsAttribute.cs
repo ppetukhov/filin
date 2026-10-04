@@ -1,26 +1,30 @@
 namespace Filin;
 
 /// <summary>
-/// Тэги событий запроса.
+/// Associates a specific query identifier with event metadata tags.
 /// </summary>
-/// <remarks>Запрос идентифицирутся по значению <see cref="QueryId"/>.</remarks>
+/// <remarks>
+/// The query is identified by the <see cref="QueryId"/> property value.
+/// </remarks>
 /// <param name="queryId"><inheritdoc cref="QueryId" path="/summary"/></param>
 /// <param name="eventTags"><inheritdoc cref="EventTags" path="/summary"/></param>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, Inherited = false, AllowMultiple = true)]
 public sealed class QueryTagsAttribute(int queryId, params string[] eventTags) : Attribute
 {
-    /// <inheritdoc cref="QueryTagsAttribute" path="/summary"/>
+    /// <summary>
+    /// Initializes a new instance of the <see cref="QueryTagsAttribute"/> class with a default query identifier.
+    /// </summary>
     /// <param name="eventTags"><inheritdoc cref="EventTags" path="/summary"/></param>
     public QueryTagsAttribute(params string[] eventTags) : this(queryId: default, eventTags: eventTags) { }
 
     /// <summary>
-    /// Номер фильтра.
+    /// Gets the identifier of the query.
     /// </summary>
-    /// <remarks>Значение по умолчанию 0</remarks>
-    public int QueryId { get; } = queryId;
+    /// <value>The default value is 0.</value>
+    public int QueryId => queryId;
 
     /// <summary>
-    /// Тэги событий.
+    /// Gets the collection of event metadata tags associated with the query.
     /// </summary>
-    public IEnumerable<string> EventTags { get; } = eventTags;
+    public IEnumerable<string> EventTags => eventTags;
 }

@@ -8,33 +8,12 @@
     <Description Condition="'$(Description)' == ''">$(AssemblyName)</Description>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(IsTestProject)' != 'true' and '$(IsTestSupportProject)' != 'true'">
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadata">
-      <_Parameter1>Serviceable</_Parameter1>
-      <_Parameter2>True</_Parameter2>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadata">
-      <_Parameter1>PreferInbox</_Parameter1>
-      <_Parameter2>True</_Parameter2>
-    </AssemblyAttribute>
-  </ItemGroup>
-
   <ItemGroup>
     <AssemblyAttribute Include="System.Reflection.AssemblyDefaultAliasAttribute">
       <_Parameter1>$(AssemblyName)</_Parameter1>
     </AssemblyAttribute>
     <AssemblyAttribute Include="System.Resources.NeutralResourcesLanguage" Condition="'@(EmbeddedResource)' != '' and '$(IsSourceProject)' == 'true'">
       <_Parameter1>en-US</_Parameter1>
-    </AssemblyAttribute>
-    
-<!--    <AssemblyAttribute Include="CLSCompliantAttribute" Condition="'$(CLSCompliant)' == 'true'">
-      <_Parameter1>true</_Parameter1>
-    </AssemblyAttribute>-->
-  
-  </ItemGroup>
-
-  <!-- Add PlatformNeutralAssembly property for targeted builds of cross platform assemblies -->
-  <ItemGroup Condition="'$(TargetPlatformIdentifier)' != '' and '$(IsTestProject)' != 'true' and '@(SupportedOSPlatforms)' == ''">
-    <CompilerVisibleProperty Include="PlatformNeutralAssembly" />
+    </AssemblyAttribute> 
   </ItemGroup>
 </Project>

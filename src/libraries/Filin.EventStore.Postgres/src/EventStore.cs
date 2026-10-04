@@ -10,13 +10,13 @@ using Microsoft.Extensions.Options;
 namespace Filin.EventStore.Postgres;
 
 /// <summary>
-/// Реализация хранилища <see cref="IEventStore"/> в PostgreSQL.
+/// A PostgreSQL-based implementation of the <see cref="IEventStore"/> interface.
 /// </summary>
-/// <param name="commandFactory"><inheritdoc cref="DbCommandFactory" path="/summary"/></param>
+/// <param name="commandFactory">The factory used to create and configure database commands for PostgreSQL.</param>
 /// <param name="appendEventsBlock"><inheritdoc cref="AppendEventsBlock" path="/summary"/></param>
-/// <param name="messageWriter"><inheritdoc cref="ChannelWriter{T}" path="/summary"/></param>
-/// <param name="loggerFactory"><inheritdoc cref="ILoggerFactory" path="/summary"/></param>
-/// <param name="options"><inheritdoc cref="IOptions{TOptions}" path="/summary"/></param>
+/// <param name="messageWriter">The channel writer used to dispatch outbound messages or events asynchronously.</param>
+/// <param name="loggerFactory">The factory used to create loggers for tracing store operations.</param>
+/// <param name="options">The configuration options specific to the PostgreSQL event store implementation.</param>
 sealed partial class EventStore(
     DbCommandFactory commandFactory,
     AppendEventsBlock appendEventsBlock,

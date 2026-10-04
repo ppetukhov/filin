@@ -13,5 +13,5 @@ public sealed class ApplicationPartAttribute(string assemblyName) : Attribute
     /// <summary>
     /// Gets the assembly name.
     /// </summary>
-    public string AssemblyName { get; } = assemblyName ?? throw new ArgumentNullException(nameof(assemblyName));
+    public string AssemblyName => assemblyName;
 }

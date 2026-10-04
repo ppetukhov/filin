@@ -1,26 +1,30 @@
 namespace Filin;
 
 /// <summary>
-/// Тэг-параметеры фильтра событий. (Префиксы тэгов).
+/// Associates a specific query identifier with event filter tag parameters or tag prefixes.
 /// </summary>
-/// <remarks>Запрос идентифицирутся по значению <see cref="QueryId"/>.</remarks>
+/// <remarks>
+/// The query is identified by the <see cref="QueryId"/> property value.
+/// </remarks>
 /// <param name="queryId"><inheritdoc cref="QueryId" path="/summary"/></param>
 /// <param name="tagParameters"><inheritdoc cref="TagParameters" path="/summary"/></param>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, Inherited = false, AllowMultiple = true)]
 public sealed class QueryTagParametersAttribute(int queryId, params string[] tagParameters) : Attribute
 {
-    /// <inheritdoc cref="QueryTagsAttribute" path="/summary"/>
-    /// <param name="tagParameters"><inheritdoc cref="QueryTagParametersAttribute" path="/summary"/></param>
+    /// <summary>
+    /// Initializes a new instance of the <see cref="QueryTagParametersAttribute"/> class with a default query identifier.
+    /// </summary>
+    /// <param name="tagParameters"><inheritdoc cref="TagParameters" path="/summary"/></param>
     public QueryTagParametersAttribute(params string[] tagParameters) : this(queryId: default, tagParameters: tagParameters) { }
 
     /// <summary>
-    /// Номер фильтра.
+    /// Gets the unique identifier of the query.
     /// </summary>
-    /// <remarks>Значение по умолчанию 0</remarks>
-    public int QueryId { get; } = queryId;
+    /// <value>The default value is 0.</value>
+    public int QueryId => queryId;
 
     /// <summary>
-    /// Тэг-параметеры фильтра событий. (Префиксы тэгов).
+    /// Gets the event filter tag parameters or tag prefixes.
     /// </summary>
-    public IEnumerable<string> TagParameters { get; } = tagParameters;
+    public IEnumerable<string> TagParameters => tagParameters;
 }

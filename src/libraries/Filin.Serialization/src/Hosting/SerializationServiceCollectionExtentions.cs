@@ -1,21 +1,31 @@
 using System.Diagnostics.CodeAnalysis;
 
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options;
-
 using Filin.Configuration;
 using Filin.Serialization;
 using Filin.Storage;
 
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
+
 namespace Filin.Hosting;
 
+/// <summary>
+/// Provides extension methods for registering serialization services within the application container.
+/// </summary>
 public static class SerializationServiceCollectionExtentions
 {
+    /// <summary>
+    /// Registers the default storage serialization services, including options configuration and the storage serializer.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
+    /// <returns>The same <see cref="IServiceCollection"/> instance so that multiple calls can be chained.</returns>
     [RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Deserialize(ref Utf8JsonReader, Type, JsonSerializerOptions)")]
     [RequiresDynamicCode("JSON serialization and deserialization might require types that cannot be statically analyzed and might need runtime code generation. Use System.Text.Json source generation for native AOT applications.")]
     public static IServiceCollection AddStorageSerialization(this IServiceCollection services)
     {
+        ArgumentNullException.ThrowIfNull(services);
+
         services.TryAddSingleton<IPostConfigureOptions<FilinJsonStorageSerializerOptions>, FilinJsonStorageSerializerOptionsProvider>();
 
         return services.AddSingleton<IStorageSerializer, FilinJsonStorageSerializer>();

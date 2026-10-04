@@ -2,10 +2,10 @@ using System.Diagnostics.CodeAnalysis;
 
 using Filin;
 using Filin.Configuration;
-using Filin.DataFlow;
 using Filin.Hosting;
 using Filin.Internal;
 using Filin.Storage;
+using Filin.Storage.DataFlow;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

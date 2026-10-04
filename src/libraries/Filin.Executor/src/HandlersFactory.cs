@@ -3,9 +3,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 using Filin.Configuration;
-using Filin.DataFlow;
 using Filin.Internal;
 using Filin.Storage;
+using Filin.Storage.DataFlow;
 
 using Microsoft.Extensions.Options;
 

@@ -1,35 +1,10 @@
 <Project>
   <Import Project="$(RepositoryEngineeringDir)Analyzers.targets" />
   <Import Project="$(RepositoryEngineeringDir)GeneratorProjects.targets" Condition="'$(IsGeneratorProject)' == 'true'" />
-  <Import Project="$(RepositoryEngineeringDir)ResolveContract.targets" Condition="'$(IsSourceProject)' == 'true'" />
-  <Import Project="$(RepositoryEngineeringDir)Slngen.targets" Condition="'$(IsSlnGen)' == 'true'" />
 
-  <PropertyGroup>
-    <!-- SDK sets product to assembly but we want it to be our product name -->
-    <Product>FilinFramework.NET</Product>
-    <!-- Use the .NET product branding version for informational version description -->
-    <InformationalVersion Condition="'$(InformationalVersion)' == '' and '$(VersionSuffix)' == ''">$(ProductVersion)</InformationalVersion>
-    <InformationalVersion Condition="'$(InformationalVersion)' == '' and '$(PreReleaseVersionLabel)' == 'servicing'">$(ProductVersion)</InformationalVersion>
-    <InformationalVersion Condition="'$(InformationalVersion)' == '' and '$(VersionSuffix)' != ''">$(ProductVersion)-$(VersionSuffix)</InformationalVersion>
-  </PropertyGroup>
- 
   <!-- Packaging -->
-  <ItemGroup Condition="'$(IsPackable)' == 'true' and Exists('$(PackageThirdPartyNoticesFile)')">
-    <None Include="$(PackageThirdPartyNoticesFile)"
-          PackagePath="$([System.IO.Path]::GetFileName('$(PackageThirdPartyNoticesFile)'))"
-          Pack="true" />
-  </ItemGroup>
-
   <PropertyGroup>
     <PackageDescription Condition="'$(PackageDescription)' == '' and '$(Description)' != ''">$(Description)</PackageDescription>
     <Description>$(PackageDescription)</Description>
   </PropertyGroup>
-
-  <Target Name="ValidateReferenceAssemblyProjectTargetFramework"
-      BeforeTargets="CoreCompile"
-      Condition="'$(IsReferenceAssemblyProject)' == 'true' and
-                     '$(SkipValidateReferenceAssemblyProjectReferences)' != 'true'">
-    <Error Text="Reference assemblies must be TargetPlatform agnostic. $(MSBuildProjectName) incorrectly targets $(TargetFramework), platform: $(TargetPlatformIdentifier)."
-           Condition="'$(TargetPlatformIdentifier)' != ''" />
-  </Target>
 </Project>

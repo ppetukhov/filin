@@ -1,24 +1,27 @@
 namespace Filin;
 
 /// <summary>
-/// Идентификатор проектора.
+/// Specifies the unique identifier and schema version for an event projector.
 /// </summary>
-/// <param name="name">Название.</param>
-/// <param name="version">Версия.</param>
+/// <param name="name">The unique name of the projector.</param>
+/// <param name="version">The version of the projector projection logic.</param>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, Inherited = false, AllowMultiple = false)]
 public sealed class ProjectorIdAttribute(string name, uint version) : Attribute
 {
     /// <summary>
-    /// Название.
+    /// Gets the unique name of the projector.
     /// </summary>
-    public string Name { get; } = name;
+    public string Name => name;
 
     /// <summary>
-    /// Версия проектора.
+    /// Gets or sets the version of the projector.
     /// </summary>
-    /// <remarks>Значение по умолчанию 0</remarks>
+    /// <value>The default value is 0.</value>
     public uint Version { get; set; } = version;
 
-    /// <inheritdoc cref="ProjectorIdAttribute"/>
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ProjectorIdAttribute"/> class with a default version of 0.
+    /// </summary>
+    /// <param name="name">The unique name of the projector.</param>
     public ProjectorIdAttribute(string name) : this(name, 0) { }
 }

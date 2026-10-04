@@ -8,5 +8,13 @@ namespace Filin.Configuration;
 sealed class FilinJsonStorageSerializerOptions
 {
     /// <inheritdoc cref="JsonSerializerOptions"/>
-    public required JsonSerializerOptions SerializerOptions { get; set; } = new JsonSerializerOptions(JsonSerializerOptions.Strict);
+    public required JsonSerializerOptions SerializerOptions { get; set; } =
+#if NET9_0_OR_GREATER
+        new JsonSerializerOptions(JsonSerializerOptions.Strict);
+#else
+        new JsonSerializerOptions(JsonSerializerDefaults.General)
+        {
+            UnmappedMemberHandling = System.Text.Json.Serialization.JsonUnmappedMemberHandling.Disallow,
+        };
+#endif
 }

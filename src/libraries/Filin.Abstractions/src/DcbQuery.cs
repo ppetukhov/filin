@@ -121,14 +121,12 @@ public readonly struct DcbQuery : IEquatable<DcbQuery>, IComparable<DcbQuery>
             return true;
         }
 
-        // Сканируем отсортированные и оптимизированные элементы запроса.
-        // Так как _items — это непрерывный массив, обход идет по L1-кэшу процессора.
         var itemsSpan = _items.AsSpan();
         for (int i = 0; i < itemsSpan.Length; i++)
         {
             if (itemsSpan[i].MatchesEvent(@event))
             {
-                return true; // Найдено первое совпадение — событие полностью валидно для данной DCB-спецификации
+                return true;
             }
         }
 
