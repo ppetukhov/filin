@@ -11,7 +11,7 @@ namespace Filin.Hosting;
 /// <summary>
 /// Extensions for <see cref="IFilinBuilder"/> instances.
 /// </summary>
-public static class ExecutorBuilderConfigureExtensions
+public static class FilinBuilderConfigureExtensions
 {
     /// <summary>
     /// Adds an assembly to the builder.

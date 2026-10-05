@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Filin.Hosting;
 
-public static class ExecutorBuilderDefaultServicesExtensions
+public static class FilinBuilderDefaultServicesExtensions
 {
     [RequiresAssemblyFiles("Calls Filin.Hosting.DefaultExecutorServices.ApplyConfiguration(IFilinBuilder)")]
     [RequiresUnreferencedCode("Calls Filin.Hosting.SerializationServiceCollectionExtentions.AddStorageSerialization()")]

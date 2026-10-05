@@ -28,16 +28,9 @@ public static class EventStorePostgresServiceCollectionExtensions
     {
         configureOptions?.Invoke(services.AddOptions<EventStorePostgresOptions>());
 
-        if (services.Contains(MarkerEventStorePostgres.ServiceDescriptor))
-        {
-            return services;
-        }
-
-        services.Add(MarkerEventStorePostgres.ServiceDescriptor);
-
-        services.AddTransient<IPostConfigureOptions<EventStorePostgresOptions>, EventStorePostgresOptionsProvider>();
-        services.AddTransient<IPostConfigureOptions<EventStorePostgresOptions>, DefaultStorageProviderSerializerOptionsConfigurator<EventStorePostgresOptions>>();
-        services.AddSingleton<IValidateOptions<EventStorePostgresOptions>, EventStorePostgresOptionsValidator>();
+        services.TryAddEnumerable(ServiceDescriptor.Transient<IPostConfigureOptions<EventStorePostgresOptions>, EventStorePostgresOptionsProvider>());
+        services.TryAddEnumerable(ServiceDescriptor.Transient<IPostConfigureOptions<EventStorePostgresOptions>, DefaultStorageProviderSerializerOptionsConfigurator<EventStorePostgresOptions>>());
+        services.TryAddEnumerable(ServiceDescriptor.Transient<IValidateOptions<EventStorePostgresOptions>, EventStorePostgresOptionsValidator>());
 
         var streamChannel = Channel.CreateUnboundedPrioritized(new UnboundedPrioritizedChannelOptions<Message> { SingleReader = true, SingleWriter = false });
 
@@ -63,9 +56,5 @@ public static class EventStorePostgresServiceCollectionExtensions
         services.AddHostedService<EventStreamingService>();
 
         return services;
-    }
-    sealed class MarkerEventStorePostgres
-    {
-        public static readonly ServiceDescriptor ServiceDescriptor = ServiceDescriptor.Singleton(new MarkerEventStorePostgres());
     }
 }
