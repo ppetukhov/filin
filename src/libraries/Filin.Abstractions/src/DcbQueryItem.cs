@@ -46,7 +46,7 @@ public readonly record struct DcbQueryItem(EventTypeCollection EventTypes, TagCo
     {
         if (eventTypes.IsEmpty) return this;
 
-        EventTypeCollection mergedTypes = [.. this.EventTypes, .. eventTypes];
+        EventTypeCollection mergedTypes = [.. EventTypes, .. eventTypes];
         return new DcbQueryItem(mergedTypes, Tags);
     }
 
@@ -58,7 +58,7 @@ public readonly record struct DcbQueryItem(EventTypeCollection EventTypes, TagCo
     {
         if (tags.IsEmpty) return this;
 
-        TagCollection mergedTags = [.. this.Tags, .. tags];
+        TagCollection mergedTags = [.. Tags, .. tags];
         return new DcbQueryItem(EventTypes, mergedTags);
     }
 
