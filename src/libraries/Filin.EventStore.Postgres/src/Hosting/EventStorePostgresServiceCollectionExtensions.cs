@@ -49,9 +49,12 @@ public static class EventStorePostgresServiceCollectionExtensions
         });
 
         services.TryAddSingleton<AppendEventsBlock>();
-        services.TryAddFromExisting<IAppendEventsBlock, AppendEventsBlock>();
 
-        services.TryAddSingleton<IEventStore, EventStore.Postgres.EventStore>();
+        services.RemoveAll<IAppendEventsBlock>();
+        services.AddFromExisting<IAppendEventsBlock, AppendEventsBlock>();
+
+        services.RemoveAll<IEventStore>();
+        services.AddSingleton<IEventStore, EventStore.Postgres.EventStore>();
 
         services.AddHostedService<EventStreamingService>();
 

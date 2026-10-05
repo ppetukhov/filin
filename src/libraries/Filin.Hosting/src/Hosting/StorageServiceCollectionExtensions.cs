@@ -25,12 +25,13 @@ public static class StorageServiceCollectionExtensions
         ArgumentException.ThrowIfNullOrEmpty(name);
         ArgumentNullException.ThrowIfNull(implementationFactory);
 
+        collection.RemoveAllKeyed<IProjectionStore>(name);
         collection.TryAddKeyedSingleton<IProjectionStore>(name, (sp, key) => implementationFactory(sp, (string)key!));
 
         // Check if it is the default implementation
         if (string.Equals(name, ProviderConstants.DefaultStorageProvider, StringComparison.OrdinalIgnoreCase))
         {
-            collection.TryAddSingleton(sp => sp.GetRequiredKeyedService<IProjectionStore>(ProviderConstants.DefaultStorageProvider));
+            collection.Replace(ServiceDescriptor.Singleton(sp => sp.GetRequiredKeyedService<IProjectionStore>(ProviderConstants.DefaultStorageProvider)));
         }
 
         return collection;
@@ -50,7 +51,7 @@ public static class StorageServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(collection);
         ArgumentNullException.ThrowIfNull(implementationFactory);
 
-        collection.TryAddSingleton<IEventStore>((sp) => implementationFactory(sp));
+        collection.Replace(ServiceDescriptor.Singleton<IEventStore>(sp => implementationFactory(sp)));
 
         return collection;
     }
