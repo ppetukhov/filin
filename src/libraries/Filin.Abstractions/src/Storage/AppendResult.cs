@@ -48,6 +48,7 @@ public readonly partial struct AppendResult
         {
             _value = Empty._value;
             _pos = Empty._pos;
+            _ts = Empty._ts;
             return;
         }
 
@@ -56,6 +57,7 @@ public readonly partial struct AppendResult
             var @event = events[0];
             _value = @event.Event;
             _pos = @event.Position;
+            _ts = @event.Timestamp;
             return;
         }
 
