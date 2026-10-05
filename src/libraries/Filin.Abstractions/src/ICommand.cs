@@ -8,5 +8,4 @@ namespace Filin;
 /// resulting in either new domain events or a failed state transition.
 /// </remarks>
 /// <typeparam name="TState">The type of the domain state model target for this command.</typeparam>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1040:Avoid empty interfaces", Justification = "Идентификация команд должна выполняться во время компиляции.")]
 public interface ICommand<TState> : IWithQueryTags where TState : notnull;
