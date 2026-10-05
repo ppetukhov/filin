@@ -14,21 +14,12 @@ namespace Filin.Hosting;
 
 public static class ExecutorBuilderDefaultServicesExtensions
 {
-    static readonly ServiceDescriptor ServiceDescriptor = new(typeof(ServicesAdded), new ServicesAdded());
-
-    [RequiresAssemblyFiles("Calls Filin.Hosting.DefaultExecutorServices.ApplyConfiguration(IExecutorBuilder)")]
+    [RequiresAssemblyFiles("Calls Filin.Hosting.DefaultExecutorServices.ApplyConfiguration(IFilinBuilder)")]
     [RequiresUnreferencedCode("Calls Filin.Hosting.SerializationServiceCollectionExtentions.AddStorageSerialization()")]
     [RequiresDynamicCode("Calls Filin.Hosting.SerializationServiceCollectionExtentions.AddStorageSerialization()")]
-    public static IExecutorBuilder AddDefaultServices(this IExecutorBuilder builder)
+    public static IFilinBuilder AddDefaultServices(this IFilinBuilder builder)
     {
         var services = builder.Services;
-
-        if (services.Contains(ServiceDescriptor))
-        {
-            return builder;
-        }
-
-        services.Add(ServiceDescriptor);
 
         // Common services
         services.AddOptions();
@@ -52,7 +43,7 @@ public static class ExecutorBuilderDefaultServicesExtensions
     }
 
     [RequiresAssemblyFiles("Calls Filin.Hosting.DefaultExecutorServices.GetRegisteredProviders()")]
-    static void ApplyConfiguration(IExecutorBuilder builder, RelevantAssemblies relevantAssemblies)
+    static void ApplyConfiguration(IFilinBuilder builder, RelevantAssemblies relevantAssemblies)
     {
         var cfg = builder.Configuration.GetSection("Filin");
         var knownProviderTypes = GetRegisteredProviders(relevantAssemblies);
@@ -85,7 +76,7 @@ public static class ExecutorBuilderDefaultServicesExtensions
         return result;
     }
 
-    static void ApplySubsection(IExecutorBuilder builder, IConfigurationSection cfg, Dictionary<(string Kind, string? Name), Type> knownProviderTypes, string sectionName)
+    static void ApplySubsection(IFilinBuilder builder, IConfigurationSection cfg, Dictionary<(string Kind, string? Name), Type> knownProviderTypes, string sectionName)
     {
         if (cfg.GetSection(sectionName) is { } section && section.Exists())
         {
@@ -93,7 +84,7 @@ public static class ExecutorBuilderDefaultServicesExtensions
         }
     }
 
-    static void ApplyNamedSubsections(IExecutorBuilder builder, IConfigurationSection cfg, Dictionary<(string Kind, string? Name), Type> knownProviderTypes, string sectionName)
+    static void ApplyNamedSubsections(IFilinBuilder builder, IConfigurationSection cfg, Dictionary<(string Kind, string? Name), Type> knownProviderTypes, string sectionName)
     {
         if (cfg.GetSection(sectionName) is { } section && section.Exists())
         {
@@ -104,27 +95,25 @@ public static class ExecutorBuilderDefaultServicesExtensions
         }
     }
 
-    static void ConfigureProvider(IExecutorBuilder builder, Dictionary<(string Kind, string? Name), Type> knownProviderTypes, string kind, string? name, IConfigurationSection configurationSection)
+    static void ConfigureProvider(IFilinBuilder builder, Dictionary<(string Kind, string? Name), Type> knownProviderTypes, string kind, string? name, IConfigurationSection configurationSection)
     {
         var providerType = configurationSection["ProviderType"];
         var provider = GetRequiredProvider(knownProviderTypes: knownProviderTypes, kind: kind, name: providerType);
         provider.Configure(builder, name, configurationSection);
     }
 
-    static IProviderBuilder<IExecutorBuilder> GetRequiredProvider(Dictionary<(string Kind, string? Name), Type> knownProviderTypes, string kind, string? name)
+    static IProviderBuilder<IFilinBuilder> GetRequiredProvider(Dictionary<(string Kind, string? Name), Type> knownProviderTypes, string kind, string? name)
     {
         if (knownProviderTypes.TryGetValue((kind, name), out var type))
         {
             var instance = Activator.CreateInstance(type);
 
-            return instance as IProviderBuilder<IExecutorBuilder>
-                ?? throw new InvalidOperationException($"{kind} provider, '{name}', of type {type}, does not implement {typeof(IProviderBuilder<IExecutorBuilder>)}.");
+            return instance as IProviderBuilder<IFilinBuilder>
+                ?? throw new InvalidOperationException($"{kind} provider, '{name}', of type {type}, does not implement {typeof(IProviderBuilder<IFilinBuilder>)}.");
         }
 
         throw new InvalidOperationException($"Could not find {kind} provider named '{name}'. This can indicate the provider's package are not referenced by your application.");
     }
-
-    sealed class ServicesAdded { }
 
     sealed record RelevantAssemblies(ImmutableHashSet<Assembly> Assembles);
 }

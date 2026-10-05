@@ -5,7 +5,6 @@
     <Nullable>enable</Nullable>
     <TargetFramework>$(NetCurrent)</TargetFramework>
     <LaunchDebugger>true</LaunchDebugger>
-    <DefineConstants>$(DefineConstants);LAUNCH_DEBUGGER</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

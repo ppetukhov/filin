@@ -26,19 +26,18 @@ public static class EventStorePostgresServiceCollectionExtensions
         this IServiceCollection services,
         Action<OptionsBuilder<EventStorePostgresOptions>>? configureOptions = null)
     {
-        var opt = services.AddOptions<EventStorePostgresOptions>();
-
         configureOptions?.Invoke(services.AddOptions<EventStorePostgresOptions>());
-        services.AddTransient<IPostConfigureOptions<EventStorePostgresOptions>, EventStorePostgresOptionsProvider>();
-        services.AddTransient<IPostConfigureOptions<EventStorePostgresOptions>, DefaultStorageProviderSerializerOptionsConfigurator<EventStorePostgresOptions>>();
-        services.AddSingleton<IValidateOptions<EventStorePostgresOptions>, EventStorePostgresOptionsValidator>();
 
-        if (services.Contains(MarkerSreamingService.ServiceDescriptor))
+        if (services.Contains(MarkerEventStorePostgres.ServiceDescriptor))
         {
             return services;
         }
 
-        services.Add(MarkerSreamingService.ServiceDescriptor);
+        services.Add(MarkerEventStorePostgres.ServiceDescriptor);
+
+        services.AddTransient<IPostConfigureOptions<EventStorePostgresOptions>, EventStorePostgresOptionsProvider>();
+        services.AddTransient<IPostConfigureOptions<EventStorePostgresOptions>, DefaultStorageProviderSerializerOptionsConfigurator<EventStorePostgresOptions>>();
+        services.AddSingleton<IValidateOptions<EventStorePostgresOptions>, EventStorePostgresOptionsValidator>();
 
         var streamChannel = Channel.CreateUnboundedPrioritized(new UnboundedPrioritizedChannelOptions<Message> { SingleReader = true, SingleWriter = false });
 
@@ -65,8 +64,8 @@ public static class EventStorePostgresServiceCollectionExtensions
 
         return services;
     }
-    sealed class MarkerSreamingService
+    sealed class MarkerEventStorePostgres
     {
-        public static readonly ServiceDescriptor ServiceDescriptor = ServiceDescriptor.Singleton(new MarkerSreamingService());
+        public static readonly ServiceDescriptor ServiceDescriptor = ServiceDescriptor.Singleton(new MarkerEventStorePostgres());
     }
 }

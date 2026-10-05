@@ -13,10 +13,10 @@ using Microsoft.Extensions.Options;
 
 namespace Filin.EventStore.Postgres;
 
-sealed class EventStoreProviderBuilder : IProviderBuilder<IExecutorBuilder>
+sealed class EventStoreProviderBuilder : IProviderBuilder<IFilinBuilder>
 {
     /// <inheritdoc/>
-    public void Configure(IExecutorBuilder builder, string? name, IConfigurationSection configurationSection)
+    public void Configure(IFilinBuilder builder, string? name, IConfigurationSection configurationSection)
     {
         var invariant = configurationSection[nameof(EventStorePostgresOptions.Invariant)];
         var connectionName = configurationSection[nameof(EventStorePostgresOptions.ConnectionName)];

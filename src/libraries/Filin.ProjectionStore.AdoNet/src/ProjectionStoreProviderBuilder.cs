@@ -13,10 +13,10 @@ using Microsoft.Extensions.Options;
 
 namespace Filin.ProjectionStore.AdoNet;
 
-sealed class ProjectionStoreProviderBuilder : IProviderBuilder<IExecutorBuilder>
+sealed class ProjectionStoreProviderBuilder : IProviderBuilder<IFilinBuilder>
 {
     /// <inheritdoc/>
-    public void Configure(IExecutorBuilder builder, string? name, IConfigurationSection configurationSection)
+    public void Configure(IFilinBuilder builder, string? name, IConfigurationSection configurationSection)
     {
         var invariant = configurationSection[nameof(ProjectionStoreAdoNetOptions.Invariant)];
         var connectionName = configurationSection[nameof(ProjectionStoreAdoNetOptions.ConnectionName)];

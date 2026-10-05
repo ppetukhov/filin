@@ -15,6 +15,7 @@
   <ItemGroup>
     <ProjectReference Include="$(LibrariesProjectRoot)\Filin.EventStore.Postgres\src\Filin.EventStore.Postgres.csproj" />
     <ProjectReference Include="$(LibrariesProjectRoot)\Filin.ProjectionStore.AdoNet\src\Filin.ProjectionStore.AdoNet.csproj" />
+    <ProjectReference Include="$(LibrariesProjectRoot)\Filin.Executor\src\Filin.Executor.csproj" />
     <ProjectReference Include="..\Edu.Contract\Edu.Contract.csproj" />
     <ProjectReference Include="..\Edu\Edu.csproj" />
   </ItemGroup>

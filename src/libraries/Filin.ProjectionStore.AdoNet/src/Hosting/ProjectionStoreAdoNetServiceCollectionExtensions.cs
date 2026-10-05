@@ -2,6 +2,7 @@ using Filin.Configuration;
 using Filin.ProjectionStore.AdoNet;
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
 namespace Filin.Hosting;
@@ -38,9 +39,9 @@ public static class ProjectionStoreAdoNetServiceCollectionExtensions
         Action<OptionsBuilder<ProjectionStoreAdoNetOptions>>? configureOptions = null)
     {
         configureOptions?.Invoke(services.AddOptions<ProjectionStoreAdoNetOptions>(name));
-        services.AddTransient<IPostConfigureOptions<ProjectionStoreAdoNetOptions>, ProjectionStoreAdoNetOptionsProvider>();
-        services.AddTransient<IPostConfigureOptions<ProjectionStoreAdoNetOptions>, DefaultStorageProviderSerializerOptionsConfigurator<ProjectionStoreAdoNetOptions>>();
-        services.AddSingleton<IValidateOptions<ProjectionStoreAdoNetOptions>, ProjectionStoreAdoNetOptionsValidator>();
+        services.TryAddEnumerable(ServiceDescriptor.Transient<IPostConfigureOptions<ProjectionStoreAdoNetOptions>, ProjectionStoreAdoNetOptionsProvider>());
+        services.TryAddEnumerable(ServiceDescriptor.Transient<IPostConfigureOptions<ProjectionStoreAdoNetOptions>, DefaultStorageProviderSerializerOptionsConfigurator<ProjectionStoreAdoNetOptions>>());
+        services.TryAddEnumerable(ServiceDescriptor.Transient<IValidateOptions<ProjectionStoreAdoNetOptions>, ProjectionStoreAdoNetOptionsValidator>());
         return services.AddProjectionStore(name, ProjectionStoreFactory.Create);
     }
 }

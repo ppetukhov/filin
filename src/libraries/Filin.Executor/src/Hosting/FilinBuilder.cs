@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Filin.Hosting;
 
 /// <inheritdoc/>
-sealed class ExecutorBuilder(IServiceCollection services, IConfiguration configuration) : IExecutorBuilder
+sealed class FilinBuilder(IServiceCollection services, IConfiguration configuration) : IFilinBuilder
 {
     /// <inheritdoc/>
     public IServiceCollection Services => services;
