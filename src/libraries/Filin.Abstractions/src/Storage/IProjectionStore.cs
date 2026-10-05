@@ -27,16 +27,6 @@ public interface IProjectionStore
     Task SaveAsync(Projection projection, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Asynchronously saves a projection with an option to strictly enforce its creation.
-    /// </summary>
-    /// <param name="projection"><inheritdoc cref="Projection" path="/summary"/></param>
-    /// <param name="create"><see langword="true"/> to strictly insert a new projection record; <see langword="true"/> to allow upsert or modification behavior.</param>
-    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
-    /// <exception cref="DcbProjectionStoreException">Thrown when a storage error or concurrency constraint violation occurs while persisting the projection.</exception>
-    Task SaveAsync(Projection projection, bool create, CancellationToken cancellationToken);
-
-    /// <summary>
     /// Asynchronously saves a batch of projections atomically or as a single bulk operation.
     /// </summary>
     /// <param name="projections">The collection of projections to persist.</param>

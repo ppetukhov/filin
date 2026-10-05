@@ -126,30 +126,6 @@ END;
 $$ LANGUAGE plpgsql;
 
 INSERT INTO Filin_query
-    VALUES ('CreateStorageKey',
-    'INSERT INTO
-        projections(id_hash, id_name, type_hash, type_name, position, timestamp_utc, payload)
-    SELECT
-        @id_hash,
-        @id_name,
-        @type_hash,
-        @type_name,
-        @position,
-        @timestamp_utc,
-        @payload
-    WHERE NOT EXISTS
-    (
-        SELECT 1
-        FROM
-            projections
-        WHERE
-            id_hash = @id_hash
-            AND type_hash = @type_hash
-            AND (@id_name IS NOT NULL AND id_name = @id_name OR @id_name IS NULL AND id_name IS NULL)
-            AND type_name = @type_name
-    )');
-
-INSERT INTO Filin_query
     VALUES ('ReadStorageKey',
     'SELECT
         position,
@@ -163,21 +139,6 @@ INSERT INTO Filin_query
         AND (@id_name IS NOT NULL AND id_name = @id_name OR @id_name IS NULL AND id_name IS NULL)
         AND type_name = @type_name
         AND payload IS NOT NULL');
-
-INSERT INTO Filin_query
-    VALUES ('UpdateStorageKey',
-    'UPDATE
-        projections
-    SET
-        position = @position,
-        timestamp_utc = @timestamp_utc,
-        payload = @payload       
-    WHERE
-        id_hash = @id_hash
-        AND type_hash = @type_hash
-        AND (@id_name IS NOT NULL AND id_name = @id_name OR @id_name IS NULL AND id_name IS NULL)
-        AND type_name = @type_name
-        AND (position < @position OR position <= @position AND payload IS NULL)');
 
 INSERT INTO Filin_query
     VALUES ('UpsertStorageKey',

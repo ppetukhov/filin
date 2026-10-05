@@ -149,53 +149,6 @@ sealed class ProjectionStore(
     }
 
     /// <inheritdoc/>
-    public async Task SaveAsync(Projection projection, bool create, CancellationToken cancellationToken)
-    {
-        ArgumentNullException.ThrowIfNull(projection);
-
-        if (_logger.IsEnabled(LogLevel.Trace))
-        {
-            _logger.RelationalProviderWriting(name, projection.Id, projection.Position);
-        }
-
-        try
-        {
-            var opQueries = Interlocked.CompareExchange(ref _currentOperationalQueries, null, null) ?? await InitQueriesAsync(cancellationToken).ConfigureAwait(false);
-
-            var query = create ? opQueries.CreateStorageKey : opQueries.UpdateStorageKey;
-
-            using var conn = await dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
-
-            using var command = conn.CreateCommand();
-
-            command.CommandText = query;
-
-            var projectionId = projection.Id;
-
-            command.AddParameter(CommandParam.IdHash, (long)projectionId.Key.Hash);
-            command.AddParameter(CommandParam.IdName, projectionId.Key.Value);
-            command.AddParameter(CommandParam.TypeHash, (long)projectionId.ProjectorId.Hash);
-            command.AddParameter(CommandParam.TypeName, projectionId.ProjectorId.Value);
-            command.AddParameter(CommandParam.Position, (long)projection.Position.Value);
-            command.AddParameter(CommandParam.TimestampUtc, projection.Timestamp.ToUniversalTime());
-            command.AddParameter(CommandParam.Payload, _serializer.Serialize(projection.Payload).ToArray());
-
-            await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            _logger.RelationalProviderWriteError(ex, name, projection.Id, projection.Position);
-
-            throw;
-        }
-
-        if (_logger.IsEnabled(LogLevel.Trace))
-        {
-            _logger.RelationalProviderWrote(name, projection.Id, projection.Position);
-        }
-    }
-
-    /// <inheritdoc/>
     public async Task SaveAsync(IEnumerable<Projection> projections, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(projections);
@@ -291,14 +244,12 @@ sealed class ProjectionStore(
 
     async Task<RelationalStorageProviderQueries> InitQueriesAsync(CancellationToken cancellationToken)
     {
-        const string CreateStorageKey = nameof(RelationalStorageProviderQueries.CreateStorageKey);
         const string ReadStorageKey = nameof(RelationalStorageProviderQueries.ReadStorageKey);
-        const string UpdateStorageKey = nameof(RelationalStorageProviderQueries.UpdateStorageKey);
         const string UpsertStorageKey = nameof(RelationalStorageProviderQueries.UpsertStorageKey);
         const string UpsertBatchStorageKey = nameof(RelationalStorageProviderQueries.UpsertBatchStorageKey);
         const string ClearStorageKey = nameof(RelationalStorageProviderQueries.ClearStorageKey);
 
-        const string InitializationQuery = $"SELECT query_key, query_text FROM Filin_query WHERE query_key IN ('{CreateStorageKey}','{ReadStorageKey}','{UpdateStorageKey}','{UpsertStorageKey}','{UpsertBatchStorageKey}','{ClearStorageKey}')";
+        const string InitializationQuery = $"SELECT query_key, query_text FROM Filin_query WHERE query_key IN ('{ReadStorageKey}','{UpsertStorageKey}','{UpsertBatchStorageKey}','{ClearStorageKey}')";
 
         using var conn = await dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
 
@@ -317,9 +268,7 @@ sealed class ProjectionStore(
 
         var opQueries = new RelationalStorageProviderQueries
         {
-            CreateStorageKey = queries.Single(i => i.Item1 == CreateStorageKey).Item2,
             ReadStorageKey = queries.Single(i => i.Item1 == ReadStorageKey).Item2,
-            UpdateStorageKey = queries.Single(i => i.Item1 == UpdateStorageKey).Item2,
             UpsertStorageKey = queries.Single(i => i.Item1 == UpsertStorageKey).Item2,
             UpsertBatchStorageKey = queries.Single(i => i.Item1 == UpsertBatchStorageKey).Item2,
             ClearStorageKey = queries.Single(i => i.Item1 == ClearStorageKey).Item2

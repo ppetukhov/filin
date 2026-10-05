@@ -7,19 +7,9 @@ namespace Filin.ProjectionStore.AdoNet;
 sealed record RelationalStorageProviderQueries
 {
     /// <summary>
-    /// The clause to create record in the storage.
-    /// </summary>
-    public required string CreateStorageKey { get; init; }
-
-    /// <summary>
     /// The clause to read from the storage.
     /// </summary>
     public required string ReadStorageKey { get; init; }
-
-    /// <summary>
-    /// The clause to write to the storage.
-    /// </summary>
-    public required string UpdateStorageKey { get; init; }
 
     /// <summary>
     /// The clause to write to the storage.
