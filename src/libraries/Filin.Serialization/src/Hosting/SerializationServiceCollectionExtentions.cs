@@ -26,8 +26,10 @@ public static class SerializationServiceCollectionExtentions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.TryAddSingleton<IPostConfigureOptions<FilinJsonStorageSerializerOptions>, FilinJsonStorageSerializerOptionsProvider>();
+        services.TryAddEnumerable(ServiceDescriptor.Transient<IPostConfigureOptions<JsonStorageSerializerOptions>, JsonStorageSerializerOptionsProvider>());
 
-        return services.AddSingleton<IStorageSerializer, FilinJsonStorageSerializer>();
+        services.TryAddSingleton<IStorageSerializer, JsonStorageSerializer>();
+
+        return services;
     }
 }

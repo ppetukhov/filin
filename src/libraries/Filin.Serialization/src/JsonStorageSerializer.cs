@@ -1,16 +1,16 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
-using Microsoft.Extensions.Options;
-
 using Filin.Configuration;
 using Filin.Storage;
+
+using Microsoft.Extensions.Options;
 
 namespace Filin.Serialization;
 
 [RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Deserialize(ref Utf8JsonReader, Type, JsonSerializerOptions)")]
 [RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Deserialize(ref Utf8JsonReader, Type, JsonSerializerOptions)")]
-sealed class FilinJsonStorageSerializer(IOptions<FilinJsonStorageSerializerOptions> jsonSerializerOptions) : IStorageSerializer
+sealed class JsonStorageSerializer(IOptions<JsonStorageSerializerOptions> jsonSerializerOptions) : IStorageSerializer
 {
     JsonSerializerOptions Options => jsonSerializerOptions.Value.SerializerOptions;
 
