@@ -13,9 +13,9 @@ namespace Filin.EventStore.Postgres.DataFlow;
 
 sealed class AppendEventsBlock : IAppendEventsBlock, IDisposable
 {
-    readonly record struct ExecuteRequest(Func<DbCommand, object, CancellationToken, Task<AppendResult>> handler, DbCommand command, object state, IContext context);
+    readonly record struct ExecuteRequest(Func<DbCommand, object, CancellationToken, Task<AppendResult>> Handler, DbCommand Command, object State, IContext Context);
 
-    static readonly TimeSpan[] _retryDelays = [.. Enumerable.Range(1, 15).Select(i => double.Pow(2.0, i) * TimeSpan.FromMilliseconds(3))];
+    static readonly TimeSpan[] RetryDelays = [.. Enumerable.Range(1, 15).Select(i => double.Pow(2.0, i) * TimeSpan.FromMilliseconds(3))];
 
     readonly TransformBlock<AppendEventRequest, ExecuteRequest> _appendEventBlock;
     readonly TransformBlock<AppendEventsRequest, ExecuteRequest> _appendEventsBlock;
@@ -43,7 +43,7 @@ sealed class AppendEventsBlock : IAppendEventsBlock, IDisposable
 
             var command = commandFactory.CreateAppendEventCommand(@event, appendCondition);
 
-            return new ExecuteRequest { handler = AppendEventInner, command = command, state = @event, context = context };
+            return new ExecuteRequest { Handler = AppendEventInner, Command = command, State = @event, Context = context };
         }, execOpt);
 
         _appendEventsBlock = new(request =>
@@ -52,7 +52,7 @@ sealed class AppendEventsBlock : IAppendEventsBlock, IDisposable
 
             var command = commandFactory.CreateAppendEventsCommand(events, appendCondition);
 
-            return new ExecuteRequest { handler = AppendEventsInner, command = command, state = events, context = context };
+            return new ExecuteRequest { Handler = AppendEventsInner, Command = command, State = events, Context = context };
         }, execOpt);
 
         _executeBlock = new(ExecuteAsync,
@@ -75,14 +75,15 @@ sealed class AppendEventsBlock : IAppendEventsBlock, IDisposable
         [
             _appendEventBlock.LinkTo(_executeBlock, linkOption),
             _appendEventsBlock.LinkTo(_executeBlock, linkOption),
-
-            _executeBlock.LinkTo(new ActionBlock<AppendEventsResponse>(SetResult, execSingleOpt), linkOption, IsOwnedResponse)
         ];
     }
 
     public void Dispose()
     {
-        if (_disposed) return;
+        if (_disposed)
+        {
+            return;
+        }
 
         foreach (var item in _disposable)
         {
@@ -94,43 +95,9 @@ sealed class AppendEventsBlock : IAppendEventsBlock, IDisposable
         _disposed = true;
     }
 
-    internal Task<AppendResult> AppendAventAsync(DcbEvent @event, AppendCondition appendCondition, CancellationToken cancellationToken)
-    {
-        var tcs = new TaskCompletionSource<AppendResult>();
-        var context = new LocalContext(this, tcs, cancellationToken);
-
-        var req = new AppendEventRequest(@event, appendCondition, context);
-
-        var posted = _appendEventBlock.Post(req);
-
-        if (!posted)
-        {
-            tcs.TrySetException(SystemIsToBusyException());
-        }
-
-        return tcs.Task;
-    }
-
-    internal Task<AppendResult> AppendEventsAsync(ICollection<DcbEvent> events, AppendCondition appendCondition, CancellationToken cancellationToken)
-    {
-        var tcs = new TaskCompletionSource<AppendResult>();
-        var context = new LocalContext(this, tcs, cancellationToken);
-
-        var req = new AppendEventsRequest(events, appendCondition, context);
-
-        var posted = _appendEventsBlock.Post(req);
-
-        if (!posted)
-        {
-            tcs.TrySetException(SystemIsToBusyException());
-        }
-
-        return tcs.Task;
-    }
-
     async Task<AppendResult> AppendEventInner(DbCommand command, object state, CancellationToken cancellationToken)
     {
-        DcbEvent @event = (DcbEvent)state;
+        var @event = (DcbEvent)state;
 
         using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
 
@@ -235,9 +202,9 @@ sealed class AppendEventsBlock : IAppendEventsBlock, IDisposable
                 }
                 catch (DbException e) when (e.IsTransient)
                 {
-                    if (retry < _retryDelays.Length)
+                    if (retry < RetryDelays.Length)
                     {
-                        delay = _retryDelays[retry];
+                        delay = RetryDelays[retry];
                     }
 
                     retry++;
@@ -258,7 +225,9 @@ sealed class AppendEventsBlock : IAppendEventsBlock, IDisposable
 
                     return new AppendEventsResponse(AppendResult.Empty, context);
                 }
+#pragma warning disable CA1031 // Modify 'ExecuteAsync' to catch a more specific allowed exception type, or rethrow the exception
                 catch (Exception ex)
+#pragma warning restore CA1031 // Modify 'ExecuteAsync' to catch a more specific allowed exception type, or rethrow the exception
                 {
                     _logger.ErrorAppendEvents(ex);
 
@@ -270,22 +239,16 @@ sealed class AppendEventsBlock : IAppendEventsBlock, IDisposable
         }
     }
 
-    static void SetResult(AppendEventsResponse resp) => ((LocalContext)resp.Context).TrySetResult(resp.Result);
-
-    static DcbEventStoreException SystemIsToBusyException() => new DcbEventStoreException("System is too busy.");
-
     [DoesNotReturn]
     static void ThrowUnexpectedRowsCount(int expectedCount, int count)
     {
-        var ex = new DcbEventStoreException("Unexpected rows count");
+        var ex = new EventStoreException("Unexpected rows count");
 
         ex.Data["Count"] = count;
         ex.Data["ExpectedCount"] = expectedCount;
 
         throw ex;
     }
-
-    bool IsOwnedResponse(AppendEventsResponse resp) => resp.Context is LocalContext req && ReferenceEquals(this, req.Owner);
 
     AppendEventsResponse ISourceBlock<AppendEventsResponse>.ConsumeMessage(DataflowMessageHeader messageHeader, ITargetBlock<AppendEventsResponse> target, out bool messageConsumed) => ((ISourceBlock<AppendEventsResponse>)_executeBlock).ConsumeMessage(messageHeader, target, out messageConsumed);
     IDisposable ISourceBlock<AppendEventsResponse>.LinkTo(ITargetBlock<AppendEventsResponse> target, DataflowLinkOptions linkOptions) => _executeBlock.LinkTo(target, linkOptions);
@@ -306,15 +269,4 @@ sealed class AppendEventsBlock : IAppendEventsBlock, IDisposable
 
     DataflowMessageStatus ITargetBlock<AppendEventRequest>.OfferMessage(DataflowMessageHeader messageHeader, AppendEventRequest messageValue, ISourceBlock<AppendEventRequest>? source, bool consumeToAccept) => ((ITargetBlock<AppendEventRequest>)_appendEventBlock).OfferMessage(messageHeader, messageValue, source, consumeToAccept);
     DataflowMessageStatus ITargetBlock<AppendEventsRequest>.OfferMessage(DataflowMessageHeader messageHeader, AppendEventsRequest messageValue, ISourceBlock<AppendEventsRequest>? source, bool consumeToAccept) => ((ITargetBlock<AppendEventsRequest>)_appendEventsBlock).OfferMessage(messageHeader, messageValue, source, consumeToAccept);
-
-    sealed class LocalContext(AppendEventsBlock owner, TaskCompletionSource<AppendResult> tcs, CancellationToken cancellationToken) : IContext
-    {
-        public AppendEventsBlock Owner => owner;
-        public bool IsCompleted => tcs.Task.IsCompleted;
-        public CancellationToken CancellationToken => cancellationToken;
-
-        public bool TrySetResult(AppendResult result) => tcs.TrySetResult(result);
-        public bool TrySetCanceled(CancellationToken cancellationToken) => tcs.TrySetCanceled(cancellationToken);
-        public bool TrySetException(Exception exception) => tcs.TrySetException(exception);
-    }
 }

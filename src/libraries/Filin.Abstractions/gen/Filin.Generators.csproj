@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <AnalyzerRoslynVersion>4.4</AnalyzerRoslynVersion>
+    <AnalyzerRoslynVersion>4.3</AnalyzerRoslynVersion>
     <AssemblyName>$(MSBuildThisFileName)</AssemblyName>
     <RootNamespace>$(MSBuildThisFileName)</RootNamespace>
     <StringResourcesClassName>SR</StringResourcesClassName>
@@ -33,9 +33,6 @@
     <!-- Include the custom .targets file to check the source generator -->
     <None Include="Filin.Generators.targets" PackagePath="buildTransitive\" Pack="true" />
     <None Include="Filin.Generators.targets" PackagePath="build\" Pack="true" />
-  
-    <!-- Pack the source generator binary -->
-    <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
   </ItemGroup>
   
 </Project>

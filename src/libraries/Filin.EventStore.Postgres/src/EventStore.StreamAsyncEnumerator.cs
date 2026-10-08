@@ -38,24 +38,12 @@ sealed partial class EventStore
 
             if (Interlocked.Exchange(ref storeEnumerator, null) is IAsyncEnumerator<DcbEventSequenced> disp)
             {
-                try
-                {
-                    await disp.DisposeAsync().ConfigureAwait(false);
-                }
-                catch
-                {
-                }
+                await disp.DisposeAsync().ConfigureAwait(false);
             }
 
             if (Interlocked.Exchange(ref onDispose, null) is Func<StreamAsyncEnumerator, ValueTask> onDisp)
             {
-                try
-                {
-                    await onDisp(this).ConfigureAwait(false);
-                }
-                catch
-                {
-                }
+                await onDisp(this).ConfigureAwait(false);
             }
         }
 

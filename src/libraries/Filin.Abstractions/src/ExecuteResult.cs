@@ -4,13 +4,13 @@ using System.Runtime.CompilerServices;
 namespace Filin;
 
 /// <summary>
-/// Represents the result of a command execution, containing either the updated state or a domain error.
+/// Represents the result of a command execution, containing either the updated state or a domain rule error.
 /// </summary>
 /// <typeparam name="TState">The type of the state produced by a successful command execution.</typeparam>
 public readonly record struct ExecuteResult<TState> where TState : notnull
 {
     readonly TState? _state;
-    readonly Error _error;
+    readonly DomainRuleError _error;
 
     /// <summary>
     /// Gets a value indicating whether the command execution completed successfully.
@@ -38,36 +38,10 @@ public readonly record struct ExecuteResult<TState> where TState : notnull
     /// </summary>
     /// <value>The <see cref="Error"/> descriptor.</value>
     /// <exception cref="InvalidOperationException">Thrown if the operation succeeded and there is no error to access.</exception>
-    public Error Error => IsFailure ? _error : throw new InvalidOperationException("Cannot access Error of a successful command result.");
+    public DomainRuleError Error => IsFailure ? _error : throw new InvalidOperationException("Cannot access DomainRuleError of a successful command result.");
 
-    ExecuteResult(TState state) => (_state, _error) = (state, default);
-    ExecuteResult(Error error) => (_state, _error) = (default, error);
-
-    /// <summary>
-    /// Creates a successful execution result containing the updated state.
-    /// </summary>
-    /// <param name="state">The state produced by the successful command execution.</param>
-    /// <returns>A successful <see cref="ExecuteResult{TState}"/> instance.</returns>
-    public static ExecuteResult<TState> Success(TState state) => new(state);
-
-    /// <summary>
-    /// Creates a failed execution result containing the domain error.
-    /// </summary>
-    /// <param name="error">The domain error that caused the failure.</param>
-    /// <returns>A failed <see cref="ExecuteResult{TState}"/> instance.</returns>
-    public static ExecuteResult<TState> Failure(Error error) => new(error);
-
-    /// <summary>
-    /// Implicitly converts a state instance into a successful <see cref="ExecuteResult{TState}"/>.
-    /// </summary>
-    /// <param name="state">The successful state payload.</param>
-    public static implicit operator ExecuteResult<TState>(TState state) => Success(state);
-
-    /// <summary>
-    /// Implicitly converts an error instance into a failed <see cref="ExecuteResult{TState}"/>.
-    /// </summary>
-    /// <param name="error">The domain error payload.</param>
-    public static implicit operator ExecuteResult<TState>(Error error) => Failure(error);
+    internal ExecuteResult(TState state) => (_state, _error) = (state, default);
+    internal ExecuteResult(DomainRuleError error) => (_state, _error) = (default, error);
 
     /// <summary>
     /// Executes the appropriate delegate based on whether the result indicates success or failure, returning a computed value.
@@ -77,6 +51,47 @@ public readonly record struct ExecuteResult<TState> where TState : notnull
     /// <param name="onFailure">The function to execute if the command failed, receiving the <see cref="Error"/>.</param>
     /// <returns>The result computed by the invoked delegate.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public TOut Match<TOut>(Func<TState, TOut> onSuccess, Func<Error, TOut> onFailure) =>
-        IsSuccess ? onSuccess(_state) : onFailure(_error);
+    public TOut Match<TOut>(Func<TState, TOut> onSuccess, Func<DomainRuleError, TOut> onFailure)
+    {
+        ArgumentNullException.ThrowIfNull(onSuccess);
+        ArgumentNullException.ThrowIfNull(onFailure);
+
+        return IsSuccess ? onSuccess(_state) : onFailure(_error);
+    }
+#pragma warning disable CA2225 // Operator overloads have named alternates
+    /// <summary>
+    /// Implicitly converts a state instance into a successful <see cref="ExecuteResult{TState}"/>.
+    /// </summary>
+    /// <param name="state">The successful state payload.</param>
+    public static implicit operator ExecuteResult<TState>(TState state) => new(state);
+
+    /// <summary>
+    /// Implicitly converts an error instance into a failed <see cref="ExecuteResult{TState}"/>.
+    /// </summary>
+    /// <param name="error">The domain error payload.</param>
+    public static implicit operator ExecuteResult<TState>(DomainRuleError error) => new(error);
+#pragma warning restore CA2225 // Operator overloads have named alternates
+}
+
+/// <summary>
+/// Represents the result of a command execution, containing either the updated state or a domain rule error.
+/// </summary>
+public static class ExecuteResult
+{
+    /// <summary>
+    /// Creates a successful execution result containing the updated state.
+    /// </summary>
+    /// <param name="state">The state produced by the successful command execution.</param>
+    /// <returns>A successful <see cref="ExecuteResult{TState}"/> instance.</returns>
+    public static ExecuteResult<TState> Success<TState>(TState state)
+         where TState : notnull => new(state);
+
+    /// <summary>
+    /// Creates a failed execution result containing the domain error.
+    /// </summary>
+    /// <param name="error">The domain error that caused the failure.</param>
+    /// <returns>A failed <see cref="ExecuteResult{TState}"/> instance.</returns>
+    public static ExecuteResult<TState> Failure<TState>(DomainRuleError error)
+         where TState : notnull
+        => new(error);
 }

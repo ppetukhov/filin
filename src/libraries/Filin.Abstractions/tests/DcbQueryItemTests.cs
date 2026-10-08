@@ -20,8 +20,8 @@ public class DcbQueryItemTests
     public void PrimaryConstructor_WithExplicitArgs_ShouldInitializeInCorrectOrder()
     {
         // Arrange
-        var types = new EventTypeCollection(new EventType("Created"));
-        var tags = new TagCollection(new Tag("course:777"));
+        var types = new EventTypes(new EventType("Created"));
+        var tags = new Tags(new Tag("course:777"));
 
         // Act (Invoking Primary Constructor with eventTypes first, tags second)
         var queryItem = new DcbQueryItem(types, tags);
@@ -39,8 +39,8 @@ public class DcbQueryItemTests
     public void Or_WithEventTypesSpan_ShouldMergeSortAndDeduplicateCorrectly()
     {
         // Arrange
-        var initialTypes = new EventTypeCollection(new EventType("Created"), new EventType("Updated"));
-        var initialTags = new TagCollection(new Tag("course:777"));
+        var initialTypes = new EventTypes(new EventType("Created"), new EventType("Updated"));
+        var initialTags = new Tags(new Tag("course:777"));
         var queryItem = new DcbQueryItem(initialTypes, initialTags);
 
         var extraType1 = new EventType("Deleted");
@@ -61,8 +61,8 @@ public class DcbQueryItemTests
     public void And_WithTagsSpan_ShouldMergeSortAndDeduplicateCorrectly()
     {
         // Arrange
-        var initialTypes = new EventTypeCollection(new EventType("Created"));
-        var initialTags = new TagCollection(new Tag("faculty:it"), new Tag("student:123"));
+        var initialTypes = new EventTypes(new EventType("Created"));
+        var initialTags = new Tags(new Tag("faculty:it"), new Tag("student:123"));
         var queryItem = new DcbQueryItem(initialTypes, initialTags);
 
         var extraTag1 = new Tag("course:777");
@@ -88,15 +88,15 @@ public class DcbQueryItemTests
     {
         // Arrange
         var queryItem = new DcbQueryItem(
-            new EventTypeCollection(new EventType("CourseCapacityChanged")),
-            new TagCollection(new Tag("a"), new Tag("c"))
+            new EventTypes(new EventType("CourseCapacityChanged")),
+            new Tags(new Tag("a"), new Tag("c"))
         );
 
         // Act
         var evt = new DcbEvent
         {
             EventType = new EventType("CourseCapacityChanged"),
-            Tags = new TagCollection(new Tag("a"), new Tag("b"), new Tag("c")),
+            Tags = new Tags(new Tag("a"), new Tag("b"), new Tag("c")),
             Payload = new object()
         };
 

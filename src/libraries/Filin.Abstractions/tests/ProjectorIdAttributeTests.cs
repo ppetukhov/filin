@@ -1,10 +1,12 @@
+using Filin.Abstractions.Tests.Configuration;
+
 namespace Filin.Abstractions.ProjectorTests;
 
 [ProjectorId("some-projector")]
 sealed partial class SomeProjector : IProjector<SomeProjState>
 {
-    public static ProjectionId GetProjectionId(TagCollection tags) => throw new NotImplementedException();
-    public static DcbQuery GetQuery(TagCollection tags) => throw new NotImplementedException();
+    public static ProjectionId GetProjectionId(Tags tags) => throw new NotImplementedException();
+    public static DcbQuery GetQuery(Tags tags) => throw new NotImplementedException();
     public static SomeProjState Project(SomeProjState state, DcbEventSequenced domainEvent) => throw new NotImplementedException();
     public static SomeProjState Project(DcbEventSequenced domainEvent) => throw new NotImplementedException();
 }
@@ -12,8 +14,8 @@ sealed partial class SomeProjector : IProjector<SomeProjState>
 [ProjectorId("some-projector-with-default-ver", 0)]
 sealed partial class SomeProjectorWithDefaultVersion : IProjector<SomeProjDefVerState>
 {
-    public static ProjectionId GetProjectionId(TagCollection tags) => throw new NotImplementedException();
-    public static DcbQuery GetQuery(TagCollection tags) => throw new NotImplementedException();
+    public static ProjectionId GetProjectionId(Tags tags) => throw new NotImplementedException();
+    public static DcbQuery GetQuery(Tags tags) => throw new NotImplementedException();
     public static SomeProjDefVerState Project(SomeProjDefVerState state, DcbEventSequenced domainEvent) => throw new NotImplementedException();
     public static SomeProjDefVerState Project(DcbEventSequenced domainEvent) => throw new NotImplementedException();
 }
@@ -21,8 +23,8 @@ sealed partial class SomeProjectorWithDefaultVersion : IProjector<SomeProjDefVer
 [ProjectorId("some-projector", 1)]
 sealed partial class SomeProjectorV1 : IProjector<SomeProjV1State>
 {
-    public static ProjectionId GetProjectionId(TagCollection tags) => throw new NotImplementedException();
-    public static DcbQuery GetQuery(TagCollection tags) => throw new NotImplementedException();
+    public static ProjectionId GetProjectionId(Tags tags) => throw new NotImplementedException();
+    public static DcbQuery GetQuery(Tags tags) => throw new NotImplementedException();
     public static SomeProjV1State Project(SomeProjV1State state, DcbEventSequenced domainEvent) => throw new NotImplementedException();
     public static SomeProjV1State Project(DcbEventSequenced domainEvent) => throw new NotImplementedException();
 }
@@ -30,8 +32,8 @@ sealed partial class SomeProjectorV1 : IProjector<SomeProjV1State>
 [ProjectorId("some-projector", 2025_05)]
 sealed partial record SomeProjectorV2025_05 : IProjector<SomeProjV2025_05State>
 {
-    public static ProjectionId GetProjectionId(TagCollection tags) => throw new NotImplementedException();
-    public static DcbQuery GetQuery(TagCollection tags) => throw new NotImplementedException();
+    public static ProjectionId GetProjectionId(Tags tags) => throw new NotImplementedException();
+    public static DcbQuery GetQuery(Tags tags) => throw new NotImplementedException();
     public static SomeProjV2025_05State Project(SomeProjV2025_05State state, DcbEventSequenced domainEvent) => throw new NotImplementedException();
     public static SomeProjV2025_05State Project(DcbEventSequenced domainEvent) => throw new NotImplementedException();
 }
@@ -43,8 +45,8 @@ sealed partial class TestDomainEvents
         [ProjectorId("some-nested-projector")]
         internal sealed partial record SomeNestedProjector : IProjector<SomeProjNestedState>
         {
-            public static ProjectionId GetProjectionId(TagCollection tags) => throw new NotImplementedException();
-            public static DcbQuery GetQuery(TagCollection tags) => throw new NotImplementedException();
+            public static ProjectionId GetProjectionId(Tags tags) => throw new NotImplementedException();
+            public static DcbQuery GetQuery(Tags tags) => throw new NotImplementedException();
             public static SomeProjNestedState Project(SomeProjNestedState state, DcbEventSequenced domainEvent) => throw new NotImplementedException();
             public static SomeProjNestedState Project(DcbEventSequenced domainEvent) => throw new NotImplementedException();
         }
@@ -93,7 +95,7 @@ public sealed class ProjectorIdAttributeTests
     public void MetadataProjectors_Configure_ProjectorTypes_TotalCount()
     {
         var options = new Configuration.TypeManifestOptions();
-        var provider = new MetadataProjectors_Filin_Abstractions_Tests();
+        var provider = new FilinAbstractionsTestsProjectorsTypeManifestProvider();
 
         provider.Configure(options);
 
@@ -104,7 +106,7 @@ public sealed class ProjectorIdAttributeTests
     public void MetadataProjectors_Configure_ProjectionTypes_TotalCount()
     {
         var options = new Configuration.TypeManifestOptions();
-        var provider = new MetadataProjectors_Filin_Abstractions_Tests();
+        var provider = new FilinAbstractionsTestsProjectorsTypeManifestProvider();
 
         provider.Configure(options);
 
@@ -115,7 +117,7 @@ public sealed class ProjectorIdAttributeTests
     public void MetadataProjectors_Configure_ProjectorTypes_SomeProjector()
     {
         var options = new Configuration.TypeManifestOptions();
-        var provider = new MetadataProjectors_Filin_Abstractions_Tests();
+        var provider = new FilinAbstractionsTestsProjectorsTypeManifestProvider();
 
         provider.Configure(options);
 
@@ -130,7 +132,7 @@ public sealed class ProjectorIdAttributeTests
     public void MetadataProjectors_Configure_ProjectionTypes_SomeProjector()
     {
         var options = new Configuration.TypeManifestOptions();
-        var provider = new MetadataProjectors_Filin_Abstractions_Tests();
+        var provider = new FilinAbstractionsTestsProjectorsTypeManifestProvider();
 
         provider.Configure(options);
 

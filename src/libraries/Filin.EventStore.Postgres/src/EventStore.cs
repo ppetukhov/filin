@@ -3,6 +3,7 @@ using System.Threading.Channels;
 using Filin.Configuration;
 using Filin.EventStore.Postgres.DataFlow;
 using Filin.Storage;
+using Filin.Storage.DataFlow;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -14,34 +15,35 @@ namespace Filin.EventStore.Postgres;
 /// </summary>
 /// <param name="commandFactory">The factory used to create and configure database commands for PostgreSQL.</param>
 /// <param name="appendEventsBlock"><inheritdoc cref="AppendEventsBlock" path="/summary"/></param>
-/// <param name="messageWriter">The channel writer used to dispatch outbound messages or events asynchronously.</param>
+/// <param name="messageWriter">The channel writer used to dispatch outbound messages or dcbEvents asynchronously.</param>
 /// <param name="loggerFactory">The factory used to create loggers for tracing store operations.</param>
 /// <param name="options">The configuration options specific to the PostgreSQL event store implementation.</param>
 sealed partial class EventStore(
     DbCommandFactory commandFactory,
-    AppendEventsBlock appendEventsBlock,
+    IAppendEventsBlock appendEventsBlock,
     ChannelWriter<Message> messageWriter,
     ILoggerFactory loggerFactory,
-    IOptions<EventStorePostgresOptions> options) : IEventStore
+    IOptions<EventStorePostgresOptions> options) : IEventStore, IDisposable
 {
     readonly ILogger _logger = loggerFactory.CreateLogger("Filin.EventStore.Postgres");
+    readonly AppendEventsBlockWrapper _appendEventsBlockWrapped = new(appendEventsBlock);
 
     /// <inheritdoc/>
-    public Task<AppendResult> AppendAsync(DcbEvent @event, AppendCondition appendCondition, CancellationToken cancellationToken)
+    public Task<AppendResult> AppendAsync(DcbEvent dcbEvent, AppendCondition appendCondition, CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(@event);
+        ArgumentNullException.ThrowIfNull(dcbEvent);
 
-        return appendEventsBlock.AppendAventAsync(@event, appendCondition, cancellationToken);
+        return _appendEventsBlockWrapped.AppendAventAsync(dcbEvent, appendCondition, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public Task<AppendResult> AppendAsync(IEnumerable<DcbEvent> events, AppendCondition appendCondition, CancellationToken cancellationToken)
+    public Task<AppendResult> AppendAsync(IEnumerable<DcbEvent> dcbEvents, AppendCondition appendCondition, CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(events);
+        ArgumentNullException.ThrowIfNull(dcbEvents);
 
-        if (events is not ICollection<DcbEvent> collection)
+        if (dcbEvents is not ICollection<DcbEvent> collection)
         {
-            collection = [.. events];
+            collection = [.. dcbEvents];
         }
 
         return collection.Count switch
@@ -75,13 +77,16 @@ sealed partial class EventStore(
             logger: _logger,
             storageEnumerable: ReadAsync(query, afterPosition));
 
+    /// <inheritdoc/>
+    public void Dispose() => _appendEventsBlockWrapped.Dispose();
+
     static DcbEventSequenced InitialEnumeratorEvent(EventPosition afterPosition) => new(afterPosition, default, new DcbEvent
     {
         EventType = default,
         Payload = new object()
     });
 
-    static DcbEventStoreException EventStoreException(Exception ex) => new(message: ex.Message, innerException: ex);
+    static EventStoreException EventStoreException(Exception ex) => new(message: ex.Message, innerException: ex);
 
-    Task<AppendResult> AppendAsync(ICollection<DcbEvent> events, AppendCondition appendCondition, CancellationToken cancellationToken) => appendEventsBlock.AppendEventsAsync(events, appendCondition, cancellationToken);
+    Task<AppendResult> AppendAsync(ICollection<DcbEvent> events, AppendCondition appendCondition, CancellationToken cancellationToken) => _appendEventsBlockWrapped.AppendEventsAsync(events, appendCondition, cancellationToken);
 }

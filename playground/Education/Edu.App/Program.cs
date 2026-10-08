@@ -44,18 +44,24 @@ var eventStore = host.Services.GetRequiredService<IEventStore>();
 _ = Task.Run(async () =>
 {
     if (logger.IsEnabled(LogLevel.Information))
+    {
         logger.LogInformation("Subscribed. Started");
+    }
 
     var queryStream = new DcbQuery([new DcbQueryItem(["CourseRenamed"], [])]);
 
     await foreach (var @event in eventStore.Subscribe(queryStream, default).WithCancellation(apptLifeTime.ApplicationStopping))
     {
         if (logger.IsEnabled(LogLevel.Information))
+        {
             logger.LogInformation("Subscribed. Recived Event {Event}", @event);
+        }
     }
 
     if (logger.IsEnabled(LogLevel.Information))
+    {
         logger.LogInformation("Subscribed. Finished");
+    }
 });
 
 var executor = host.Services.GetRequiredService<IMediator>();
@@ -85,37 +91,37 @@ var sw = Stopwatch.StartNew();
 
 await Task.Run(async () =>
 {
-    const int PARALLEL_TASKS = 100;
+    const int parallelTasks = 100;
 
-    const int ITERATIONS_COUNT = 1;
+    const int iterationsCount = 1;
 
-    const int CREATE_COURSES_COUNT = 5000;
+    const int createCourcesCount = 5000;
 
-    int CREATE_COURSES_CHUNK_SIZE = (int)double.Round((double)(CREATE_COURSES_COUNT * ITERATIONS_COUNT) / PARALLEL_TASKS, MidpointRounding.AwayFromZero);
+    var createCoursecCountSize = (int)double.Round((double)(createCourcesCount * iterationsCount) / parallelTasks, MidpointRounding.AwayFromZero);
 
     Console.WriteLine();
-    Console.WriteLine($"Execute {nameof(CreateCourse)} commands: {{0}}", CREATE_COURSES_COUNT * ITERATIONS_COUNT);
-    Console.WriteLine("Parallel tasks: {0}", PARALLEL_TASKS);
+    Console.WriteLine($"Execute {nameof(CreateCourse)} commands: {{0}}", createCourcesCount * iterationsCount);
+    Console.WriteLine("Parallel tasks: {0}", parallelTasks);
     Console.WriteLine(" . - Success added");
     Console.WriteLine(" ! - Business rule error");
     Console.WriteLine(" x - Exception");
     Console.WriteLine();
 
-    var tasks = new List<Task<List<(object command, long timeTaken, object result)>>>(capacity: allCources.Count * ITERATIONS_COUNT);
+    var tasks = new List<Task<List<(object command, long timeTaken, object result)>>>(capacity: allCources.Count * iterationsCount);
 
     sw.Restart();
 
-    foreach (var _ in Enumerable.Range(0, ITERATIONS_COUNT))
+    foreach (var __ in Enumerable.Range(0, iterationsCount))
     {
-        foreach (var chunk in allCources.Take(CREATE_COURSES_COUNT).Chunk(CREATE_COURSES_CHUNK_SIZE))
+        foreach (var chunk in allCources.Take(createCourcesCount).Chunk(createCoursecCountSize))
         {
             var task = Task.Run(async () =>
             {
                 var list = new List<(object command, long timeTaken, object result)>(capacity: chunk.Length);
 
-                foreach (var course in chunk)
+                foreach (var (id, name) in chunk)
                 {
-                    var command = new CreateCourse(course.Id, course.Name);
+                    var command = new CreateCourse(id, name);
 
                     try
                     {
@@ -127,7 +133,7 @@ await Task.Run(async () =>
 
                         var timeTaken = sw.ElapsedMilliseconds - startAt;
 
-                        Interlocked.Increment(ref completedCount);
+                        _ = Interlocked.Increment(ref completedCount);
 
                         list.Add((command, timeTaken, res));
 
@@ -154,9 +160,10 @@ await Task.Run(async () =>
         }
     }
 
+#pragma warning disable CA1031 // Do not catch general exception types
     try
     {
-        await Task.WhenAll(tasks).ConfigureAwait(false);
+        _ = await Task.WhenAll(tasks).ConfigureAwait(false);
 
         Console.WriteLine();
 
@@ -171,13 +178,17 @@ await Task.Run(async () =>
                     if (logger.IsEnabled(LogLevel.Error))
                     {
                         Console.WriteLine();
+#pragma warning disable CA2254 // Template should be a static expression
                         logger.LogError(e.Message);
+#pragma warning restore CA2254 // Template should be a static expression
                     }
 
                     continue;
                 }
 
+#pragma warning disable CA1849 // Call async methods when in an async method
                 var list = task.Result;
+#pragma warning restore CA1849 // Call async methods when in an async method
 
                 foreach (var (command, timeTaken, result) in list)
                 {
@@ -186,12 +197,16 @@ await Task.Run(async () =>
                         if (res.IsSuccess)
                         {
                             if (logger.IsEnabled(LogLevel.Information))
+                            {
                                 logger.LogInformation("Ok. {TimeTaken} ms, Command: {Command}; Result: Current chunk name: {Result}", timeTaken, command, res.State.CourseName);
+                            }
                         }
                         else
                         {
                             if (logger.IsEnabled(LogLevel.Warning))
+                            {
                                 logger.LogWarning("OK. {TimeTaken} ms, Business rule validation error. Command: {Command}; Result: {Result}", timeTaken, command, res.Error);
+                            }
                         }
                     }
                 }
@@ -207,8 +222,11 @@ await Task.Run(async () =>
         Console.WriteLine();
 
         if (logger.IsEnabled(LogLevel.Error))
+        {
             logger.LogError(ex, "CreateCourse WhenAll exception. Timetaken: {Timetaken} ms. Total tasks: {TaskCount}", sw.ElapsedMilliseconds, completedCount);
+        }
     }
+#pragma warning restore CA1031 // Do not catch general exception types
 }).ConfigureAwait(false);
 
 await Task.Run(async () =>
@@ -216,22 +234,31 @@ await Task.Run(async () =>
     if (completedCount > -1)
     {
         if (logger.IsEnabled(LogLevel.Information))
+        {
             logger.LogInformation("No GetActiveCourses ...");
+        }
+
         return;
     }
 
+#pragma warning disable CA1031 // Do not catch general exception types
     try
     {
         var activeCourses = await executor.QueryAsync<GetActiveCourses, ActiveCourses>(new GetActiveCourses(), apptLifeTime.ApplicationStopping).ConfigureAwait(false);
 
         if (logger.IsEnabled(LogLevel.Information))
+        {
             logger.LogInformation("Active courses {ActiveCourses}", activeCourses?.Courses.Count);
+        }
     }
     catch (Exception e)
     {
         if (logger.IsEnabled(LogLevel.Error))
+        {
             logger.LogError(e, "GetActiveCourses error");
+        }
     }
+#pragma warning restore CA1031 // Do not catch general exception types
 }).ConfigureAwait(false);
 
 Console.WriteLine();

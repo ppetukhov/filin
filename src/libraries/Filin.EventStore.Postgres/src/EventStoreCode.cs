@@ -5,8 +5,7 @@ namespace Filin.EventStore.Postgres;
 /// </summary>
 enum EventStoreCode
 {
-    ProvidersBase = 200000,
-    EventStoreBase = ProvidersBase + 800,
+    EventStoreBase = 100,
 
     EventsReading = EventStoreBase + 1,
     EventsReaded = EventStoreBase + 2,

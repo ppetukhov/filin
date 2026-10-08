@@ -27,14 +27,15 @@ partial class CodeGenerator
             constraintClauses: default,
             members: default);
 
-        readonly MetadataEmitter _metadataEmitter = new(typeDefinitions);
+        static readonly SyntaxToken GetEventTypeMethod = Identifier(Constants.GetEventTypeMethod);
 
-        readonly SyntaxToken GetEventTypeMethod = Identifier(options.GetEventTypeMethod);
+        readonly TypeManifestProviderEmitter _metadataEmitter = new(typeDefinitions);
+        readonly string _namespaceMetadata = Emitter.GetConfigurationNamespace(options);
 
-        readonly ClassDeclarationSyntax EventTypesGeneratedExtensionsClassNameSyntax = ClassDeclaration(
+        readonly ClassDeclarationSyntax _eventTypesGeneratedExtensionsClassNameSyntax = ClassDeclaration(
             attributeLists: SingletonList(Emitter.GeneratedCodeAttributeSyntax),
             modifiers: TokenList(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.StaticKeyword), Token(SyntaxKind.PartialKeyword)),
-            identifier: Identifier(options.EventTypeExtensionsClassName),
+            identifier: Identifier(options.EventTypeExtensionsClass),
             typeParameterList: null,
             parameterList: null,
             baseList: null,
@@ -56,6 +57,22 @@ partial class CodeGenerator
                         )
                     )
                 );
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static MethodDeclarationSyntax CreateGetEventTypeMethod(string fieldName, Accessibility accessibility, string classFullName) =>
+            MethodDeclaration(
+                attributeLists: SingletonList(Emitter.AggressiveInliningAttributeSyntax),
+                modifiers: TokenList(Token(Emitter.MethodAccessibility(accessibility)), Token(SyntaxKind.StaticKeyword)),
+                returnType: Emitter.EventTypeClassTypeSyntax,
+                explicitInterfaceSpecifier: null,
+                identifier: GetEventTypeMethod,
+                typeParameterList: default,
+                constraintClauses: default,
+                parameterList: ParameterList(
+                    SingletonSeparatedList(Parameter(attributeLists: default, modifiers: TokenList(Token(SyntaxKind.ThisKeyword)), ParseTypeName(classFullName), Emitter.DiscardIdentifierToken, null))),
+                body: null,
+                expressionBody: ArrowExpressionClause(Emitter.EventTypesGeneratedNameSyntax.Member(fieldName)),
+                semicolonToken: Token(SyntaxKind.SemicolonToken));
 
         internal void EmitEventTypes(SourceProductionContext ctx, ImmutableArray<EventType> eventTypes)
         {
@@ -87,13 +104,13 @@ partial class CodeGenerator
                 return;
             }
 
-            var metadataClass = _metadataEmitter.GenerateMetadata(eventTypes);
+            var metadataClass = _metadataEmitter.CreateTypeManifestProvider(eventTypes);
             var metadataAttribute = AttributeList()
                 .WithTarget(AttributeTargetSpecifier(Token(SyntaxKind.AssemblyKeyword)))
                 .WithAttributes(
                     SingletonSeparatedList(
                         Attribute(ParseName(Constants.TypeManifestProviderAttribute))
-                            .AddArgumentListArguments(AttributeArgument(TypeOfExpression(QualifiedName(IdentifierName(options.EmittingNamespace), IdentifierName(metadataClass.Identifier.Text)))))
+                            .AddArgumentListArguments(AttributeArgument(TypeOfExpression(QualifiedName(IdentifierName(_namespaceMetadata), IdentifierName(metadataClass.Identifier.Text)))))
                 ));
 
             var assemblyAttributes = Emitter.GenerateApplicationPartsAttributes(typeDefinitions);
@@ -102,11 +119,12 @@ partial class CodeGenerator
             var cu = CompilationUnit()
                 .WithAttributeLists(List(assemblyAttributes))
                 .AddMembers(
-                    FileScopedNamespaceDeclaration(ParseName(options.EmittingNamespace)),
                     EventTypesGeneratedSyntax.AddMembers([.. fieldMembers]),
-                    EventTypesGeneratedExtensionsClassNameSyntax.AddMembers([.. methodsMembers]),
-                    metadataClass
+                    NamespaceDeclaration(ParseName(options.RootNamespace)).AddMembers(
+                        _eventTypesGeneratedExtensionsClassNameSyntax.AddMembers([.. methodsMembers])),
+                    NamespaceDeclaration(ParseName(_namespaceMetadata)).AddMembers(metadataClass)
                 )
+                .WithLeadingTrivia(Emitter.HeaderSyntaxTriviaList)
                 .NormalizeWhitespace();
 
             ctx.CancellationToken.ThrowIfCancellationRequested();
@@ -115,21 +133,5 @@ partial class CodeGenerator
 
             ctx.AddSource($"EventTypes.g.cs", sourceText);
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        MethodDeclarationSyntax CreateGetEventTypeMethod(string fieldName, Accessibility accessibility, string classFullName) =>
-            MethodDeclaration(
-                attributeLists: SingletonList(Emitter.AggressiveInliningAttributeSyntax),
-                modifiers: TokenList(Token(Emitter.MethodAccessibility(accessibility)), Token(SyntaxKind.StaticKeyword)),
-                returnType: Emitter.EventTypeClassTypeSyntax,
-                explicitInterfaceSpecifier: null,
-                identifier: GetEventTypeMethod,
-                typeParameterList: default,
-                constraintClauses: default,
-                parameterList: ParameterList(
-                    SingletonSeparatedList(Parameter(attributeLists: default, modifiers: TokenList(Token(SyntaxKind.ThisKeyword)), ParseTypeName(classFullName), Emitter.DiscardIdentifierToken, null))),
-                body: null,
-                expressionBody: ArrowExpressionClause(Emitter.EventTypesGeneratedNameSyntax.Member(fieldName)),
-                semicolonToken: Token(SyntaxKind.SemicolonToken));
     }
 }

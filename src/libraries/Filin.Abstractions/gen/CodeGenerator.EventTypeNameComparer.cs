@@ -4,7 +4,7 @@ partial class CodeGenerator
 {
     sealed class EventTypeNameComparer : IEqualityComparer<EventType>
     {
-        internal static readonly EventTypeNameComparer Instance = new EventTypeNameComparer();
+        internal static readonly EventTypeNameComparer Instance = new();
 
         public bool Equals(EventType x, EventType y) => string.Equals(x.TargetType.FullName, y.TargetType.FullName, StringComparison.Ordinal);
 

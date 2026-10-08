@@ -1,25 +1,31 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <RootNamespace>Filin</RootNamespace>
     <IsPackable>true</IsPackable>
     <TargetFrameworks>$(NetCurrent);$(NetMinimum)</TargetFrameworks>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);PackInternalAnalyzers</TargetsForTfmSpecificContentInPackage>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="System.IO.Hashing" />
   </ItemGroup>
- 
+  
   <ItemGroup>
-    <ProjectReference Include="..\gen\Filin.Generators.csproj" ReferenceOutputAssembly="false" />
+    <None Include="..\gen\Filin.Generators.targets" Pack="true" Visible="false" PackagePath="build\$(PackageId).targets;buildTransitive\$(PackageId).targets" />
   </ItemGroup>
- 
-  <ItemGroup Label="Package">
-    <!-- Include the custom .targets file to check the source generator -->
-    <None Include="..\gen\Filin.Generators.targets" PackagePath="build\Filin.Abstractions.targets" Pack="true" Visible="false" />
-    <None Include="..\gen\Filin.Generators.targets" PackagePath="buildTransitive\Filin.Abstractions.targets" Pack="true" Visible="false" />
+  
+  <Target Name="PackInternalAnalyzers">
+    <MSBuild Projects="..\gen\Filin.Generators.csproj" Targets="Build" Properties="Configuration=$(Configuration);TargetFramework=netstandard2.0" />
+    
+    <MSBuild Projects="..\gen\Filin.Generators.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration);TargetFramework=netstandard2.0">
+      <Output TaskParameter="TargetOutputs" ItemName="GeneratorAssemblyFile" />
+    </MSBuild>
 
-    <!-- Pack the source generator binary -->
-    <None Include="..\gen\bin\$(Configuration)\netstandard2.0\Filin.Generators.dll" PackagePath="analyzers\dotnet\cs" Pack="true" Visible="false" />
-  </ItemGroup>
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="@(GeneratorAssemblyFile)">
+        <PackagePath>analyzers/dotnet/cs</PackagePath>
+      </TfmSpecificPackageFile>
+    </ItemGroup>
+  </Target>
 </Project>

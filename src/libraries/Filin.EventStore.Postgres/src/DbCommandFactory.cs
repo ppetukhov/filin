@@ -11,18 +11,18 @@ namespace Filin.EventStore.Postgres;
 
 sealed partial class DbCommandFactory(DbDataSource dataSource, IStorageSerializer serializer)
 {
-    static readonly ConcurrentDictionary<CacheKey, string> _readCommandTextCache = new();
-    static readonly ConcurrentDictionary<CacheKey, string> _appendCommandTextCache = new();
-    static readonly string[] _placeHolders = [.. Enumerable.Range(1, 64).Select(static pos => "$" + pos)];
+    static readonly ConcurrentDictionary<CacheKey, string> ReadCommandTextCache = new();
+    static readonly ConcurrentDictionary<CacheKey, string> AppendCommandTextCache = new();
+    static readonly string[] PlaceHolders = [.. Enumerable.Range(1, 64).Select(static pos => "$" + pos)];
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static string GetPlaceHolder(int position) => position < _placeHolders.Length ? _placeHolders[position] : "$" + (position + 1);
+    static string GetPlaceHolder(int position) => position < PlaceHolders.Length ? PlaceHolders[position] : "$" + (position + 1);
 
     internal DbCommand CreateReadEventsCommand(EventPosition afterPosition, DcbQuery query, int limit)
     {
         if (CacheKey.TryCreate(query, out var querykey))
         {
-            var commandText = _readCommandTextCache.GetOrAdd(querykey, CreateReadCommandText);
+            var commandText = ReadCommandTextCache.GetOrAdd(querykey, CreateReadCommandText);
             var command = dataSource.CreateCommand(commandText);
 
             AppendAfterPosition(afterPosition, command);
@@ -39,7 +39,7 @@ sealed partial class DbCommandFactory(DbDataSource dataSource, IStorageSerialize
     {
         if (CacheKey.TryCreate(@event, appendCondition.FailIfEventsMatch, out var querykey))
         {
-            var commandText = _appendCommandTextCache.GetOrAdd(querykey, CreateAppendCommandText);
+            var commandText = AppendCommandTextCache.GetOrAdd(querykey, CreateAppendCommandText);
             var command = dataSource.CreateCommand(commandText);
 
             AppendAfterPosition(appendCondition.After, command);
@@ -61,7 +61,7 @@ sealed partial class DbCommandFactory(DbDataSource dataSource, IStorageSerialize
 
         if (CacheKey.TryCreate(events, appendCondition.FailIfEventsMatch, out var querykey))
         {
-            var commandText = _appendCommandTextCache.GetOrAdd(querykey, CreateAppendCommandText);
+            var commandText = AppendCommandTextCache.GetOrAdd(querykey, CreateAppendCommandText);
             var command = dataSource.CreateCommand(commandText);
 
             AppendAfterPosition(appendCondition.After, command);
@@ -260,8 +260,8 @@ sealed partial class DbCommandFactory(DbDataSource dataSource, IStorageSerialize
     {
         var commandParams = command.Parameters;
 
-        commandParams.Add(command.CreateParameter(ParameterDirection.Input, (int)@event.EventType.Hash));
-        commandParams.Add(command.CreateParameter(ParameterDirection.Input, @event.EventType.Value));
+        _ = commandParams.Add(command.CreateParameter(ParameterDirection.Input, (int)@event.EventType.Hash));
+        _ = commandParams.Add(command.CreateParameter(ParameterDirection.Input, @event.EventType.Value));
 
         // tags
         if (@event.Tags is { IsEmpty: false } tags)
@@ -269,17 +269,17 @@ sealed partial class DbCommandFactory(DbDataSource dataSource, IStorageSerialize
             // hashes
             foreach (var tag in tags)
             {
-                commandParams.Add(command.CreateParameter(ParameterDirection.Input, (long)tag.Hash));
+                _ = commandParams.Add(command.CreateParameter(ParameterDirection.Input, (long)tag.Hash));
             }
 
             // names
             foreach (var tag in tags)
             {
-                commandParams.Add(command.CreateParameter(ParameterDirection.Input, tag.Value));
+                _ = commandParams.Add(command.CreateParameter(ParameterDirection.Input, tag.Value));
             }
         }
 
-        commandParams.Add(command.CreateParameter(ParameterDirection.Input, Encoding.UTF8.GetString(serializer.Serialize(@event.Payload))));
+        _ = commandParams.Add(command.CreateParameter(ParameterDirection.Input, Encoding.UTF8.GetString(serializer.Serialize(@event.Payload))));
     }
 
     static void AppendEvent(
@@ -295,8 +295,8 @@ sealed partial class DbCommandFactory(DbDataSource dataSource, IStorageSerialize
 
         var commandParams = command.Parameters;
 
-        commandParams.Add(command.CreateParameter(ParameterDirection.Input, (int)@event.EventType.Hash));
-        commandParams.Add(command.CreateParameter(ParameterDirection.Input, @event.EventType.Value));
+        _ = commandParams.Add(command.CreateParameter(ParameterDirection.Input, (int)@event.EventType.Hash));
+        _ = commandParams.Add(command.CreateParameter(ParameterDirection.Input, @event.EventType.Value));
 
         Span<char> buf = stackalloc char[64];
 
@@ -311,7 +311,7 @@ sealed partial class DbCommandFactory(DbDataSource dataSource, IStorageSerialize
             {
                 // hashes
                 AppendPlaceHolder(ref sb, ref position);
-                commandParams.Add(command.CreateParameter(ParameterDirection.Input, (long)tag.Hash));
+                _ = commandParams.Add(command.CreateParameter(ParameterDirection.Input, (long)tag.Hash));
             }
             sb.Length -= 1; // drop last symbol ','
 
@@ -319,7 +319,7 @@ sealed partial class DbCommandFactory(DbDataSource dataSource, IStorageSerialize
             {
                 // names
                 AppendPlaceHolder(ref sbNames, ref position);
-                commandParams.Add(command.CreateParameter(ParameterDirection.Input, tag.Value));
+                _ = commandParams.Add(command.CreateParameter(ParameterDirection.Input, tag.Value));
             }
             sbNames.Length -= 1; // drop last symbol ','
         }
@@ -331,7 +331,7 @@ sealed partial class DbCommandFactory(DbDataSource dataSource, IStorageSerialize
 
         sb.Append(GetPlaceHolder(position++));
         sb.Append("::json)::dcb_event");
-        commandParams.Add(command.CreateParameter(ParameterDirection.Input, Encoding.UTF8.GetString(serializer.Serialize(@event.Payload))));
+        _ = commandParams.Add(command.CreateParameter(ParameterDirection.Input, Encoding.UTF8.GetString(serializer.Serialize(@event.Payload))));
 
         sbNames.Dispose();
     }
@@ -344,10 +344,7 @@ sealed partial class DbCommandFactory(DbDataSource dataSource, IStorageSerialize
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static void AppendAfterPosition(EventPosition afterPosition, DbCommand command)
-    {
-        command.AddParameter((long)afterPosition.Value);
-    }
+    static void AppendAfterPosition(EventPosition afterPosition, DbCommand command) => command.AddParameter((long)afterPosition.Value);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static void AppendAfterPosition(ref ValueStringBuilder sb, ref int position, EventPosition afterPosition, DbCommand command)
@@ -455,26 +452,26 @@ sealed partial class DbCommandFactory(DbDataSource dataSource, IStorageSerialize
             foreach (var eventType in eventTypes)
             {
                 // hashes
-                commandParams.Add(command.CreateParameter(ParameterDirection.Input, (int)eventType.Hash));
+                _ = commandParams.Add(command.CreateParameter(ParameterDirection.Input, (int)eventType.Hash));
             }
 
             foreach (var eventType in eventTypes)
             {
                 // names
-                commandParams.Add(command.CreateParameter(ParameterDirection.Input, eventType.Value));
+                _ = commandParams.Add(command.CreateParameter(ParameterDirection.Input, eventType.Value));
             }
 
             // tags
             foreach (var tag in tags)
             {
                 // hashes
-                commandParams.Add(command.CreateParameter(ParameterDirection.Input, (long)tag.Hash));
+                _ = commandParams.Add(command.CreateParameter(ParameterDirection.Input, (long)tag.Hash));
             }
 
             foreach (var tag in tags)
             {
                 // names
-                commandParams.Add(command.CreateParameter(ParameterDirection.Input, tag.Value));
+                _ = commandParams.Add(command.CreateParameter(ParameterDirection.Input, tag.Value));
             }
         }
     }
@@ -508,7 +505,7 @@ sealed partial class DbCommandFactory(DbDataSource dataSource, IStorageSerialize
                 foreach (var eventType in eventTypes)
                 {
                     AppendPlaceHolder(ref sb, ref position);
-                    commandParams.Add(command.CreateParameter(ParameterDirection.Input, (int)eventType.Hash));
+                    _ = commandParams.Add(command.CreateParameter(ParameterDirection.Input, (int)eventType.Hash));
                 }
                 sb.Length -= 1; // drop last symbol ','
 
@@ -516,7 +513,7 @@ sealed partial class DbCommandFactory(DbDataSource dataSource, IStorageSerialize
                 foreach (var eventType in eventTypes)
                 {
                     AppendPlaceHolder(ref sbNames, ref position);
-                    commandParams.Add(command.CreateParameter(ParameterDirection.Input, eventType.Value));
+                    _ = commandParams.Add(command.CreateParameter(ParameterDirection.Input, eventType.Value));
                 }
                 sbNames.Length -= 1; // drop last symbol ','
 
@@ -540,7 +537,7 @@ sealed partial class DbCommandFactory(DbDataSource dataSource, IStorageSerialize
                 foreach (var tag in tags)
                 {
                     AppendPlaceHolder(ref sb, ref position);
-                    commandParams.Add(command.CreateParameter(ParameterDirection.Input, (long)tag.Hash));
+                    _ = commandParams.Add(command.CreateParameter(ParameterDirection.Input, (long)tag.Hash));
                 }
                 sb.Length -= 1; // drop last symbol ','
 
@@ -548,7 +545,7 @@ sealed partial class DbCommandFactory(DbDataSource dataSource, IStorageSerialize
                 foreach (var tag in tags)
                 {
                     AppendPlaceHolder(ref sbNames, ref position);
-                    commandParams.Add(command.CreateParameter(ParameterDirection.Input, tag.Value));
+                    _ = commandParams.Add(command.CreateParameter(ParameterDirection.Input, tag.Value));
                 }
                 sbNames.Length -= 1; // drop last symbol ','
 

@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-using Filin.Hosting;
+using Filin.Configuration;
 
 namespace Filin;
 

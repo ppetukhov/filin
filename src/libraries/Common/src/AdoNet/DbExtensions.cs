@@ -152,7 +152,7 @@ static class DbExtensions
 
     internal static bool TryGetPayload(this IDataRecord record, int ordinal, Type payloadType, IStorageSerializer serializer, [NotNullWhen(true)] out object? payload)
     {
-        const int CHUNK_SIZE = 4096;
+        const int chunkSize = 4096;
 
         // https://learn.microsoft.com/en-us/dotnet/api/system.data.idatarecord.getbytes?view=net-10.0#remarks
         // If you pass a buffer that is null, GetBytes returns the length of the row in bytes.
@@ -168,7 +168,7 @@ static class DbExtensions
 
         try
         {
-            var readBufferSize = Math.Min(CHUNK_SIZE, payloadBytesCount);
+            var readBufferSize = Math.Min(chunkSize, payloadBytesCount);
             long bytesRead;
             long offset = 0;
 

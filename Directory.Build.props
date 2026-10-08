@@ -43,7 +43,7 @@
     <!-- default to allowing all language features -->
     <LangVersion>preview</LangVersion>
     <!-- default to max warnlevel -->
-    <AnalysisLevel Condition="'$(MSBuildProjectExtension)' == '.csproj'">preview</AnalysisLevel>
+    <AnalysisLevel>preview</AnalysisLevel>
     <!-- Enables Strict mode for Roslyn compiler -->
     <Features>strict</Features>
     <TreatWarningsAsErrors Condition="'$(TreatWarningsAsErrors)' == ''">true</TreatWarningsAsErrors>
@@ -56,6 +56,7 @@
     <!-- By default the SDK produces ref assembly for 5.0 or later -->
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
     <Deterministic>true</Deterministic>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <!-- Define test projects and companions -->

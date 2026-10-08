@@ -1,3 +1,6 @@
+using Filin.Abstractions.Tests;
+using Filin.Abstractions.Tests.Configuration;
+
 namespace Filin.Abstractions.EventTypeTests;
 
 [EventType("SomeEvent")]
@@ -67,7 +70,7 @@ public sealed class EventTypeAttributeTests
     public void MetadataEventTypes_Configure_EventTypes()
     {
         var options = new Configuration.TypeManifestOptions();
-        var provider = new MetadataEventTypes_Filin_Abstractions_Tests();
+        var provider = new FilinAbstractionsTestsEventTypesTypeManifestProvider();
 
         provider.Configure(options);
 

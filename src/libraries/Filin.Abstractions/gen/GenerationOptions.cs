@@ -7,64 +7,29 @@ namespace Filin.Generators;
 sealed record GenerationOptions
 {
     /// <summary>
-    /// Emitting namespace. <inheritdoc cref="Constants.DefaultEmittingNamespace" path="/summary"/>
+    /// Gets the root namespace of the current project.
     /// </summary>
-    public string EmittingNamespace { get; init; } = Constants.DefaultEmittingNamespace;
+    public string RootNamespace { get; init; } = "Filin";
 
     /// <summary>
-    /// EventType extensions classname. <inheritdoc cref="Constants.DefaultEventTypeExtensionsClassName" path="/summary"/>
+    /// EventType extensions classname.
     /// </summary>
-    public string EventTypeExtensionsClassName { get; init; } = Constants.DefaultEventTypeExtensionsClassName;
+    public string EventTypeExtensionsClass { get; init; } = "EventTypeExtensions";
 
     /// <summary>
-    /// EventTypeToDcbEvent extensions classname. <inheritdoc cref="Constants.DefaultEventTypeToDcbEventExtensionsClassName" path="/summary"/>
+    /// EventTypeToDcbEvent extensions classname.
     /// </summary>
-    public string EventTypeToDcbEventExtensionsClassName { get; init; } = Constants.DefaultEventTypeToDcbEventExtensionsClassName;
+    public string EventTypeToDcbEventExtensionsClass { get; init; } = "EventTypeToDcbEventExtensions";
 
     /// <summary>
-    /// Getting Tag method. <inheritdoc cref="Constants.DefaultGetEventTypeMethod" path="/summary"/>
+    /// Queries extensions classname.
     /// </summary>
-    public string GetEventTypeMethod { get; init; } = Constants.DefaultGetEventTypeMethod;
+    public string QueryExtensionsClass { get; init; } = "QueryExtensions";
 
     /// <summary>
-    /// Getting Tag method. <inheritdoc cref="Constants.DefaultQueryMethod" path="/summary"/>
+    /// Tag extensions classname.
     /// </summary>
-    public string GetQueryMethod { get; init; } = Constants.DefaultQueryMethod;
-
-    /// <summary>
-    /// Getting Tag method. <inheritdoc cref="Constants.DefaultGetProjectionIdMethod" path="/summary"/>
-    /// </summary>
-    public string GetProjectionIdMethod { get; init; } = Constants.DefaultGetProjectionIdMethod;
-
-    /// <summary>
-    /// Getting Tag method. <inheritdoc cref="Constants.DefaultGetTagMethod" path="/summary"/>
-    /// </summary>
-    public string GetTagMethod { get; init; } = Constants.DefaultGetTagMethod;
-
-    /// <summary>
-    /// Getting Tags method. <inheritdoc cref="Constants.DefaultGetTagsMethod" path="/summary"/>
-    /// </summary>
-    public string GetTagsMethod { get; init; } = Constants.DefaultGetTagsMethod;
-
-    /// <summary>
-    /// Getting ToDcbEvent method. <inheritdoc cref="Constants.DefaultToDcbEventMethod" path="/summary"/>
-    /// </summary>
-    public string ToDcbEventMethod { get; init; } = Constants.DefaultToDcbEventMethod;
-
-    /// <summary>
-    /// Getting ProjectorId property. <inheritdoc cref="Constants.DefaultProjectorIdProperty" path="/summary"/>
-    /// </summary>
-    public string ProjectorIdProperty { get; init; } = Constants.DefaultProjectorIdProperty;
-
-    /// <summary>
-    /// Queries extensions classname. <inheritdoc cref="Constants.DefaultQueryExtensionsClass" path="/summary"/>
-    /// </summary>
-    public string QueryExtensionsClass { get; init; } = Constants.DefaultQueryExtensionsClass;
-
-    /// <summary>
-    /// Tag extensions classname. <inheritdoc cref="Constants.DefaultTagExtensionsClassName" path="/summary"/>
-    /// </summary>
-    public string TagExtensionsClassName { get; init; } = Constants.DefaultTagExtensionsClassName;
+    public string TagExtensionsClass { get; init; } = "TagExtensions";
 
     internal static GenerationOptions GetGenerationOptions(AnalyzerConfigOptionsProvider options, CancellationToken token)
     {
@@ -72,49 +37,19 @@ sealed record GenerationOptions
 
         var opt = new GenerationOptions();
 
-        if (options.TryGetStringValueMSBuildProperty(MSBuildProperties.EmittingNamespace, out var emittingNamespace))
+        if (options.TryGetStringValueMSBuildProperty(MSBuildProperties.RootNamespace, out var emittingNamespace))
         {
-            opt = opt with { EmittingNamespace = emittingNamespace! };
+            opt = opt with { RootNamespace = emittingNamespace! };
         }
 
-        if (options.TryGetStringValueMSBuildProperty(MSBuildProperties.GetEventTypeMethod, out var getEventTypeMethod))
+        if (options.TryGetStringValueMSBuildProperty(MSBuildProperties.EventTypeExtensionsClass, out var eventTypeExtensionsClass))
         {
-            opt = opt with { GetEventTypeMethod = getEventTypeMethod! };
+            opt = opt with { EventTypeExtensionsClass = eventTypeExtensionsClass! };
         }
 
-        if (options.TryGetStringValueMSBuildProperty(MSBuildProperties.EventTypeExtensionsClassName, out var eventTypeExtensionsClassName))
+        if (options.TryGetStringValueMSBuildProperty(MSBuildProperties.EventTypeToDcbEventExtensionsClass, out var eventTypeToDcbEventExtensionsClass))
         {
-            opt = opt with { EventTypeExtensionsClassName = eventTypeExtensionsClassName! };
-        }
-
-        if (options.TryGetStringValueMSBuildProperty(MSBuildProperties.EventTypeToDcbEventExtensionsClassName, out var eventTypeToDcbEventExtensionsClassName))
-        {
-            opt = opt with { EventTypeToDcbEventExtensionsClassName = eventTypeToDcbEventExtensionsClassName! };
-        }
-
-        if (options.TryGetStringValueMSBuildProperty(MSBuildProperties.GetQueryMethod, out var getQueryMethod))
-        {
-            opt = opt with { GetQueryMethod = getQueryMethod! };
-        }
-
-        if (options.TryGetStringValueMSBuildProperty(MSBuildProperties.GetProjectionIdMethod, out var getProjectionIdMethod))
-        {
-            opt = opt with { GetProjectionIdMethod = getProjectionIdMethod! };
-        }
-
-        if (options.TryGetStringValueMSBuildProperty(MSBuildProperties.GetTagMethod, out var getTagMethod))
-        {
-            opt = opt with { GetTagMethod = getTagMethod! };
-        }
-
-        if (options.TryGetStringValueMSBuildProperty(MSBuildProperties.GetTagsMethod, out var getTagsMethod))
-        {
-            opt = opt with { GetTagMethod = getTagsMethod! };
-        }
-
-        if (options.TryGetStringValueMSBuildProperty(MSBuildProperties.ProjectorIdProperty, out var projectorIdProperty))
-        {
-            opt = opt with { ProjectorIdProperty = projectorIdProperty! };
+            opt = opt with { EventTypeToDcbEventExtensionsClass = eventTypeToDcbEventExtensionsClass! };
         }
 
         if (options.TryGetStringValueMSBuildProperty(MSBuildProperties.QueryExtensionsClass, out var queryExtensionsClass))
@@ -122,9 +57,9 @@ sealed record GenerationOptions
             opt = opt with { QueryExtensionsClass = queryExtensionsClass! };
         }
 
-        if (options.TryGetStringValueMSBuildProperty(MSBuildProperties.TagExtensionsClassName, out var tagExtensionsClassName))
+        if (options.TryGetStringValueMSBuildProperty(MSBuildProperties.TagExtensionsClass, out var tagExtensionsClass))
         {
-            opt = opt with { TagExtensionsClassName = tagExtensionsClassName! };
+            opt = opt with { TagExtensionsClass = tagExtensionsClass! };
         }
 
         return opt;

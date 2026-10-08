@@ -1,10 +1,10 @@
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 
+using Filin.Generators.Specs.Types;
+
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-
-using Filin.Generators.Specs.Types;
 
 namespace Filin.Generators;
 
@@ -157,26 +157,26 @@ partial class CodeGenerator
 
         static ImmutableArray<QueryEventTypes> ConvertToQueryEventTypes(GeneratorAttributeSyntaxContext ctx, CancellationToken token)
         {
-            static QueryEventTypes factory(ObjectSpec targetType, int queryId, ImmutableArray<string> eventTypes)
-                => new QueryEventTypes(targetType, queryId, eventTypes);
+            static QueryEventTypes Factory(ObjectSpec targetType, int queryId, ImmutableArray<string> eventTypes)
+                => new(targetType, queryId, eventTypes);
 
-            return ConvertCore(ctx, factory, token);
+            return ConvertCore(ctx, Factory, token);
         }
 
         static ImmutableArray<QueryTags> ConvertToQueryTags(GeneratorAttributeSyntaxContext ctx, CancellationToken token)
         {
-            static QueryTags factory(ObjectSpec targetType, int queryId, ImmutableArray<string> tags)
-                => new QueryTags(targetType, queryId, tags);
+            static QueryTags Factory(ObjectSpec targetType, int queryId, ImmutableArray<string> tags)
+                => new(targetType, queryId, tags);
 
-            return ConvertCore(ctx, factory, token);
+            return ConvertCore(ctx, Factory, token);
         }
 
         static ImmutableArray<QueryTagParameters> ConvertToQueryTagParameters(GeneratorAttributeSyntaxContext ctx, CancellationToken token)
         {
-            static QueryTagParameters factory(ObjectSpec targetType, int queryId, ImmutableArray<string> tagParameters)
-                => new QueryTagParameters(targetType, queryId, tagParameters);
+            static QueryTagParameters Factory(ObjectSpec targetType, int queryId, ImmutableArray<string> tagParameters)
+                => new(targetType, queryId, tagParameters);
 
-            return ConvertCore(ctx, factory, token);
+            return ConvertCore(ctx, Factory, token);
         }
 
         static ImmutableArray<T> ConvertCore<T>(GeneratorAttributeSyntaxContext ctx, Func<ObjectSpec, int, ImmutableArray<string>, T> factory, CancellationToken token)
@@ -226,7 +226,7 @@ partial class CodeGenerator
 
         sealed class ObjectSpecEqualityComparer : IEqualityComparer<ObjectSpec>
         {
-            internal static readonly ObjectSpecEqualityComparer Instance = new ObjectSpecEqualityComparer();
+            internal static readonly ObjectSpecEqualityComparer Instance = new();
 
             public bool Equals(ObjectSpec x, ObjectSpec y) => TypeSpecComparer.Instance.Equals(x, y);
 
@@ -235,7 +235,7 @@ partial class CodeGenerator
 
         sealed class TypeSpecWithQueryIdEqualityComparer : IEqualityComparer<(ObjectSpec TargetType, int QueryId)>
         {
-            internal static readonly TypeSpecWithQueryIdEqualityComparer Instance = new TypeSpecWithQueryIdEqualityComparer();
+            internal static readonly TypeSpecWithQueryIdEqualityComparer Instance = new();
 
             public bool Equals((ObjectSpec TargetType, int QueryId) x, (ObjectSpec TargetType, int QueryId) y)
                 => x.QueryId == y.QueryId && TypeSpecComparer.Instance.Equals(x.TargetType, y.TargetType);
@@ -248,9 +248,9 @@ partial class CodeGenerator
             where T1 : notnull
             where T2 : notnull
         {
-            int hashCode = -2088324004;
-            hashCode = hashCode * -1521134295 + x.GetHashCode();
-            hashCode = hashCode * -1521134295 + y.GetHashCode();
+            var hashCode = -2088324004;
+            hashCode = (hashCode * -1521134295) + x.GetHashCode();
+            hashCode = (hashCode * -1521134295) + y.GetHashCode();
 
             return hashCode;
         }

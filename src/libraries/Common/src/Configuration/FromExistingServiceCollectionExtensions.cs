@@ -8,41 +8,51 @@ namespace Filin.Configuration;
 static class FromExistingServiceCollectionExtensions
 {
     /// <summary>
-    /// Registers an existing registration of <typeparamref name="TImplementation"/> as a provider of service type <typeparamref name="TService"/>.
+    /// Add an existing registration of <typeparamref name="TImplementation"/> as a provider of service type <typeparamref name="TService"/>.
     /// </summary>
     /// <typeparam name="TService">The service type being provided.</typeparam>
     /// <typeparam name="TImplementation">The implementation of <typeparamref name="TService"/>.</typeparam>
-    /// <param name="services">The service collection.</param>
-    internal static void AddFromExisting<TService, TImplementation>(this IServiceCollection services) where TImplementation : TService
+    /// <param name="collection">The service collection.</param>
+    /// <returns>A reference to the current instance of <see cref="IServiceCollection"/>.</returns>
+    internal static IServiceCollection AddFromExisting<TService, TImplementation>(this IServiceCollection collection) where TImplementation : TService
     {
-        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(collection);
 
-        services.AddFromExisting(typeof(TService), typeof(TImplementation));
-    }
-
-    internal static void AddFromExisting<TService, TImplementation>(this IServiceCollection services, object? serviceKey) where TImplementation : TService
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        services.AddFromExisting(typeof(TService), typeof(TImplementation), serviceKey);
+        return collection.AddFromExisting(typeof(TService), typeof(TImplementation));
     }
 
     /// <summary>
-    /// Registers an existing registration of <paramref name="implementation"/> as a provider of service type <paramref name="service"/>.
+    /// Add an existing registration of <typeparamref name="TImplementation"/> as a provider of service type <typeparamref name="TService"/>.
     /// </summary>
-    /// <param name="services">The service collection.</param>
+    /// <typeparam name="TService">The service type being provided.</typeparam>
+    /// <typeparam name="TImplementation">The implementation of <typeparamref name="TService"/>.</typeparam>
+    /// <param name="collection">The service collection.</param>
+    /// <param name="serviceKey"></param>
+    /// <returns>A reference to the current instance of <see cref="IServiceCollection"/>.</returns>
+    internal static IServiceCollection AddFromExisting<TService, TImplementation>(this IServiceCollection collection, object? serviceKey) where TImplementation : TService
+    {
+        ArgumentNullException.ThrowIfNull(collection);
+
+        return collection.AddFromExisting(typeof(TService), typeof(TImplementation), serviceKey);
+    }
+
+    /// <summary>
+    /// Add an existing registration of <paramref name="implementation"/> as a provider of service type <paramref name="service"/>.
+    /// </summary>
+    /// <param name="collection">The service collection.</param>
     /// <param name="service">The service type being provided.</param>
     /// <param name="implementation">The implementation of <paramref name="service"/>.</param>
     /// <param name="serviceKey"></param>
-    internal static void AddFromExisting(this IServiceCollection services, Type service, Type implementation, object? serviceKey = null)
+    /// <returns>A reference to the current instance of <see cref="IServiceCollection"/>.</returns>
+    internal static IServiceCollection AddFromExisting(this IServiceCollection collection, Type service, Type implementation, object? serviceKey = null)
     {
-        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(collection);
         ArgumentNullException.ThrowIfNull(service);
         ArgumentNullException.ThrowIfNull(implementation);
 
         ServiceDescriptor? registration = null;
 
-        foreach (var descriptor in services)
+        foreach (var descriptor in collection)
         {
             if (descriptor.ServiceType == implementation && descriptor.ServiceKey == serviceKey)
             {
@@ -62,32 +72,41 @@ static class FromExistingServiceCollectionExtensions
             ? new ServiceDescriptor(service, sp => sp.GetRequiredService(implementation), registration.Lifetime)
             : new ServiceDescriptor(service, serviceKey, (sp, key) => sp.GetRequiredKeyedService(implementation, key), registration.Lifetime);
 
-        services.Add(newRegistration);
+        collection.Add(newRegistration);
+
+        return collection;
     }
 
     /// <summary>
-    /// Registers an existing registration of <typeparamref name="TImplementation"/> as a provider of <typeparamref name="TService"/> if there are no existing <typeparamref name="TService"/> implementations.
+    /// Add an existing registration of <typeparamref name="TImplementation"/> as a provider of <typeparamref name="TService"/> to the <paramref name="collection"/> if there are no existing <typeparamref name="TService"/> implementations.
     /// </summary>
     /// <typeparam name="TService">The service type being provided.</typeparam>
     /// <typeparam name="TImplementation">The implementation of <typeparamref name="TService"/>.</typeparam>
-    /// <param name="services">The service collection.</param>
-    internal static void TryAddFromExisting<TService, TImplementation>(this IServiceCollection services) where TImplementation : TService
+    /// <param name="collection">The service collection.</param>
+    /// <returns>A reference to the current instance of <see cref="IServiceCollection"/>.</returns>
+    internal static IServiceCollection TryAddFromExisting<TService, TImplementation>(this IServiceCollection collection) where TImplementation : TService
     {
-        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(collection);
 
-        if (services.All(service => !service.IsKeyedService && service.ServiceType != typeof(TService)))
-        {
-            services.AddFromExisting<TService, TImplementation>();
-        }
+        return collection.All(service => !service.IsKeyedService && service.ServiceType != typeof(TService))
+            ? collection.AddFromExisting<TService, TImplementation>()
+            : collection;
     }
 
-    internal static void TryAddFromExisting<TService, TImplementation>(this IServiceCollection services, object? serviceKey) where TImplementation : TService
+    /// <summary>
+    /// Add an existing registration of <typeparamref name="TImplementation"/> as a provider of <typeparamref name="TService"/> to the <paramref name="collection"/> if there are no existing <typeparamref name="TService"/> implementations.
+    /// </summary>
+    /// <typeparam name="TService">The type of the service to add.</typeparam>
+    /// <typeparam name="TImplementation">The implementation of <typeparamref name="TService"/>.</typeparam>
+    /// <param name="collection">The <see cref="IServiceCollection"/>.</param>
+    /// <param name="serviceKey"></param>
+    /// <returns>A reference to the current instance of <see cref="IServiceCollection"/>.</returns>
+    internal static IServiceCollection TryAddFromExisting<TService, TImplementation>(this IServiceCollection collection, object? serviceKey) where TImplementation : TService
     {
-        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(collection);
 
-        if (services.All(service => service.ServiceType != typeof(TService) && service.ServiceKey != serviceKey))
-        {
-            services.AddFromExisting<TService, TImplementation>(serviceKey);
-        }
+        return collection.All(service => service.ServiceType != typeof(TService) && service.ServiceKey != serviceKey)
+            ? collection.AddFromExisting<TService, TImplementation>(serviceKey)
+            : collection;
     }
 }

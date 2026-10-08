@@ -1,11 +1,11 @@
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-
 using Filin.Generators.Specs.Members;
 using Filin.Generators.Specs.Types;
+
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Filin.Generators;
 
@@ -98,7 +98,7 @@ partial class CodeGenerator
 
         sealed class EventTagComparer : IEqualityComparer<EventTag>, IComparer<EventTag>
         {
-            internal static readonly EventTagComparer Instance = new EventTagComparer();
+            internal static readonly EventTagComparer Instance = new();
 
             public int Compare(EventTag x, EventTag y)
             {
@@ -123,16 +123,14 @@ partial class CodeGenerator
             }
 
             public bool Equals(EventTag x, EventTag y)
-                => !string.Equals(x.Tag, y.Tag, StringComparison.Ordinal)
-                    ? false
-                    : (x, y) switch
-                    {
-                        (EventTagMember xMember, EventTagMember yMember) => string.Equals(xMember.Member.Name, yMember.Member.Name, StringComparison.Ordinal) &&
+                => string.Equals(x.Tag, y.Tag, StringComparison.Ordinal) && (x, y) switch
+                {
+                    (EventTagMember xMember, EventTagMember yMember) => string.Equals(xMember.Member.Name, yMember.Member.Name, StringComparison.Ordinal) &&
                             string.Equals(xMember.TargetType.IdentifierCompatibleSubstring, yMember.TargetType.IdentifierCompatibleSubstring, StringComparison.Ordinal),
-                        (EventTagMember, _) => false,
-                        (_, EventTagMember) => false,
-                        _ => string.Equals(x.TargetType.IdentifierCompatibleSubstring, x.TargetType.IdentifierCompatibleSubstring, StringComparison.Ordinal)
-                    };
+                    (EventTagMember, _) => false,
+                    (_, EventTagMember) => false,
+                    _ => string.Equals(x.TargetType.IdentifierCompatibleSubstring, x.TargetType.IdentifierCompatibleSubstring, StringComparison.Ordinal)
+                };
 
             public int GetHashCode(EventTag obj)
                 => obj is EventTagMember objMember
@@ -142,9 +140,9 @@ partial class CodeGenerator
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             static int HashCode(string x, string y)
             {
-                int hashCode = -2088324004;
-                hashCode = hashCode * -1521134295 + x.GetHashCode();
-                hashCode = hashCode * -1521134295 + y.GetHashCode();
+                var hashCode = -2088324004;
+                hashCode = (hashCode * -1521134295) + x.GetHashCode();
+                hashCode = (hashCode * -1521134295) + y.GetHashCode();
 
                 return hashCode;
             }
@@ -152,10 +150,10 @@ partial class CodeGenerator
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             static int HashCode(string x, string y, string z)
             {
-                int hashCode = -2088324004;
-                hashCode = hashCode * -1521134295 + x.GetHashCode();
-                hashCode = hashCode * -1521134295 + y.GetHashCode();
-                hashCode = hashCode * -1521134295 + z.GetHashCode();
+                var hashCode = -2088324004;
+                hashCode = (hashCode * -1521134295) + x.GetHashCode();
+                hashCode = (hashCode * -1521134295) + y.GetHashCode();
+                hashCode = (hashCode * -1521134295) + z.GetHashCode();
 
                 return hashCode;
             }

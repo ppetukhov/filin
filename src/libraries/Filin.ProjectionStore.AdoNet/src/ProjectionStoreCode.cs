@@ -5,8 +5,7 @@ namespace Filin.ProjectionStore.AdoNet;
 /// </summary>
 enum ProjectionStoreCode
 {
-    ProvidersBase = 200000,
-    ProjectionStoreBase = ProvidersBase + 400,
+    ProjectionStoreBase = 200,
 
     ProjectionInitStore = ProjectionStoreBase + 1,
 

@@ -6,7 +6,6 @@ using Filin.Configuration;
 using Filin.EventStore.Postgres;
 using Filin.EventStore.Postgres.DataFlow;
 using Filin.Storage;
-using Filin.Storage.DataFlow;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -48,16 +47,9 @@ public static class EventStorePostgresServiceCollectionExtensions
             return ActivatorUtilities.CreateInstance<DbCommandFactory>(sp, dbSource, opt.Value.StorageSerializer);
         });
 
-        services.TryAddSingleton<AppendEventsBlock>();
-
-        services.RemoveAll<IAppendEventsBlock>();
-        services.AddFromExisting<IAppendEventsBlock, AppendEventsBlock>();
-
-        services.RemoveAll<IEventStore>();
-        services.AddSingleton<IEventStore, EventStore.Postgres.EventStore>();
-
-        services.AddHostedService<EventStreamingService>();
-
-        return services;
+        return services
+            .AddAppendEventsBlock<AppendEventsBlock>()
+            .AddEventStore<EventStore.Postgres.EventStore>()
+            .AddHostedService<EventStreamingService>();
     }
 }

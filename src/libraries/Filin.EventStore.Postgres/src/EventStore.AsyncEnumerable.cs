@@ -121,7 +121,7 @@ sealed partial class EventStore
 
                 if (!options.EventTypes.TryGetValue(eventType, out var payloadType))
                 {
-                    var ex = new DcbEventStoreException("Unknown runtime type for EventType.");
+                    var ex = new EventStoreException("Unknown runtime type for EventType.");
                     ex.Data[nameof(DcbEvent.EventType)] = eventType;
 
                     logger.ErrorReadingEvents(exception: ex);
@@ -131,7 +131,7 @@ sealed partial class EventStore
 
                 if (!reader.TryGetPayload(ordinal: ordinals.Payload, payloadType: payloadType, serializer: options.StorageSerializer, payload: out var data))
                 {
-                    var ex = new DcbEventStoreException("Corrupted event. Event data is null.");
+                    var ex = new EventStoreException("Corrupted event. Event data is null.");
                     ex.Data[nameof(DcbEvent.EventType)] = eventType;
                     ex.Data[nameof(DcbEvent.Payload)] = null;
                     ex.Data[nameof(DcbEventSequenced.Timestamp)] = timestamp;
@@ -201,7 +201,7 @@ sealed partial class EventStore
 #pragma warning restore CS0618 // Type or member is obsolete
         }
 
-        static TagCollection GetTags(DbDataReader reader, Ordinals ordinals)
+        static Tags GetTags(DbDataReader reader, Ordinals ordinals)
         {
             var tgNames = reader.GetFieldValue<string[]>(ordinals.Tags);
 

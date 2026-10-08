@@ -1,4 +1,7 @@
+using System.Diagnostics.CodeAnalysis;
+
 using Filin.Storage;
+using Filin.Storage.DataFlow;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -25,16 +28,29 @@ public static class StorageServiceCollectionExtensions
         ArgumentException.ThrowIfNullOrEmpty(name);
         ArgumentNullException.ThrowIfNull(implementationFactory);
 
-        collection.RemoveAllKeyed<IProjectionStore>(name);
-        collection.TryAddKeyedSingleton<IProjectionStore>(name, (sp, key) => implementationFactory(sp, (string)key!));
+        collection
+            .RemoveAllKeyed<IProjectionStore>(name)
+            .TryAddKeyedSingleton<IProjectionStore>(name, (sp, key) => implementationFactory(sp, (string)key!));
 
         // Check if it is the default implementation
-        if (string.Equals(name, ProviderConstants.DefaultStorageProvider, StringComparison.OrdinalIgnoreCase))
-        {
-            collection.Replace(ServiceDescriptor.Singleton(sp => sp.GetRequiredKeyedService<IProjectionStore>(ProviderConstants.DefaultStorageProvider)));
-        }
+        return string.Equals(name, ProviderConstants.DefaultStorageProvider, StringComparison.OrdinalIgnoreCase)
+            ? collection.Replace(ServiceDescriptor.Singleton(sp => sp.GetRequiredKeyedService<IProjectionStore>(ProviderConstants.DefaultStorageProvider)))
+            : collection;
+    }
 
-        return collection;
+    /// <summary>
+    /// Registers a central event store provider implementation as a singleton service if it has not already been registered.
+    /// </summary>
+    /// <typeparam name="T">The concrete implementation type of the <see cref="IEventStore"/>.</typeparam>
+    /// <param name="collection">The <see cref="IServiceCollection"/> to add the services to.</param>
+    /// <returns>The same <see cref="IServiceCollection"/> instance so that multiple calls can be chained.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="collection"/> is <see langword="null"/>.</exception>
+    public static IServiceCollection AddEventStore<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(this IServiceCollection collection)
+        where T : class, IEventStore
+    {
+        ArgumentNullException.ThrowIfNull(collection);
+
+        return collection.RemoveAll<IEventStore>().AddSingleton<IEventStore, T>();
     }
 
     /// <summary>
@@ -51,8 +67,38 @@ public static class StorageServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(collection);
         ArgumentNullException.ThrowIfNull(implementationFactory);
 
-        collection.Replace(ServiceDescriptor.Singleton<IEventStore>(sp => implementationFactory(sp)));
+        return collection.RemoveAll<IEventStore>().AddSingleton<IEventStore>(sp => implementationFactory(sp));
+    }
 
-        return collection;
+    /// <summary>
+    /// Registers a dataflow propagator block capable of processing both single and batched event append requests implementation as a singleton service.
+    /// </summary>
+    /// <typeparam name="T">The concrete implementation type of the <see cref="IAppendEventsBlock"/>.</typeparam>
+    /// <param name="collection">The <see cref="IServiceCollection"/> to add the services to.</param>
+    /// <returns>The same <see cref="IServiceCollection"/> instance so that multiple calls can be chained.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="collection"/> is <see langword="null"/>.</exception>
+    public static IServiceCollection AddAppendEventsBlock<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(this IServiceCollection collection)
+        where T : class, IAppendEventsBlock
+    {
+        ArgumentNullException.ThrowIfNull(collection);
+
+        return collection.AddSingleton<IAppendEventsBlock, T>();
+    }
+
+    /// <summary>
+    /// Registers a dataflow propagator block capable of processing both single and batched event append requests implementation as a singleton service.
+    /// </summary>
+    /// <typeparam name="T">The concrete implementation type of the <see cref="IAppendEventsBlock"/>.</typeparam>
+    /// <param name="collection">The <see cref="IServiceCollection"/> to add the services to.</param>
+    /// <param name="implementationFactory">The factory delegate used to construct the event store instance.</param>
+    /// <returns>The same <see cref="IServiceCollection"/> instance so that multiple calls can be chained.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="collection"/> or <paramref name="implementationFactory"/> is <see langword="null"/>.</exception>
+    public static IServiceCollection AddAppendEventsBlock<T>(this IServiceCollection collection, Func<IServiceProvider, T> implementationFactory)
+        where T : IAppendEventsBlock
+    {
+        ArgumentNullException.ThrowIfNull(collection);
+        ArgumentNullException.ThrowIfNull(implementationFactory);
+
+        return collection.AddSingleton<IAppendEventsBlock>(sp => implementationFactory(sp));
     }
 }

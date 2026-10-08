@@ -140,7 +140,7 @@ public sealed class ProjectorIdTests
     {
         ProjectorId identity = default;
 
-        identity.ToString().Should().BeNull(because: "ProjectorId is default");
+        identity.ToString().Should().BeNull(because: "projectorId is default");
     }
 
     [Fact]

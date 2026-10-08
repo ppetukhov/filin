@@ -12,9 +12,9 @@ public interface IMediator
     /// <typeparam name="TState">The underlying type of the domain aggregate or state being evaluated.</typeparam>
     /// <param name="command">The concrete command instance to be processed.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests during execution processing.</param>
-    /// <exception cref="DcbEventStoreException"/>
-    /// <exception cref="DcbProjectorException"/>
-    /// <exception cref="DcbProjectionStoreException"/>
+    /// <exception cref="EventStoreException"/>
+    /// <exception cref="ProjectorException"/>
+    /// <exception cref="ProjectionStoreException"/>
     /// <exception cref="MediatorException"/>
     /// <returns>
     /// A <see cref="ValueTask{TResult}"/> wrapping a <see cref="ExecuteResult{TState}"/>, yielding the brand-new 
@@ -31,9 +31,9 @@ public interface IMediator
     /// <typeparam name="TProjection">The targeted type of the read-model projection data.</typeparam>
     /// <param name="query">The concrete query request mapping the projection filter criteria.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests during projection resolution.</param>
-    /// <exception cref="DcbEventStoreException"/>
-    /// <exception cref="DcbProjectorException"/>
-    /// <exception cref="DcbProjectionStoreException"/>
+    /// <exception cref="EventStoreException"/>
+    /// <exception cref="ProjectorException"/>
+    /// <exception cref="ProjectionStoreException"/>
     /// <exception cref="MediatorException"/>
     /// <returns>
     /// A <see cref="ValueTask{TResult}"/> containing the resolved read-model <typeparamref name="TProjection"/>, 

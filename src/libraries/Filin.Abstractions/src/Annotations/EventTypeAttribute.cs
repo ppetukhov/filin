@@ -19,7 +19,7 @@ public sealed class EventTypeAttribute(string eventType, uint version) : Attribu
     /// <summary>
     /// Gets the schema version number of the event type.
     /// </summary>
-    public uint Version { get; set; } = version;
+    public uint Version => version;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="EventTypeAttribute"/> class with a default version of 0.

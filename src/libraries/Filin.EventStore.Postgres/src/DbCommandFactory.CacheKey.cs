@@ -21,10 +21,7 @@ partial class DbCommandFactory
         byte FailIfMatchQueryByteCount => _buffer[1];
         int TotalBytes => 2 + EventsCount + FailIfMatchQueryByteCount;
 
-        CacheKey(ReadOnlySpan<byte> payload)
-        {
-            payload.CopyTo(_buffer);
-        }
+        CacheKey(ReadOnlySpan<byte> payload) => payload.CopyTo(_buffer);
 
         internal static ReadOnlySpan<byte> EventTagsCount(ref CacheKey item) => item._buffer[2..][..item.EventsCount];
         internal static ReadOnlySpan<(byte EventTypesCount, byte TagsCount)> FailIfMatch(ref CacheKey item) =>
@@ -136,7 +133,10 @@ partial class DbCommandFactory
 
         public bool Equals(CacheKey other)
         {
-            if (EventsCount != other.EventsCount || FailIfMatchQueryByteCount != other.FailIfMatchQueryByteCount) return false;
+            if (EventsCount != other.EventsCount || FailIfMatchQueryByteCount != other.FailIfMatchQueryByteCount)
+            {
+                return false;
+            }
 
             ReadOnlySpan<byte> thisSpan = _buffer;
             ReadOnlySpan<byte> otherSpan = other._buffer;

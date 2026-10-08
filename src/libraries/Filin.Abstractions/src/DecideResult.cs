@@ -9,7 +9,7 @@ namespace Filin;
 /// <summary>
 /// Represents the result of a decider operation, containing either a request to append events to the <see cref="IEventStore"/> or a business error.
 /// </summary>
-public readonly struct DecideResult
+public readonly struct DecideResult : IEquatable<DecideResult>
 {
     readonly object? _value; // Can store a DcbEvent, a DcbEvent[], or an error Code string.
     readonly string? _errorMessage; // Stores the Message if it is an error
@@ -52,8 +52,8 @@ public readonly struct DecideResult
     /// <summary>
     /// Initializes a new instance of the class representing a failed operation with a business error.
     /// </summary>
-    /// <param name="errorCode"><inheritdoc cref="Error.Code" path="/summary"/></param>
-    /// <param name="errorMessage"><inheritdoc cref="Error.Message" path="/summary"/></param>
+    /// <param name="errorCode"><inheritdoc cref="DomainRuleError.Code" path="/summary"/></param>
+    /// <param name="errorMessage"><inheritdoc cref="DomainRuleError.Message" path="/summary"/></param>
     public DecideResult(string errorCode, string errorMessage)
     {
         ArgumentException.ThrowIfNullOrEmpty(errorCode);
@@ -93,15 +93,12 @@ public readonly struct DecideResult
     public int Count
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get
+        get => _value switch
         {
-            return _value switch
-            {
-                DcbEvent => 1,
-                DcbEvent[] evts => evts.Length,
-                _ => 0
-            };
-        }
+            DcbEvent => 1,
+            DcbEvent[] evts => evts.Length,
+            _ => 0
+        };
     }
 
     /// <summary>
@@ -121,26 +118,23 @@ public readonly struct DecideResult
     /// <summary>
     /// Gets the domain business error details associated with this failed operation result.
     /// </summary>
-    /// <value>The structured <see cref="Filin.Error"/> record containing failure context.</value>
+    /// <value>The structured <see cref="Filin.DomainRuleError"/> record containing failure context.</value>
     /// <exception cref="InvalidOperationException">Thrown if accessed when the operation completed successfully.</exception>
-    public Error Error
+    public DomainRuleError Error
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get
+        get => (_value, _errorMessage) switch
         {
-            return (_value, _errorMessage) switch
-            {
-                (string code, string msg) => new Error(code, msg),
-                (DcbEvent, null) => throw CannotRetrieveErrorException(),
-                (DcbEvent[], null) => throw CannotRetrieveErrorException(),
-                _ => throw UnreachableException()
-            };
-        }
+            (string code, string msg) => new DomainRuleError(code, msg),
+            (DcbEvent, null) => throw CannotRetrieveErrorException(),
+            (DcbEvent[], null) => throw CannotRetrieveErrorException(),
+            _ => throw UnreachableException()
+        };
     }
 
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Enumerator GetEnumerator() =>
+    public DecideResultEnumerator GetEnumerator() =>
         _value switch
         {
             DcbEvent evt => new(evt),
@@ -159,8 +153,8 @@ public readonly struct DecideResult
     /// <summary>
     /// Creates a failed result containing the domain business error.
     /// </summary>
-    /// <param name="code"><inheritdoc cref="Error.Code" path="/summary"/></param>
-    /// <param name="message"><inheritdoc cref="Error.Message" path="/summary"/></param>
+    /// <param name="code"><inheritdoc cref="DomainRuleError.Code" path="/summary"/></param>
+    /// <param name="message"><inheritdoc cref="DomainRuleError.Message" path="/summary"/></param>
     /// <returns>A failed result instance containing the error.</returns>
     public static DecideResult Failure(string code, string message)
     {
@@ -170,94 +164,105 @@ public readonly struct DecideResult
         return new(code, message);
     }
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    static InvalidOperationException CannotRetrieveErrorException() => new InvalidOperationException("Cannot retrieve an error from a successful result.");
+    /// <inheritdoc/>
+    public bool Equals(DecideResult other) =>
+        (_value, _errorMessage, other._value, other._errorMessage) switch
+        {
+            (string code, string msg, string code2, string msg2) => (code, msg) == (code2, msg2),
+            (DcbEvent evt, null, DcbEvent evt2, null) => evt.Equals(evt2),
+            (DcbEvent[] evts, null, DcbEvent[] evts2, null) => evts.AsSpan().SequenceEqual(evts2.AsSpan()),
+            _ => false
+        };
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    static UnreachableException UnreachableException() => new UnreachableException("The DecideResult state is invalid.");
+    /// <inheritdoc/>
+    public override bool Equals(object? obj) => obj is DecideResult other && Equals(other);
 
-    public static implicit operator DecideResult(DcbEvent @event) => new(@event);
-
-    public static implicit operator DecideResult((DcbEvent, DcbEvent) events) => new(events.Item1, events.Item2);
-
-    public static implicit operator DecideResult((DcbEvent, DcbEvent, DcbEvent) events) => new(events.Item1, events.Item2, events.Item3);
-
-    public static implicit operator DecideResult((DcbEvent, DcbEvent, DcbEvent, DcbEvent) events) => new(events.Item1, events.Item2, events.Item3, events.Item4);
-
-    public static implicit operator DecideResult((DcbEvent, DcbEvent, DcbEvent, DcbEvent, DcbEvent) events) => new(events.Item1, events.Item2, events.Item3, events.Item4, events.Item5);
-
-    public static implicit operator DecideResult(Error error) => new(error.Code, error.Message);
-
-    public static implicit operator DecideResult((string Code, string Message) error) => new(error.Code, error.Message);
+    /// <inheritdoc/>
+    public override int GetHashCode() => HashCode.Combine(_value, _errorMessage);
 
     /// <summary>
-    /// Provides a high-performance, stack-only enumerator over a collection.
+    /// Creates a <see cref="DecideResult"/> from a single <see cref="DcbEvent"/>.
     /// </summary>
-    public ref struct Enumerator
-    {
-        readonly int _length;
-        int _index;
-        readonly DcbEvent? _single;
-        readonly ReadOnlySpan<DcbEvent> _span;
+    public static DecideResult FromDcbEvent(DcbEvent @event) => new(@event);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal Enumerator(DcbEvent value)
-        {
-            _single = value;
-            _length = 1;
-            _index = -1;
-        }
+    /// <summary>
+    /// Creates a <see cref="DecideResult"/> from a domain rule error.
+    /// </summary>
+    public static DecideResult FromDomainRuleError(DomainRuleError error) => new(error.Code, error.Message);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal Enumerator(ReadOnlySpan<DcbEvent> values)
-        {
-            _span = values;
-            _length = values.Length;
-            _index = -1;
-        }
+    /// <summary>
+    /// Creates a <see cref="DecideResult"/> from an error code and message tuple.
+    /// </summary>
+    public static DecideResult FromValueTuple((string Code, string Message) error) => new(error.Code, error.Message);
 
-        /// <summary>
-        /// Advances the enumerator to the next element of the collection.
-        /// </summary>
-        /// <returns>
-        /// <see langword="true"/> if the enumerator was successfully advanced to the next element;
-        /// <see langword="false"/> if the enumerator has passed the end of the collection.
-        /// </returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool MoveNext()
-        {
-            int nextIndex = _index + 1;
+    /// <summary>
+    /// Creates a <see cref="DecideResult"/> from a tuple of two events.
+    /// </summary>
+    public static DecideResult FromValueTuple((DcbEvent, DcbEvent) events) => new(events.Item1, events.Item2);
 
-            if (nextIndex < _length)
-            {
-                _index = nextIndex;
-                return true;
-            }
+    /// <summary>
+    /// Creates a <see cref="DecideResult"/> from a tuple of three events.
+    /// </summary>
+    public static DecideResult FromValueTuple((DcbEvent, DcbEvent, DcbEvent) events) => new(events.Item1, events.Item2, events.Item3);
 
-            return false;
-        }
+    /// <summary>
+    /// Creates a <see cref="DecideResult"/> from a tuple of four events.
+    /// </summary>
+    public static DecideResult FromValueTuple((DcbEvent, DcbEvent, DcbEvent, DcbEvent) events) => new(events.Item1, events.Item2, events.Item3, events.Item4);
 
-        /// <inheritdoc cref="IEnumerator{T}.Current"/>
-        public readonly DcbEvent Current
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                if (_index < 0 || _index >= _length)
-                {
-                    ThrowInvalidOperationException();
-                }
+    /// <summary>
+    /// Creates a <see cref="DecideResult"/> from a tuple of five events.
+    /// </summary>
+    public static DecideResult FromValueTuple((DcbEvent, DcbEvent, DcbEvent, DcbEvent, DcbEvent) events) => new(events.Item1, events.Item2, events.Item3, events.Item4, events.Item5);
 
-                return _single is not null ? _single : _span[_index];
-            }
-        }
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    static InvalidOperationException CannotRetrieveErrorException() => new("Cannot retrieve an error from a successful result.");
 
-        /// <summary>
-        /// Non-inlined helper method containing the exception throwing logic.
-        /// This keeps the main 'get' property hot-path small and eligible for aggressive CPU inlining.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        [DoesNotReturn]
-        static void ThrowInvalidOperationException() => throw new InvalidOperationException("DecideResult.Enumerator.Current value has not been set.");
-    }
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    static UnreachableException UnreachableException() => new("The DecideResult state is invalid.");
+
+    /// <summary>
+    /// Determines whether two <see cref="DecideResult"/> instances are equal.
+    /// </summary>
+    public static bool operator ==(DecideResult left, DecideResult right) => left.Equals(right);
+
+    /// <summary>
+    /// Determines whether two <see cref="DecideResult"/> instances are not equal.
+    /// </summary>
+    public static bool operator !=(DecideResult left, DecideResult right) => !(left == right);
+
+    /// <summary>
+    /// Implicitly converts a <see cref="DcbEvent"/> to a <see cref="DecideResult"/>.
+    /// </summary>
+    public static implicit operator DecideResult(DcbEvent @event) => FromDcbEvent(@event);
+
+    /// <summary>
+    /// Implicitly converts a tuple of two events to a <see cref="DecideResult"/>.
+    /// </summary>
+    public static implicit operator DecideResult((DcbEvent, DcbEvent) events) => FromValueTuple(events);
+
+    /// <summary>
+    /// Implicitly converts a tuple of three events to a <see cref="DecideResult"/>.
+    /// </summary>
+    public static implicit operator DecideResult((DcbEvent, DcbEvent, DcbEvent) events) => FromValueTuple(events);
+
+    /// <summary>
+    /// Implicitly converts a tuple of four events to a <see cref="DecideResult"/>.
+    /// </summary>
+    public static implicit operator DecideResult((DcbEvent, DcbEvent, DcbEvent, DcbEvent) events) => FromValueTuple(events);
+
+    /// <summary>
+    /// Implicitly converts a tuple of five events to a <see cref="DecideResult"/>.
+    /// </summary>
+    public static implicit operator DecideResult((DcbEvent, DcbEvent, DcbEvent, DcbEvent, DcbEvent) events) => FromValueTuple(events);
+
+    /// <summary>
+    /// Implicitly converts a domain rule error to a <see cref="DecideResult"/>.
+    /// </summary>
+    public static implicit operator DecideResult(DomainRuleError error) => FromDomainRuleError(error);
+
+    /// <summary>
+    /// Implicitly converts an error tuple to a <see cref="DecideResult"/>.
+    /// </summary>
+    public static implicit operator DecideResult((string Code, string Message) error) => FromValueTuple(error);
 }

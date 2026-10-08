@@ -1,13 +1,13 @@
 using System.Collections.Immutable;
 using System.Text;
 
+using Filin.Generators.Extensions;
+using Filin.Generators.Specs.Types;
+
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
-
-using Filin.Generators.Extensions;
-using Filin.Generators.Specs.Types;
 
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
@@ -17,9 +17,10 @@ partial class CodeGenerator
 {
     sealed partial class ProjectorIdEmitter(TypeDefinitions typeDefinitions, GenerationOptions options)
     {
-        readonly MetadataEmitter _metadataEmitter = new(typeDefinitions);
+        static readonly SyntaxToken ProjectorIdIdentifierToken = Identifier(Constants.ProjectorIdProperty);
 
-        readonly SyntaxToken ProjectorIdIdentifierToken = Identifier(options.ProjectorIdProperty);
+        readonly TypeManifestProviderEmitter _metadataEmitter = new(typeDefinitions);
+        readonly string _namespaceMetadata = Emitter.GetConfigurationNamespace(options);
 
         internal void EmitProjectIds(SourceProductionContext context, ImmutableArray<ProjectorId> projectorIds)
         {
@@ -28,19 +29,19 @@ partial class CodeGenerator
                 return;
             }
 
-            var props = GenerateClassHeirerarhy(context, projectorIds.Where(x => x.TargetType.type.Interfaces.Any(typeDefinitions.IsProjector)).Select(static x => (x.TargetType, x))).ToList();
+            var props = GenerateClassHeirerarhy(context, projectorIds.Where(x => x.TargetType.Type.Interfaces.Any(typeDefinitions.IsProjector)).Select(static x => (x.TargetType, x))).ToList();
 
             context.CancellationToken.ThrowIfCancellationRequested();
 
             if (props is { Count: > 0 })
             {
-                var metadataClass = _metadataEmitter.GenerateMetadata(projectorIds);
+                var metadataClass = _metadataEmitter.CreateTypeManifestProvider(projectorIds);
                 var metadataAttribute = AttributeList()
                     .WithTarget(AttributeTargetSpecifier(Token(SyntaxKind.AssemblyKeyword)))
                     .WithAttributes(
                         SingletonSeparatedList(
                             Attribute(ParseName(Constants.TypeManifestProviderAttribute))
-                                .AddArgumentListArguments(AttributeArgument(TypeOfExpression(QualifiedName(IdentifierName(options.EmittingNamespace), IdentifierName(metadataClass.Identifier.Text)))))
+                                .AddArgumentListArguments(AttributeArgument(TypeOfExpression(QualifiedName(IdentifierName(_namespaceMetadata), IdentifierName(metadataClass.Identifier.Text)))))
                     ));
 
                 var assemblyAttributes = Emitter.GenerateApplicationPartsAttributes(typeDefinitions);
@@ -49,7 +50,8 @@ partial class CodeGenerator
                 var cu = CompilationUnit()
                     .WithAttributeLists(List(assemblyAttributes))
                     .AddMembers([.. props])
-                    .AddMembers(NamespaceDeclaration(ParseName(options.EmittingNamespace)).AddMembers(metadataClass))
+                    .AddMembers(NamespaceDeclaration(ParseName(_namespaceMetadata)).AddMembers(metadataClass))
+                    .WithLeadingTrivia(Emitter.HeaderSyntaxTriviaList)
                     .NormalizeWhitespace();
 
                 var sourceText = SourceText.From(cu.ToFullString(), Encoding.UTF8);
@@ -58,9 +60,9 @@ partial class CodeGenerator
             }
         }
 
-        IEnumerable<NamespaceDeclarationSyntax> GenerateClassHeirerarhy(SourceProductionContext ctx, IEnumerable<(ObjectSpec TargetType, ProjectorId ProjectorId)> tuples)
+        static IEnumerable<NamespaceDeclarationSyntax> GenerateClassHeirerarhy(SourceProductionContext ctx, IEnumerable<(ObjectSpec TargetType, ProjectorId ProjectorId)> tuples)
         {
-            IEnumerable<MemberDeclarationSyntax> MembersFactory((ObjectSpec TargetType, ProjectorId ProjectorId) tuple)
+            static IEnumerable<MemberDeclarationSyntax> MembersFactory((ObjectSpec TargetType, ProjectorId ProjectorId) tuple)
             {
                 return [
                     PropertyDeclaration(

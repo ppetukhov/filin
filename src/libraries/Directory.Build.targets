@@ -1,6 +1,4 @@
 <Project>
-  <Import Project="$(RepositoryEngineeringDir)Resources.targets" Condition="'$(IsSourceProject)' == 'true'" />
-
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" Condition="'' != $([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
  
   <!-- Add a meaningless "-project" suffix to the package id for non-packable source projects.

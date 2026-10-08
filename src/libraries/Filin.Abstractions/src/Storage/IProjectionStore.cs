@@ -14,7 +14,7 @@ public interface IProjectionStore
     /// A task that represents the asynchronous operation. The task result contains the <see cref="Projection"/> if found; 
     /// otherwise, <see langword="null"/>.
     /// </returns>
-    /// <exception cref="DcbProjectionStoreException">Thrown when a storage error occurs while retrieving the projection.</exception>
+    /// <exception cref="ProjectionStoreException">Thrown when a storage error occurs while retrieving the projection.</exception>
     Task<Projection?> LoadAsync(ProjectionId projectionId, CancellationToken cancellationToken);
 
     /// <summary>
@@ -23,7 +23,7 @@ public interface IProjectionStore
     /// <param name="projection"><inheritdoc cref="Projection" path="/summary"/></param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    /// <exception cref="DcbProjectionStoreException">Thrown when a storage error occurs while persisting the projection.</exception>
+    /// <exception cref="ProjectionStoreException">Thrown when a storage error occurs while persisting the projection.</exception>
     Task SaveAsync(Projection projection, CancellationToken cancellationToken);
 
     /// <summary>
@@ -32,7 +32,7 @@ public interface IProjectionStore
     /// <param name="projections">The collection of projections to persist.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    /// <exception cref="DcbProjectionStoreException">Thrown when a storage error occurs during the bulk persist operation.</exception>
+    /// <exception cref="ProjectionStoreException">Thrown when a storage error occurs during the bulk persist operation.</exception>
     Task SaveAsync(IEnumerable<Projection> projections, CancellationToken cancellationToken);
 
     /// <summary>
@@ -42,6 +42,6 @@ public interface IProjectionStore
     /// <param name="position">The stream or global event position associated with this clearing/reset operation.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    /// <exception cref="DcbProjectionStoreException">Thrown when an error occurs while clearing the projection data.</exception>
+    /// <exception cref="ProjectionStoreException">Thrown when an error occurs while clearing the projection data.</exception>
     Task ClearAsync(ProjectionId projectionId, EventPosition position, CancellationToken cancellationToken);
 }

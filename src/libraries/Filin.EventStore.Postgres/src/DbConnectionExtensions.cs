@@ -27,7 +27,9 @@ static class DbConnectionExtensions
 
                 if (backoff.UseJitter)
                 {
+#pragma warning disable CA5394 // Do not use insecure randomness
                     delay += TimeSpan.FromMilliseconds(Random.Shared.NextDouble() * 10);
+#pragma warning restore CA5394 // Do not use insecure randomness
                 }
 
                 if (backoff.MaxDelay < delay)

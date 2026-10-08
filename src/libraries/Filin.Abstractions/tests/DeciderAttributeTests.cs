@@ -1,3 +1,5 @@
+using Filin.Abstractions.Tests.Configuration;
+
 namespace Filin.Abstractions.DeciderTests;
 
 [Decider]
@@ -9,7 +11,7 @@ sealed class CreateCourseDecider : IDecider<CreateCourse, ActiveCourses>
 
 sealed record CreateCourse : ICommand<ActiveCourses>
 {
-    public TagCollection GetTags() => ["course:123"];
+    public Tags GetTags() => ["course:123"];
 };
 
 sealed record ActiveCourses { };
@@ -20,7 +22,7 @@ public sealed class DeciderAttributeTests
     public void MetadataDeciders_Configure_DeciderTypes_TotalCount()
     {
         var options = new Configuration.TypeManifestOptions();
-        var provider = new MetadataDeciders_Filin_Abstractions_Tests();
+        var provider = new FilinAbstractionsTestsDecidersTypeManifestProvider();
 
         provider.Configure(options);
 
@@ -31,7 +33,7 @@ public sealed class DeciderAttributeTests
     public void MetadataDeciders_Configure_DeciderTypes()
     {
         var options = new Configuration.TypeManifestOptions();
-        var provider = new MetadataDeciders_Filin_Abstractions_Tests();
+        var provider = new FilinAbstractionsTestsDecidersTypeManifestProvider();
 
         provider.Configure(options);
 

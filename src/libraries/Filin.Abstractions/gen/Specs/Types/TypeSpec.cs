@@ -1,29 +1,26 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-using Microsoft.CodeAnalysis;
-
 using Filin.Generators.Extensions;
+
+using Microsoft.CodeAnalysis;
 
 using SourceGenerators;
 
 namespace Filin.Generators.Specs.Types;
 
 [DebuggerDisplay("Name={DisplayString}, Kind={SpecKind}")]
-abstract record TypeSpec(ITypeSymbol type)
+abstract record TypeSpec(ITypeSymbol TypeSymbol)
 {
-    public Accessibility Accessibility { get; } = type.GetGlobalAccessibility();
+    public Accessibility Accessibility { get; } = TypeSymbol.GetGlobalAccessibility();
 
-    public TypeRef TypeRef { get; } = new TypeRef(type);
+    public TypeRef TypeRef { get; } = new TypeRef(TypeSymbol);
 
-    /// <summary>
-    /// <see cref="Type.FullName"/> like rendering of the type name.
-    /// </summary>
-    public string FullName { get; } = type.GetFullyQualifiedName();
+    public string FullName { get; } = TypeSymbol.GetFullyQualifiedName();
 
-    public string IdentifierCompatibleSubstring { get; } = type.ToIdentifierCompatibleSubstring();
+    public string IdentifierCompatibleSubstring { get; } = TypeSymbol.ToIdentifierCompatibleSubstring();
 
-    public SymbolFlag Flags { get; } = GetFlag(type);
+    public SymbolFlag Flags { get; } = GetFlag(TypeSymbol);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static SymbolFlag GetFlag(ISymbol symbol)

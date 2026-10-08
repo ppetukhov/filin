@@ -6,6 +6,7 @@
   </Configurations>
   <Folder Name="/playground/" />
   <Folder Name="/playground/Education/">
+    <File Path="playground/Directory.Build.props" />
     <Project Path="playground/Education/Edu.App/Edu.App.csproj" Id="52698aac-1988-4001-be45-65ad8a617283" />
     <Project Path="playground/Education/Edu.Contract/Edu.Contract.csproj" />
     <Project Path="playground/Education/Edu/Edu.csproj" />
@@ -21,11 +22,8 @@
   </Folder>
   <Folder Name="/eng/">
     <File Path="eng/Analyzers.targets" />
-    <File Path="eng/CodeAnalysis.src.globalconfig" />
-    <File Path="eng/CodeAnalysis.test.globalconfig" />
     <File Path="eng/GeneratorProjects.targets" />
     <File Path="eng/NoTargetsSdk.BeforeTargets.targets" />
-    <File Path="eng/Resources.targets" />
     <File Path="eng/Versioning.targets" />
   </Folder>
   <Folder Name="/src/" />
@@ -68,17 +66,13 @@
   <Folder Name="/src/libraries/Filin.Abstractions/tests/">
     <Project Path="src/libraries/Filin.Abstractions/tests/Filin.Abstractions.Tests.csproj" />
   </Folder>
-  <Folder Name="/src/libraries/Filin.Compliance.Classification/" />
-  <Folder Name="/src/libraries/Filin.Compliance.Classification/src/">
-    <Project Path="src/libraries/Filin.Compliance.Classification/src/Filin.Compliance.Classification.csproj" Id="f250fc49-1a6e-454f-82c5-48c7b0c1c7b5" />
+  <Folder Name="/src/libraries/Filin.Compliance/" />
+  <Folder Name="/src/libraries/Filin.Compliance/src/">
+    <Project Path="src/libraries/Filin.Compliance/src/Filin.Compliance.csproj" Id="f250fc49-1a6e-454f-82c5-48c7b0c1c7b5" />
   </Folder>
   <Folder Name="/src/libraries/Filin.EventStore.Postgres/" />
   <Folder Name="/src/libraries/Filin.EventStore.Postgres/src/">
     <Project Path="src/libraries/Filin.EventStore.Postgres/src/Filin.EventStore.Postgres.csproj" Id="06d0752e-79be-472c-b5cb-1276e049cb17" />
-  </Folder>
-  <Folder Name="/src/libraries/Filin.Executor/" />
-  <Folder Name="/src/libraries/Filin.Executor/src/">
-    <Project Path="src/libraries/Filin.Executor/src/Filin.Executor.csproj" Id="92eef5fd-5217-4fba-a2c6-0172833d0b49" />
   </Folder>
   <Folder Name="/src/libraries/Filin.Hosting/" />
   <Folder Name="/src/libraries/Filin.Hosting/src/">
@@ -91,5 +85,9 @@
   <Folder Name="/src/libraries/Filin.Serialization/" />
   <Folder Name="/src/libraries/Filin.Serialization/src/">
     <Project Path="src/libraries/Filin.Serialization/src/Filin.Serialization.csproj" />
+  </Folder>
+  <Folder Name="/src/libraries/Filin/" />
+  <Folder Name="/src/libraries/Filin/src/">
+    <Project Path="src/libraries/Filin/src/Filin.csproj" Id="92eef5fd-5217-4fba-a2c6-0172833d0b49" />
   </Folder>
 </Solution>

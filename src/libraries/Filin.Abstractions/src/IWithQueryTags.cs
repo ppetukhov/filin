@@ -9,7 +9,7 @@ public interface IWithQueryTags
     /// Gets the guaranteed sorted, immutable collection of query tags used to evaluate dynamic consistency boundaries.
     /// </summary>
     /// <value>
-    /// A <see cref="TagCollection"/> containing the pre-sorted query tags and their combined hash.
+    /// A <see cref="Tags"/> containing the pre-sorted query tags and their combined hash.
     /// </value>
-    TagCollection GetTags();
+    Tags GetTags();
 }

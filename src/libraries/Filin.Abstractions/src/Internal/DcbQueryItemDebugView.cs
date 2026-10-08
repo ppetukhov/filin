@@ -31,16 +31,17 @@ sealed class DcbQueryItemDebugView(DcbQueryItem queryItem)
             return "Any event";
         }
 
-        string typesPart = queryItem.EventTypes.ToString();
+        var typesPart = queryItem.EventTypes.ToString();
 
-        string tagsPart = queryItem.Tags.ToString();
+        var tagsPart = queryItem.Tags.ToString();
 
         return (typesPart, tagsPart) switch
         {
             ("", "") => "Any event",
             (string evts, "") => $"Any event from types: [{evts}]",
             ("", string tgs) => $"Any event with all tags: [{tgs}]",
-            (string evts, string tgs) => $"Any event from types: [{evts}] with all tags: [{tgs}]"
+            (string evts, string tgs) => $"Any event from types: [{evts}] with all tags: [{tgs}]",
+            _ => throw new UnreachableException("Unreachable")
         };
     }
 }

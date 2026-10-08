@@ -5,7 +5,7 @@ namespace Edu.Exceptions;
 /// <summary>
 /// The exception that is thrown when a projector encounters an event type it is not configured to handle.
 /// </summary>
-public sealed class UnexpectedEventTypeException : DcbProjectorException
+public sealed class UnexpectedEventTypeException : ProjectorException
 {
     const string DefaultMessage = "An unexpected event type was encountered.";
 

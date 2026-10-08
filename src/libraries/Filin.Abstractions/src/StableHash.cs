@@ -29,9 +29,9 @@ static class StableHash
 
         try
         {
-            Span<byte> buffer = requiredSize <= MaxStackThreshold ? stackalloc byte[requiredSize] : rentedArray = ArrayPool<byte>.Shared.Rent(requiredSize);
+            var buffer = requiredSize <= MaxStackThreshold ? stackalloc byte[requiredSize] : rentedArray = ArrayPool<byte>.Shared.Rent(requiredSize);
 
-            int writtenBytes = Encoding.UTF8.GetBytes(value, buffer);
+            var writtenBytes = Encoding.UTF8.GetBytes(value, buffer);
 
             return Hash64(buffer[..writtenBytes]);
         }
@@ -57,9 +57,9 @@ static class StableHash
 
         try
         {
-            Span<byte> buffer = requiredSize <= MaxStackThreshold ? stackalloc byte[requiredSize] : rentedArray = ArrayPool<byte>.Shared.Rent(requiredSize);
+            var buffer = requiredSize <= MaxStackThreshold ? stackalloc byte[requiredSize] : rentedArray = ArrayPool<byte>.Shared.Rent(requiredSize);
 
-            int writtenBytes = Encoding.UTF8.GetBytes(value, buffer);
+            var writtenBytes = Encoding.UTF8.GetBytes(value, buffer);
 
             return Hash32(buffer[..writtenBytes]);
         }

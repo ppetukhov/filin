@@ -1,3 +1,5 @@
+using Filin.Abstractions.Tests.Configuration;
+
 namespace Filin.Abstractions.ProjectorTests;
 
 [ProjectorId("projector-without-tags")]
@@ -121,7 +123,7 @@ public sealed class QueryEventTypesAttributeTests
     public void MetadataProjectors_Configure_ProjectorTypes_ProjectorWithoutQueryTags()
     {
         var options = new Configuration.TypeManifestOptions();
-        var provider = new MetadataProjectors_Filin_Abstractions_Tests();
+        var provider = new FilinAbstractionsTestsProjectorsTypeManifestProvider();
 
         provider.Configure(options);
 
@@ -134,7 +136,7 @@ public sealed class QueryEventTypesAttributeTests
     public void MetadataProjectors_Configure_ProjectionTypes_ProjectorWithoutQueryTags()
     {
         var options = new Configuration.TypeManifestOptions();
-        var provider = new MetadataProjectors_Filin_Abstractions_Tests();
+        var provider = new FilinAbstractionsTestsProjectorsTypeManifestProvider();
 
         provider.Configure(options);
 

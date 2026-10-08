@@ -36,7 +36,7 @@ public interface IProjector<TState> where TState : notnull
     /// <param name="tags">The zero-allocation collection of tags from the current execution context.</param>
     /// <returns>A <see cref="DcbQuery"/> defining the dynamic consistency boundary for this projection.</returns>
     /// <exception cref="ArgumentException">Thrown when a required tag is missing from the provided collection.</exception>
-    static abstract DcbQuery GetQuery(TagCollection tags);
+    static abstract DcbQuery GetQuery(Tags tags);
 
     /// <summary>
     /// Generates a unique composite projection identity based on the execution context tags.
@@ -44,14 +44,14 @@ public interface IProjector<TState> where TState : notnull
     /// <param name="tags">The zero-allocation collection of tags from the current execution context.</param>
     /// <returns>The unique identity of the projection.</returns>
     /// <exception cref="ArgumentException">Thrown when a required tag is missing from the provided collection.</exception>
-    static abstract ProjectionId GetProjectionId(TagCollection tags);
+    static abstract ProjectionId GetProjectionId(Tags tags);
 
     /// <summary>
     /// Initializes the projection state from the very first event in the history stream.
     /// </summary>
     /// <param name="domainEvent">The first sequenced domain event retrieved from the store.</param>
     /// <returns>The newly initialized <typeparamref name="TState"/> instance.</returns>
-    /// <exception cref="DcbProjectorException">Thrown when an infrastructure or projection mapping failure occurs.</exception>
+    /// <exception cref="ProjectorException">Thrown when an infrastructure or projection mapping failure occurs.</exception>
     static abstract TState Project(DcbEventSequenced domainEvent);
 
     /// <summary>
@@ -60,6 +60,6 @@ public interface IProjector<TState> where TState : notnull
     /// <param name="state">The current snapshot of the projection state.</param>
     /// <param name="domainEvent">The subsequent sequenced domain event to apply.</param>
     /// <returns>The evolved <typeparamref name="TState"/> instance.</returns>
-    /// <exception cref="DcbProjectorException">Thrown when an infrastructure or projection mapping failure occurs.</exception>
+    /// <exception cref="ProjectorException">Thrown when an infrastructure or projection mapping failure occurs.</exception>
     static abstract TState Project(TState state, DcbEventSequenced domainEvent);
 }

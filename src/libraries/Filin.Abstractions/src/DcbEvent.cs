@@ -11,7 +11,7 @@ public sealed record DcbEvent
     /// <summary>
     /// Gets the collection of tags associated with this event to form execution boundaries.
     /// </summary>
-    public TagCollection Tags { get; init; }
+    public Tags Tags { get; init; }
 
     /// <summary>
     /// Gets the payload containing the core data of the domain event.

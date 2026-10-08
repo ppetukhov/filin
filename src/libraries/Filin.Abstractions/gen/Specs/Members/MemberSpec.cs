@@ -1,8 +1,8 @@
 using System.Diagnostics;
 
-using Microsoft.CodeAnalysis;
-
 using Filin.Generators.Extensions;
+
+using Microsoft.CodeAnalysis;
 
 using SourceGenerators;
 

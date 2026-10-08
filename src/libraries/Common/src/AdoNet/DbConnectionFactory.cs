@@ -28,7 +28,9 @@ static class DbConnectionFactory
         ArgumentException.ThrowIfNullOrWhiteSpace(invariantName);
 
         if (!ProviderFactoryTypeMap.TryGetValue(invariantName, out var providerFactoryDefinitions) || providerFactoryDefinitions.Count == 0)
+        {
             throw new InvalidOperationException($"Database provider factory with '{invariantName}' invariant name not supported.");
+        }
 
         List<Exception>? exceptions = null;
 

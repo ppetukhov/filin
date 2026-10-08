@@ -12,15 +12,8 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(RunAnalyzers)' != 'false'">
-    <EditorConfigFiles Include="$(MSBuildThisFileDirectory)CodeAnalysis.src.globalconfig" />
-
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" PrivateAssets="all" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="all" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(IsTestProject)' == 'true'">
-    <EditorConfigFiles Remove="$(RepositoryEngineeringDir)CodeAnalysis.src.globalconfig" />
-    <EditorConfigFiles Include="$(RepositoryEngineeringDir)CodeAnalysis.test.globalconfig" />
   </ItemGroup>
 </Project>

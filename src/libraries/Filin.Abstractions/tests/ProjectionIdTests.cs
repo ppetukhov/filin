@@ -17,7 +17,7 @@ public sealed class ProjectionIdTests
         var projId = new ProjectorId(projectorId!);
         var projKey = new IdSpan(key!);
 
-        var expectedHashCode = projId.GetHashCode() * 31 + projKey.GetHashCode();
+        var expectedHashCode = HashCode.Combine(projId, projKey);
 
         var result = new ProjectionId(projId, projKey);
 
@@ -278,11 +278,11 @@ public sealed class ProjectionIdTests
     }
 
     [Fact]
-    public void ProjectionId_FromTuple()
+    public void ProjectionId_FromValueTuple()
     {
         var expected = new ProjectionId(new ProjectorId("some-proj@10"), new IdSpan("1562"));
 
-        var result = ProjectionId.FromTuple((new ProjectorId("some-proj@10"), new IdSpan("1562")));
+        var result = ProjectionId.FromValueTuple((new ProjectorId("some-proj@10"), new IdSpan("1562")));
 
         result.Should().BeEquivalentTo(expected);
     }

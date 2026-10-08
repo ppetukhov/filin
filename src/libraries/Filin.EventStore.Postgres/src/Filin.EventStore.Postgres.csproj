@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>$(NetCurrent);$(NetMinimum)</TargetFrameworks>
@@ -20,7 +20,6 @@
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="$(LibrariesProjectRoot)\Filin.Compliance.Classification\src\Filin.Compliance.Classification.csproj" />
     <ProjectReference Include="$(LibrariesProjectRoot)\Filin.Hosting\src\Filin.Hosting.csproj" />
   </ItemGroup>
 

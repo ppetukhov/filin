@@ -1,9 +1,9 @@
 using System.Threading.Channels;
 
+using Filin.Configuration;
+
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-
-using Filin.Configuration;
 
 namespace Filin.EventStore.Postgres;
 

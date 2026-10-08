@@ -19,31 +19,18 @@ partial class CodeGenerator
 {
     sealed class EventTagsEmitter(TypeDefinitions typeDefinitions, GenerationOptions options)
     {
-        readonly SyntaxToken GetTagMethodIdentifierToken = Identifier(options.GetTagMethod);
-        readonly SyntaxToken GetTagsMethodIdentifierToken = Identifier(options.GetTagsMethod);
-        readonly FileScopedNamespaceDeclarationSyntax NamespaceSyntax = FileScopedNamespaceDeclaration(ParseName(options.EmittingNamespace));
-        readonly ClassDeclarationSyntax TagsGeneratedExtensionsClassNameSyntax = ClassDeclaration(
+        static readonly SyntaxToken GetTagMethodIdentifierToken = Identifier(Constants.GetTagMethod);
+        static readonly SyntaxToken GetTagsMethodIdentifierToken = Identifier(Constants.GetTagsMethod);
+        readonly FileScopedNamespaceDeclarationSyntax _namespaceSyntax = FileScopedNamespaceDeclaration(ParseName(options.RootNamespace));
+        readonly ClassDeclarationSyntax _tagsGeneratedExtensionsClassNameSyntax = ClassDeclaration(
             attributeLists: SingletonList(Emitter.GeneratedCodeAttributeSyntax),
             modifiers: TokenList(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.StaticKeyword), Token(SyntaxKind.PartialKeyword)),
-            identifier: Identifier(options.TagExtensionsClassName),
+            identifier: Identifier(options.TagExtensionsClass),
             typeParameterList: null,
             parameterList: null,
             baseList: null,
             constraintClauses: default,
             members: default);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static InterpolatedStringExpressionSyntax TagByMemberToStringExpression(string tag, MemberSpec member, bool withThis = true)
-            => InterpolatedStringExpression(Token(SyntaxKind.InterpolatedStringStartToken))
-                .AddContents(
-                    InterpolatedStringText().WithTextToken(Token(
-                        TriviaList(),
-                        SyntaxKind.InterpolatedStringTextToken,
-                        tag + Constants.TagSuffixSeparator,
-                        string.Empty,
-                        TriviaList())),
-                    Interpolation(withThis ? Emitter.ThisIdentifierNameSyntax.Member(member.Name) : IdentifierName(Identifier(member.Name)))
-                );
 
         internal void EmitEventTags(SourceProductionContext context, ImmutableArray<EventTag> eventTags)
         {
@@ -58,7 +45,7 @@ partial class CodeGenerator
 
             foreach (var targetTypeGrouped in targetTypeGroupedCollection)
             {
-                if (targetTypeGrouped.Key.type.Interfaces.Any(IWithQueryTags))
+                if (targetTypeGrouped.Key.Type.Interfaces.Any(IWithQueryTags))
                 {
                     continue;
                 }
@@ -75,17 +62,19 @@ partial class CodeGenerator
                 extensionsMethods.Add(CreateGetEventTagsMethod(targetType: targetTypeGrouped.Key, eventTags: groupedList));
             }
 
-            var instanceMethods = GenerateClassHeirerarhy(context, targetTypeGroupedCollection.Where(x => x.Key.type.Interfaces.Any(IWithQueryTags)).Select(static x => (x.Key, (IEnumerable<EventTag>)x))).ToList();
+            var instanceMethods = GenerateClassHeirerarhy(context, targetTypeGroupedCollection.Where(x => x.Key.Type.Interfaces.Any(IWithQueryTags)).Select(static x => (x.Key, (IEnumerable<EventTag>)x))).ToList();
 
             context.CancellationToken.ThrowIfCancellationRequested();
 
-
             if (extensionsMethods is { Count: > 0 })
             {
-                var cu = CompilationUnit().AddMembers(
-                    NamespaceSyntax,
-                    TagsGeneratedExtensionsClassNameSyntax.AddMembers([.. extensionsMethods])
-                ).NormalizeWhitespace();
+                var cu = CompilationUnit()
+                    .AddMembers(
+                        _namespaceSyntax,
+                        _tagsGeneratedExtensionsClassNameSyntax.AddMembers([.. extensionsMethods])
+                    )
+                    .WithLeadingTrivia(Emitter.HeaderSyntaxTriviaList)
+                    .NormalizeWhitespace();
 
                 context.CancellationToken.ThrowIfCancellationRequested();
 
@@ -98,7 +87,7 @@ partial class CodeGenerator
 
             if (instanceMethods is { Count: > 0 })
             {
-                var cu = CompilationUnit().AddMembers([.. instanceMethods]).NormalizeWhitespace();
+                var cu = CompilationUnit().AddMembers([.. instanceMethods]).WithLeadingTrivia(Emitter.HeaderSyntaxTriviaList).NormalizeWhitespace();
 
                 var sourceText = SourceText.From(cu.ToFullString(), Encoding.UTF8);
 
@@ -107,12 +96,25 @@ partial class CodeGenerator
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        MethodDeclarationSyntax CreateGetEventTagMethod(TypeSpec targetType, EventTag eventTag)
+        static InterpolatedStringExpressionSyntax TagByMemberToStringExpression(string tag, MemberSpec member, bool withThis = true)
+            => InterpolatedStringExpression(Token(SyntaxKind.InterpolatedStringStartToken))
+                .AddContents(
+                    InterpolatedStringText().WithTextToken(Token(
+                        TriviaList(),
+                        SyntaxKind.InterpolatedStringTextToken,
+                        tag + Constants.TagSuffixSeparator,
+                        string.Empty,
+                        TriviaList())),
+                    Interpolation(withThis ? Emitter.ThisIdentifierNameSyntax.Member(member.Name) : IdentifierName(Identifier(member.Name)))
+                );
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static MethodDeclarationSyntax CreateGetEventTagMethod(TypeSpec targetType, EventTag eventTag)
             => eventTag is EventTagMember itemWithMember
                 ? CreateGetEventTagMethod(targetType: targetType, tag: itemWithMember.Tag, member: itemWithMember.Member)
                 : CreateGetEventTagMethod(targetType: targetType, tag: eventTag.Tag);
 
-        MethodDeclarationSyntax CreateGetEventTagMethod(TypeSpec targetType, string tag) =>
+        static MethodDeclarationSyntax CreateGetEventTagMethod(TypeSpec targetType, string tag) =>
             MethodDeclaration(
                 attributeLists: SingletonList(Emitter.AggressiveInliningAttributeSyntax),
                 modifiers: TokenList(Token(Emitter.MethodAccessibility(targetType.Accessibility)), Token(SyntaxKind.StaticKeyword)),
@@ -132,7 +134,7 @@ partial class CodeGenerator
                 expressionBody: ArrowExpressionClause(tag.GetLiteralExpression()),
                 semicolonToken: Token(SyntaxKind.SemicolonToken));
 
-        MethodDeclarationSyntax CreateGetEventTagMethod(TypeSpec targetType, string tag, MemberSpec member) =>
+        static MethodDeclarationSyntax CreateGetEventTagMethod(TypeSpec targetType, string tag, MemberSpec member) =>
             MethodDeclaration(
                 attributeLists: SingletonList(Emitter.AggressiveInliningAttributeSyntax),
                 modifiers: TokenList(Token(Emitter.MethodAccessibility(targetType.Accessibility)), Token(SyntaxKind.StaticKeyword)),
@@ -152,7 +154,7 @@ partial class CodeGenerator
                 expressionBody: ArrowExpressionClause(TagByMemberToStringExpression(tag, member)),
                 semicolonToken: Token(SyntaxKind.SemicolonToken));
 
-        bool IWithQueryTags(INamedTypeSymbol symbol) => !SymbolEqualityComparer.Default.Equals(symbol, typeDefinitions.IWithQueryTags) ? symbol.Interfaces.Any(IWithQueryTags) : true;
+        bool IWithQueryTags(INamedTypeSymbol symbol) => SymbolEqualityComparer.Default.Equals(symbol, typeDefinitions.IWithQueryTags) || symbol.Interfaces.Any(IWithQueryTags);
 
         static (ArrowExpressionClauseSyntax expressionBody, bool hasMember) CreateGetTagsExpression(IEnumerable<EventTag> eventTags, bool withThis = true)
         {
@@ -176,14 +178,14 @@ partial class CodeGenerator
             return (ArrowExpressionClause(CollectionExpression(SeparatedList(collectionElemetList))), hasMember);
         }
 
-        MethodDeclarationSyntax CreateGetEventTagsMethod(ObjectSpec targetType, List<EventTag> eventTags)
+        static MethodDeclarationSyntax CreateGetEventTagsMethod(ObjectSpec targetType, List<EventTag> eventTags)
         {
             var (expressionBody, hasMember) = CreateGetTagsExpression(eventTags);
 
             return MethodDeclaration(
                 attributeLists: SingletonList(Emitter.AggressiveInliningAttributeSyntax),
                 modifiers: TokenList(Token(Emitter.MethodAccessibility(targetType.Accessibility)), Token(SyntaxKind.StaticKeyword)),
-                returnType: Emitter.TagCollectionTypeSyntax,
+                returnType: Emitter.TagsTypeSyntax,
                 explicitInterfaceSpecifier: null,
                 identifier: GetTagsMethodIdentifierToken,
                 typeParameterList: default,
@@ -200,14 +202,14 @@ partial class CodeGenerator
                 semicolonToken: Token(SyntaxKind.SemicolonToken));
         }
 
-        IEnumerable<NamespaceDeclarationSyntax> GenerateClassHeirerarhy(SourceProductionContext ctx, IEnumerable<(ObjectSpec TargetType, IEnumerable<EventTag> EventTags)> tuples)
+        static IEnumerable<NamespaceDeclarationSyntax> GenerateClassHeirerarhy(SourceProductionContext ctx, IEnumerable<(ObjectSpec TargetType, IEnumerable<EventTag> EventTags)> tuples)
         {
-            IEnumerable<MemberDeclarationSyntax> MembersFactory((ObjectSpec TargetType, IEnumerable<EventTag> EventTags) tuple)
+            static IEnumerable<MemberDeclarationSyntax> MembersFactory((ObjectSpec TargetType, IEnumerable<EventTag> EventTags) tuple)
             {
                 return [MethodDeclaration(
                     attributeLists: SingletonList(Emitter.AggressiveInliningAttributeSyntax),
                     modifiers: TokenList(Token(SyntaxKind.PublicKeyword)),
-                    returnType: Emitter.TagCollectionTypeSyntax,
+                    returnType: Emitter.TagsTypeSyntax,
                     explicitInterfaceSpecifier: null,
                     identifier: GetTagsMethodIdentifierToken,
                     typeParameterList: default,

@@ -4,9 +4,7 @@ using SourceGenerators;
 
 namespace Filin.Generators.Specs.Members;
 
-sealed record ParameterSpec(IParameterSymbol parameter) : MemberSpec(parameter, new TypeRef(parameter.Type))
+sealed record ParameterSpec(IParameterSymbol Parameter) : MemberSpec(Parameter, new TypeRef(Parameter.Type))
 {
-    public RefKind RefKind { get; } = parameter.RefKind;
-
     public override bool CanGet => Accessibility >= Accessibility.Internal;
 }

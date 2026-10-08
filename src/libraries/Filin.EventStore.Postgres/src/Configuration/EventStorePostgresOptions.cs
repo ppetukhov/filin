@@ -84,14 +84,17 @@ public sealed class EventStorePostgresOptions : IStorageProviderSerializerOption
     /// <param name="value"><inheritdoc cref="EventStorePostgresOptions" path="/summary"/></param>
     /// <param name="context"><inheritdoc cref="ValidationContext" path="/summary"/></param>
     /// <returns><inheritdoc cref="ValidationResult" path="/summary"/></returns>
-    public static ValidationResult? IsValidConnectionName(object value, ValidationContext context) =>
+    public static ValidationResult? IsValidConnectionName(object value, ValidationContext? context) =>
         (value is not string connectionName || string.IsNullOrWhiteSpace(connectionName))
-        && context.ObjectInstance is EventStorePostgresOptions opt
+        && context is not null && context.ObjectInstance is EventStorePostgresOptions opt
         && string.IsNullOrWhiteSpace(opt.ConnectionString)
             ? new ValidationResult($"Required '{nameof(ConnectionString)}' or '{nameof(ConnectionName)}'. {typeof(EventStorePostgresOptions).FullName}")
             : ValidationResult.Success;
 }
 
+/// <summary>
+/// Provides compile-time generated validation for <see cref="EventStorePostgresOptions"/> using data annotations.
+/// </summary>
 [OptionsValidator]
 public sealed partial class EventStorePostgresOptionsValidator : IValidateOptions<EventStorePostgresOptions>
 {

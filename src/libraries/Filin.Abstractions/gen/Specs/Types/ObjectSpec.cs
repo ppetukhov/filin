@@ -4,15 +4,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Filin.Generators.Specs.Types;
 
-sealed record ObjectSpec : TypeSpec
+sealed record ObjectSpec(INamedTypeSymbol Type) : TypeSpec(Type)
 {
-    internal ObjectSpec(INamedTypeSymbol type) : base(type)
-    {
-        DisplayParts = type.ToDisplayParts();
-        Type = type;
-    }
-
-    internal INamedTypeSymbol Type { get; }
-
-    internal ImmutableArray<SymbolDisplayPart> DisplayParts { get; }
+    internal ImmutableArray<SymbolDisplayPart> DisplayParts { get; } = Type.ToDisplayParts();
 }

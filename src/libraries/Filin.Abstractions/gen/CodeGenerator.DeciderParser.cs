@@ -1,13 +1,13 @@
 using System.Collections.Immutable;
 
+using Filin.Generators.Specs.Types;
+
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-using Filin.Generators.Specs.Types;
-
 namespace Filin.Generators;
 
-public sealed partial class CodeGenerator
+partial class CodeGenerator
 {
     sealed class DeciderParser
     {
@@ -53,7 +53,7 @@ public sealed partial class CodeGenerator
 
         sealed class DeciderComparer : IEqualityComparer<Decider>, IComparer<Decider>
         {
-            internal static readonly DeciderComparer Instance = new DeciderComparer();
+            internal static readonly DeciderComparer Instance = new();
 
             public int Compare(Decider x, Decider y) => ObjectSpecComparer.Instance.Compare(x.TargetType, y.TargetType);
             public bool Equals(Decider x, Decider y) => ObjectSpecComparer.Instance.Equals(x.TargetType, y.TargetType);

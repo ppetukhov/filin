@@ -19,15 +19,13 @@ public readonly struct IdSpan : IEquatable<IdSpan>, IComparable<IdSpan>, ISpanFo
 {
     readonly string? _value;
 
-    readonly ulong _hash;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="IdSpan"/> struct with a specified id.
     /// </summary>
     /// <param name="id">The id value.</param>
     public IdSpan(string id) : this(id, StableHash.Hash64(id)) { }
 
-    internal IdSpan(string id, ulong hash) => (_value, _hash) = (id, hash);
+    internal IdSpan(string id, ulong hash) => (_value, Hash) = (id, hash);
 
     /// <summary>
     /// Gets a value indicating whether this instance is the default value.
@@ -51,7 +49,7 @@ public readonly struct IdSpan : IEquatable<IdSpan>, IComparable<IdSpan>, ISpanFo
     /// <summary>
     /// Hash value.
     /// </summary>
-    public ulong Hash => _hash;
+    public ulong Hash { get; }
 
     /// <inheritdoc/>
     public override bool Equals(object? obj) => obj is IdSpan evetType && Equals(evetType);
@@ -60,7 +58,7 @@ public readonly struct IdSpan : IEquatable<IdSpan>, IComparable<IdSpan>, ISpanFo
     public bool Equals(IdSpan obj) => string.Equals(_value, obj._value, StringComparison.Ordinal);
 
     /// <inheritdoc/>
-    public override int GetHashCode() => _hash.GetHashCode();
+    public override int GetHashCode() => Hash.GetHashCode();
 
     /// <inheritdoc/>
     public int CompareTo(IdSpan other) => string.CompareOrdinal(_value, other._value);
@@ -138,14 +136,14 @@ public readonly struct IdSpan : IEquatable<IdSpan>, IComparable<IdSpan>, ISpanFo
     /// </warning>
     /// </remarks>
     [Obsolete("This method is intended for infrastructure and deserialization only. Use the standard constructor or FromString for domain logic.")]
-    public static IdSpan UnsafeCreate(string id, ulong hash) => new IdSpan(id, hash);
+    public static IdSpan UnsafeCreate(string id, ulong hash) => new(id, hash);
 
     /// <summary>
     /// Defines an implicit conversion of an <see cref="IdSpan"/> to a <see cref="string"/>.
     /// </summary>
-    /// <param name="IdSpan">The event type instance to convert.</param>
+    /// <param name="idSpan">The event type instance to convert.</param>
     /// <returns>The string representation of the event type, or <see langword="null"/> if uninitialized.</returns>
-    public static implicit operator string(IdSpan IdSpan) => IdSpan.Value;
+    public static implicit operator string(IdSpan idSpan) => idSpan.Value;
 
     /// <inheritdoc cref="FromString(string)"/>
     public static implicit operator IdSpan(string id) => new(id);

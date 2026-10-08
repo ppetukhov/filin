@@ -50,9 +50,9 @@ sealed class EventStoreProviderBuilder : IProviderBuilder<IFilinBuilder>
 
         if (!string.IsNullOrEmpty(invariant) && !string.IsNullOrEmpty(connectionName))
         {
-            builder.Services.TryAddDbDataSource(invariant: invariant, connectionName: connectionName);
+            _ = builder.Services.TryAddDbDataSource(invariant: invariant, connectionName: connectionName);
         }
 
-        builder.Services.AddEventStorePostgres(OptBuilder);
+        _ = builder.Services.AddEventStorePostgres(OptBuilder);
     }
 }

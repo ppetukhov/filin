@@ -1,6 +1,6 @@
-using Microsoft.Extensions.Options;
-
 using Filin.Configuration;
+
+using Microsoft.Extensions.Options;
 
 namespace Filin.Hosting;
 

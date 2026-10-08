@@ -51,7 +51,9 @@ sealed class ProjectionStore(
 
             using var command = conn.CreateCommand();
 
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
             command.CommandText = opQueries.ReadStorageKey;
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
 
             command.AddParameter(CommandParam.IdHash, (long)projectionId.Key.Hash);
             command.AddParameter(CommandParam.IdName, projectionId.Key.Value);
@@ -121,7 +123,9 @@ sealed class ProjectionStore(
 
             using var command = conn.CreateCommand();
 
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
             command.CommandText = opQueries.UpsertStorageKey;
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
 
             var projectionId = projection.Id;
 
@@ -133,7 +137,7 @@ sealed class ProjectionStore(
             command.AddParameter(CommandParam.TimestampUtc, projection.Timestamp.ToUniversalTime());
             command.AddParameter(CommandParam.Payload, _serializer.Serialize(projection.Payload).ToArray());
 
-            await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+            _ = await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -153,7 +157,9 @@ sealed class ProjectionStore(
     {
         ArgumentNullException.ThrowIfNull(projections);
 
+#pragma warning disable CA1851 // Possible multiple enumerations of 'IEnumerable' collection
         var count = Enumerable.TryGetNonEnumeratedCount(projections, out var cnt) ? cnt : projections.Count();
+#pragma warning restore CA1851 // Possible multiple enumerations of 'IEnumerable' collection
 
         if (_logger.IsEnabled(LogLevel.Trace))
         {
@@ -170,9 +176,12 @@ sealed class ProjectionStore(
 
             using var command = conn.CreateCommand();
 
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
             command.CommandText = commandText;
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
 
             var i = 0;
+#pragma warning disable CA1851 // Possible multiple enumerations of 'IEnumerable' collection
             foreach (var projection in projections)
             {
                 var projectionId = projection.Id;
@@ -187,8 +196,9 @@ sealed class ProjectionStore(
 
                 i++;
             }
+#pragma warning restore CA1851 // Possible multiple enumerations of 'IEnumerable' collection
 
-            await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+            _ = await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -219,7 +229,9 @@ sealed class ProjectionStore(
 
             using var command = conn.CreateCommand();
 
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
             command.CommandText = opQueries.ClearStorageKey;
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
 
             command.AddParameter(CommandParam.IdHash, (long)projectionId.Key.Hash);
             command.AddParameter(CommandParam.IdName, projectionId.Key.Value);
@@ -227,7 +239,7 @@ sealed class ProjectionStore(
             command.AddParameter(CommandParam.TypeName, projectionId.ProjectorId.Value);
             command.AddParameter(CommandParam.Position, (long)position.Value);
 
-            await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+            _ = await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -244,18 +256,18 @@ sealed class ProjectionStore(
 
     async Task<RelationalStorageProviderQueries> InitQueriesAsync(CancellationToken cancellationToken)
     {
-        const string ReadStorageKey = nameof(RelationalStorageProviderQueries.ReadStorageKey);
-        const string UpsertStorageKey = nameof(RelationalStorageProviderQueries.UpsertStorageKey);
-        const string UpsertBatchStorageKey = nameof(RelationalStorageProviderQueries.UpsertBatchStorageKey);
-        const string ClearStorageKey = nameof(RelationalStorageProviderQueries.ClearStorageKey);
+        const string readStorageKey = nameof(RelationalStorageProviderQueries.ReadStorageKey);
+        const string upsertStorageKey = nameof(RelationalStorageProviderQueries.UpsertStorageKey);
+        const string upsertBatchStorageKey = nameof(RelationalStorageProviderQueries.UpsertBatchStorageKey);
+        const string clearStorageKey = nameof(RelationalStorageProviderQueries.ClearStorageKey);
 
-        const string InitializationQuery = $"SELECT query_key, query_text FROM Filin_query WHERE query_key IN ('{ReadStorageKey}','{UpsertStorageKey}','{UpsertBatchStorageKey}','{ClearStorageKey}')";
+        const string initializationQuery = $"SELECT query_key, query_text FROM Filin_query WHERE query_key IN ('{readStorageKey}','{upsertStorageKey}','{upsertBatchStorageKey}','{clearStorageKey}')";
 
         using var conn = await dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
 
         using var command = conn.CreateCommand();
 
-        command.CommandText = InitializationQuery;
+        command.CommandText = initializationQuery;
 
         using var reader = await command.ExecuteReaderAsync(CommandBehavior.SingleResult, cancellationToken).ConfigureAwait(false);
 
@@ -268,10 +280,10 @@ sealed class ProjectionStore(
 
         var opQueries = new RelationalStorageProviderQueries
         {
-            ReadStorageKey = queries.Single(i => i.Item1 == ReadStorageKey).Item2,
-            UpsertStorageKey = queries.Single(i => i.Item1 == UpsertStorageKey).Item2,
-            UpsertBatchStorageKey = queries.Single(i => i.Item1 == UpsertBatchStorageKey).Item2,
-            ClearStorageKey = queries.Single(i => i.Item1 == ClearStorageKey).Item2
+            ReadStorageKey = queries.Single(i => i.Item1 == readStorageKey).Item2,
+            UpsertStorageKey = queries.Single(i => i.Item1 == upsertStorageKey).Item2,
+            UpsertBatchStorageKey = queries.Single(i => i.Item1 == upsertBatchStorageKey).Item2,
+            ClearStorageKey = queries.Single(i => i.Item1 == clearStorageKey).Item2
         };
 
         var oldValue = Interlocked.CompareExchange(ref _currentOperationalQueries, opQueries, null);
@@ -290,7 +302,7 @@ sealed class ProjectionStore(
     {
         if (!options.Value.ProjectionTypes.TryGetValue(projectionId.ProjectorId, out var type))
         {
-            var ex = new DcbEventStoreException("Unknown runtime type for ProjectorId.");
+            var ex = new EventStoreException("Unknown runtime type for projectorId.");
             ex.Data[nameof(ProjectionId.ProjectorId)] = projectionId.ProjectorId;
 
             _logger.RelationalProviderReadError(Exception: ex, ProviderName: name, ProjectionId: projectionId);
@@ -308,13 +320,13 @@ sealed class ProjectionStore(
             var queries = Volatile.Read(ref _currentOperationalQueries) ?? throw new InvalidOperationException($"{nameof(_currentOperationalQueries)} is null");
 
             return queries.UpsertBatchStorageKey
-                .Replace(CommandParam.IdHash, string.Join(',', Enumerable.Range(0, paramsCount).Select(BatchCommandParams.IdHash)))
-                .Replace(CommandParam.IdName, string.Join(',', Enumerable.Range(0, paramsCount).Select(BatchCommandParams.IdName)))
-                .Replace(CommandParam.TypeHash, string.Join(',', Enumerable.Range(0, paramsCount).Select(BatchCommandParams.TypeHash)))
-                .Replace(CommandParam.TypeName, string.Join(',', Enumerable.Range(0, paramsCount).Select(BatchCommandParams.TypeName)))
-                .Replace(CommandParam.Position, string.Join(',', Enumerable.Range(0, paramsCount).Select(BatchCommandParams.Position)))
-                .Replace(CommandParam.TimestampUtc, string.Join(',', Enumerable.Range(0, paramsCount).Select(BatchCommandParams.TimestampUtc)))
-                .Replace(CommandParam.Payload, string.Join(',', Enumerable.Range(0, paramsCount).Select(BatchCommandParams.Payload)));
+                .Replace(CommandParam.IdHash, string.Join(',', Enumerable.Range(0, paramsCount).Select(BatchCommandParams.IdHash)), StringComparison.Ordinal)
+                .Replace(CommandParam.IdName, string.Join(',', Enumerable.Range(0, paramsCount).Select(BatchCommandParams.IdName)), StringComparison.Ordinal)
+                .Replace(CommandParam.TypeHash, string.Join(',', Enumerable.Range(0, paramsCount).Select(BatchCommandParams.TypeHash)), StringComparison.Ordinal)
+                .Replace(CommandParam.TypeName, string.Join(',', Enumerable.Range(0, paramsCount).Select(BatchCommandParams.TypeName)), StringComparison.Ordinal)
+                .Replace(CommandParam.Position, string.Join(',', Enumerable.Range(0, paramsCount).Select(BatchCommandParams.Position)), StringComparison.Ordinal)
+                .Replace(CommandParam.TimestampUtc, string.Join(',', Enumerable.Range(0, paramsCount).Select(BatchCommandParams.TimestampUtc)), StringComparison.Ordinal)
+                .Replace(CommandParam.Payload, string.Join(',', Enumerable.Range(0, paramsCount).Select(BatchCommandParams.Payload)), StringComparison.Ordinal);
         }
 
         return _upsertBatchQueries.GetOrAdd(paramsCount, CreateUpsertBatchQuery);

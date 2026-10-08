@@ -4,9 +4,7 @@ using SourceGenerators;
 
 namespace Filin.Generators.Specs.Members;
 
-sealed record PropertySpec(IPropertySymbol property) : MemberSpec(property, new TypeRef(property.Type))
+sealed record PropertySpec(IPropertySymbol Property) : MemberSpec(Property, new TypeRef(Property.Type))
 {
-    public bool IsStatic { get; } = property.IsStatic;
-
-    public override bool CanGet { get; } = property.GetMethod is { DeclaredAccessibility: >= Accessibility.Internal };
+    public override bool CanGet { get; } = Property.GetMethod is { DeclaredAccessibility: >= Accessibility.Internal };
 }

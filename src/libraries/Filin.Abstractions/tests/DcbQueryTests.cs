@@ -20,8 +20,8 @@ public class DcbQueryTests
     public void CollectionExpression_WithBracketSyntax_ShouldCompileAndSortAutomated()
     {
         // Arrange
-        var q1 = new DcbQueryItem(new EventTypeCollection(new EventType("B")), new TagCollection(new Tag("tag:b")));
-        var q2 = new DcbQueryItem(new EventTypeCollection(new EventType("A")), new TagCollection(new Tag("tag:a")));
+        var q1 = new DcbQueryItem(new EventTypes(new EventType("B")), new Tags(new Tag("tag:b")));
+        var q2 = new DcbQueryItem(new EventTypes(new EventType("A")), new Tags(new Tag("tag:a")));
 
         // Act
         DcbQuery query = [q1, q2];
@@ -36,10 +36,10 @@ public class DcbQueryTests
     public void Constructor_WithIdenticalTags_ShouldMergeEventTypesAndDeduplicateItems()
     {
         // Arrange
-        var sharedTags = new TagCollection(new Tag("course:777"));
+        var sharedTags = new Tags(new Tag("course:777"));
 
-        var q1 = new DcbQueryItem(new EventTypeCollection(new EventType("Updated")), sharedTags);
-        var q2 = new DcbQueryItem(new EventTypeCollection(new EventType("Created")), sharedTags);
+        var q1 = new DcbQueryItem(new EventTypes(new EventType("Updated")), sharedTags);
+        var q2 = new DcbQueryItem(new EventTypes(new EventType("Created")), sharedTags);
 
         // Act
         DcbQuery query = [q1, q2];
@@ -90,8 +90,8 @@ public class DcbQueryTests
     public void Equals_IdenticalCollections_ShouldReturnTrue()
     {
         // Arrange
-        var q1 = new DcbQueryItem(new EventTypeCollection(new EventType("A")), new TagCollection(new Tag("t1")));
-        var q2 = new DcbQueryItem(new EventTypeCollection(new EventType("B")), new TagCollection(new Tag("t2")));
+        var q1 = new DcbQueryItem(new EventTypes(new EventType("A")), new Tags(new Tag("t1")));
+        var q2 = new DcbQueryItem(new EventTypes(new EventType("B")), new Tags(new Tag("t2")));
 
         DcbQuery c1 = [q1, q2];
         DcbQuery c2 = [q2, q1];
@@ -106,8 +106,8 @@ public class DcbQueryTests
     public void RelationalOperators_WithVariousQueries_ShouldEvaluateCorrectly()
     {
         // Arrange
-        var q1 = new DcbQueryItem(new EventTypeCollection(new EventType("A")), new TagCollection(new Tag("t1")));
-        var q2 = new DcbQueryItem(new EventTypeCollection(new EventType("B")), new TagCollection(new Tag("t2")));
+        var q1 = new DcbQueryItem(new EventTypes(new EventType("A")), new Tags(new Tag("t1")));
+        var q2 = new DcbQueryItem(new EventTypes(new EventType("B")), new Tags(new Tag("t2")));
 
         DcbQuery c1 = [q1];
         DcbQuery c2 = [q2];
@@ -148,7 +148,7 @@ public class DcbQueryTests
         {
             ex.Should().NotBeNull();
             ex.Should().BeOfType<InvalidOperationException>();
-            ex.Message.Should().Be("DcbQuery.Enumerator.Current value has not been set.");
+            ex.Message.Should().Be("DcbQueryEnumerator.Current value has not been set.");
         }
     }
 
@@ -164,7 +164,7 @@ public class DcbQueryTests
         var evt = new DcbEvent
         {
             EventType = new EventType("CourseSubscribed"),
-            Tags = new TagCollection(new Tag("course:777")),
+            Tags = new Tags(new Tag("course:777")),
             Payload = new object()
         };
 
@@ -184,7 +184,7 @@ public class DcbQueryTests
         var evt = new DcbEvent
         {
             EventType = new EventType("Updated"),
-            Tags = new TagCollection(new Tag("course:222")),
+            Tags = new Tags(new Tag("course:222")),
             Payload = new object()
         };
 
@@ -203,7 +203,7 @@ public class DcbQueryTests
         var evt = new DcbEvent
         {
             EventType = new EventType("Deleted"),
-            Tags = new TagCollection(new Tag("course:999")),
+            Tags = new Tags(new Tag("course:999")),
             Payload = new object()
         };
 
@@ -219,10 +219,10 @@ public class DcbQueryTests
     public void Or_WithSingleQueryItem_ShouldAppendAndOptimizeCorrectly()
     {
         // Arrange: Query targeting course:777
-        var sharedTags = new TagCollection(new Tag("course:777"));
-        DcbQuery query = [new DcbQueryItem(new EventTypeCollection(new EventType("Created")), sharedTags)];
+        var sharedTags = new Tags(new Tag("course:777"));
+        DcbQuery query = [new DcbQueryItem(new EventTypes(new EventType("Created")), sharedTags)];
 
-        var extraItem = new DcbQueryItem(new EventTypeCollection(new EventType("Updated")), sharedTags);
+        var extraItem = new DcbQueryItem(new EventTypes(new EventType("Updated")), sharedTags);
 
         // Act: Appending single item via Fluent Or method
         DcbQuery result = query.Or(extraItem);
@@ -238,16 +238,16 @@ public class DcbQueryTests
     public void Or_WithCompositeQuery_ShouldMergeMonolithicallyAndGroupTags()
     {
         // Arrange: Two distinct queries with intersecting boundaries
-        var tagsA = new TagCollection(new Tag("course:111"));
-        var tagsB = new TagCollection(new Tag("course:222"));
+        var tagsA = new Tags(new Tag("course:111"));
+        var tagsB = new Tags(new Tag("course:222"));
 
         DcbQuery query1 = [
-            new DcbQueryItem(new EventTypeCollection(new EventType("Created")), tagsA),
-            new DcbQueryItem(new EventTypeCollection(new EventType("Created")), tagsB)
+            new DcbQueryItem(new EventTypes(new EventType("Created")), tagsA),
+            new DcbQueryItem(new EventTypes(new EventType("Created")), tagsB)
         ];
 
         DcbQuery query2 = [
-            new DcbQueryItem(new EventTypeCollection(new EventType("Updated")), tagsB)
+            new DcbQueryItem(new EventTypes(new EventType("Updated")), tagsB)
         ];
 
         // Act: Merging two queries
@@ -267,5 +267,4 @@ public class DcbQueryTests
     }
 
     #endregion
-
 }

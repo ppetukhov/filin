@@ -6,57 +6,27 @@ namespace Filin.Generators;
 static class MSBuildProperties
 {
     /// <summary>
-    /// The MSBuild property for <see cref="GenerationOptions.EmittingNamespace"/>
+    /// The MSBuild property for <see cref="GenerationOptions.RootNamespace"/>
     /// </summary>
-    public const string EmittingNamespace = $"FilinEmittingNamespace";
+    public const string RootNamespace = "RootNamespace";
 
     /// <summary>
-    /// The MSBuild property for <see cref="GenerationOptions.EventTypeExtensionsClassName"/>
+    /// The MSBuild property for <see cref="GenerationOptions.EventTypeExtensionsClass"/>
     /// </summary>
-    public const string EventTypeExtensionsClassName = $"FilinEventTypeExtensionsClassName";
+    public const string EventTypeExtensionsClass = "FilinEventTypeExtensionsClass";
 
     /// <summary>
-    /// The MSBuild property for <see cref="GenerationOptions.EventTypeToDcbEventExtensionsClassName"/>
+    /// The MSBuild property for <see cref="GenerationOptions.EventTypeToDcbEventExtensionsClass"/>
     /// </summary>
-    public const string EventTypeToDcbEventExtensionsClassName = $"FilinEventTypeToDcbEventExtensionsClassName";
-
-    /// <summary>
-    /// The MSBuild property for <see cref="GenerationOptions.GetEventTypeMethod" path="/summary"/>
-    /// </summary>
-    public const string GetEventTypeMethod = $"FilinGetEventTypeMethod";
-
-    /// <summary>
-    /// The MSBuild property for <see cref="GenerationOptions.GetQueryMethod"/>
-    /// </summary>
-    public const string GetQueryMethod = $"FilinGetQueryMethod";
-
-    /// <summary>
-    /// The MSBuild property for <see cref="GenerationOptions.GetProjectionIdMethod"/>
-    /// </summary>
-    public const string GetProjectionIdMethod = $"FilinGetProjectionIdMethod";
-
-    /// <summary>
-    /// The MSBuild property for <see cref="GenerationOptions.GetTagMethod"/>
-    /// </summary>
-    public const string GetTagMethod = $"FilinGetTagMethod";
-
-    /// <summary>
-    /// The MSBuild property for <see cref="GenerationOptions.GetTagsMethod"/>
-    /// </summary>
-    public const string GetTagsMethod = $"FilinGetTagsMethod";
-
-    /// <summary>
-    /// The MSBuild property for <see cref="GenerationOptions.ProjectorIdProperty"/>
-    /// </summary>
-    public const string ProjectorIdProperty = $"FilinProjectorIdProperty";
+    public const string EventTypeToDcbEventExtensionsClass = "FilinEventTypeToDcbEventExtensionsClass";
 
     /// <summary>
     /// The MSBuild property for <see cref="GenerationOptions.QueryExtensionsClass"/>
     /// </summary>
-    public const string QueryExtensionsClass = $"FilinQueryExtensions";
+    public const string QueryExtensionsClass = "QueryExtensionsClass";
 
     /// <summary>
-    /// The MSBuild property for <see cref="GenerationOptions.TagExtensionsClassName"/>
+    /// The MSBuild property for <see cref="GenerationOptions.TagExtensionsClass"/>
     /// </summary>
-    public const string TagExtensionsClassName = $"FilinTagExtensionsClassName";
+    public const string TagExtensionsClass = "FilinTagExtensionsClass";
 }

@@ -112,7 +112,7 @@ sealed class EventStreamingService(
                         command.CommandText = $"LISTEN dcb_events";
                         command.Connection = connection;
 
-                        await command
+                        _ = await command
                             .ExecuteNonQueryAsync(stoppingToken)
                             .ConfigureAwait(false);
                     }
@@ -173,7 +173,7 @@ sealed class EventStreamingService(
             // fast path
             if (_query.Status == QueryStatus.None
                 || partialEvent.Position <= _lastEventPosition
-                || _query.Status != QueryStatus.NotActual && !_query.Query.MatchesEvent(partialEvent.Event))
+                || (_query.Status != QueryStatus.NotActual && !_query.Query.MatchesEvent(partialEvent.Event)))
             {
                 return;
             }
@@ -244,6 +244,8 @@ sealed class EventStreamingService(
                     break;
                 case QueryStatus.None:
                     return;
+                default:
+                    break;
             }
 
             var afterEventPosition = new EventPosition(partialEvent.Position.Value - 1);
@@ -289,7 +291,7 @@ sealed class EventStreamingService(
             return;
         }
 
-        _weakConsumers.AddLast(subscribe.Subscriber);
+        _ = _weakConsumers.AddLast(subscribe.Subscriber);
 
         switch (_query.Status)
         {
@@ -300,6 +302,8 @@ sealed class EventStreamingService(
                 _query = (QueryStatus.Actual, subscriber.Query);
                 break;
             case QueryStatus.NotActual:
+                break;
+            default:
                 break;
         }
     }

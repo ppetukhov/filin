@@ -47,8 +47,11 @@ static class RoslynExtensions
                 {
                     var currentType = referencedAssembly.GetTypeByMetadataName(fullyQualifiedMetadataName);
                     if (currentType is null)
+                    {
                         continue;
+                    }
 
+#pragma warning disable IDE0010 // Add missing cases
                     switch (currentType.GetResultantVisibility())
                     {
                         case SymbolVisibility.Public:
@@ -58,6 +61,7 @@ static class RoslynExtensions
                         default:
                             continue;
                     }
+#pragma warning restore IDE0010 // Add missing cases
 
                     if (type is object)
                     {
@@ -89,8 +93,9 @@ static class RoslynExtensions
     static SymbolVisibility GetResultantVisibility(this ISymbol symbol)
     {
         // Start by assuming it's visible.
-        SymbolVisibility visibility = SymbolVisibility.Public;
+        var visibility = SymbolVisibility.Public;
 
+#pragma warning disable IDE0010 // Add missing cases
         switch (symbol.Kind)
         {
             case SymbolKind.Alias:
@@ -106,9 +111,11 @@ static class RoslynExtensions
                 // Type Parameters are private.
                 return SymbolVisibility.Private;
         }
+#pragma warning restore IDE0010 // Add missing cases
 
         while (symbol != null && symbol.Kind != SymbolKind.Namespace)
         {
+#pragma warning disable IDE0010 // Add missing cases
             switch (symbol.DeclaredAccessibility)
             {
                 // If we see anything private, then the symbol is private.
@@ -126,6 +133,7 @@ static class RoslynExtensions
                     // For anything else (Public, Protected, ProtectedOrInternal), the
                     // symbol stays at the level we've gotten so far.
             }
+#pragma warning restore IDE0010 // Add missing cases
 
             symbol = symbol.ContainingSymbol;
         }

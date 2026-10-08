@@ -1,10 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <RootNamespace>Edu</RootNamespace>
     <Nullable>enable</Nullable>
     <TargetFramework>$(NetCurrent)</TargetFramework>
     <LaunchDebugger>true</LaunchDebugger>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

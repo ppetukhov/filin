@@ -4,20 +4,20 @@ using Microsoft.CodeAnalysis;
 
 namespace Filin.Generators;
 
-sealed class TypeDefinitions(Compilation Compilation)
+sealed class TypeDefinitions(Compilation compilation)
 {
     /// <inheritdoc cref="Compilation.GlobalNamespace"/>
-    public INamespaceSymbol GlobalNamespace { get; } = Compilation.GlobalNamespace;
-    public INamedTypeSymbol ApplicationPartAttribute { get; } = Type(Constants.ApplicationPartAttribute, Compilation);
-    public INamedTypeSymbol IDecider { get; } = Type(Constants.IDecider, Compilation);
-    public INamedTypeSymbol IWithQueryTags { get; } = Type(Constants.IWithQueryTags, Compilation);
-    public INamedTypeSymbol IProjector { get; } = Type(Constants.IProjector, Compilation);
-    public ImmutableHashSet<string> ApplicationParts { get; } = CreateApplicationParts(Compilation);
-    public string AssemblyName { get; } = Compilation.AssemblyName ?? string.Empty;
+    public INamespaceSymbol GlobalNamespace { get; } = compilation.GlobalNamespace;
+    public INamedTypeSymbol ApplicationPartAttribute { get; } = Type(Constants.ApplicationPartAttribute, compilation);
+    public INamedTypeSymbol IDecider { get; } = Type(Constants.IDeciderFullName, compilation);
+    public INamedTypeSymbol IWithQueryTags { get; } = Type(Constants.IWithQueryTagsFullName, compilation);
+    public INamedTypeSymbol IProjector { get; } = Type(Constants.IProjectorFullName, compilation);
+    public ImmutableHashSet<string> ApplicationParts { get; } = CreateApplicationParts(compilation);
+    public string AssemblyName { get; } = compilation.AssemblyName ?? string.Empty;
 
-    internal bool IsDecider(INamedTypeSymbol symbol) => !SymbolEqualityComparer.Default.Equals(symbol.OriginalDefinition, IDecider) ? symbol.Interfaces.Any(IsDecider) : true;
+    internal bool IsDecider(INamedTypeSymbol symbol) => SymbolEqualityComparer.Default.Equals(symbol.OriginalDefinition, IDecider) || symbol.Interfaces.Any(IsDecider);
 
-    internal bool IsProjector(INamedTypeSymbol symbol) => !SymbolEqualityComparer.Default.Equals(symbol.OriginalDefinition, IProjector) ? symbol.Interfaces.Any(IsProjector) : true;
+    internal bool IsProjector(INamedTypeSymbol symbol) => SymbolEqualityComparer.Default.Equals(symbol.OriginalDefinition, IProjector) || symbol.Interfaces.Any(IsProjector);
 
     internal INamedTypeSymbol? FindIDecider(INamedTypeSymbol symbol)
     {
@@ -73,7 +73,7 @@ sealed class TypeDefinitions(Compilation Compilation)
             compilation.Assembly
         };
 
-        builder.Add(compilation.Assembly.MetadataName);
+        _ = builder.Add(compilation.Assembly.MetadataName);
 
         foreach (var reference in compilation.References)
         {
@@ -95,11 +95,11 @@ sealed class TypeDefinitions(Compilation Compilation)
                 {
                     if (!added)
                     {
-                        builder.Add(asm.MetadataName);
+                        _ = builder.Add(asm.MetadataName);
                         added = true;
                     }
 
-                    builder.Add((string)attr.ConstructorArguments.First().Value!);
+                    _ = builder.Add((string)attr.ConstructorArguments.First().Value!);
                 }
             }
         }

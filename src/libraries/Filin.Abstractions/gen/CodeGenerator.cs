@@ -10,8 +10,9 @@ namespace Filin.Generators;
 #pragma warning disable RS1038
 [Generator(LanguageNames.CSharp)]
 #pragma warning restore RS1038
-public sealed partial class CodeGenerator : IIncrementalGenerator
+sealed partial class CodeGenerator : IIncrementalGenerator
 {
+    /// <inheritdoc/>
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
 #if LAUNCH_DEBUGGER
@@ -36,7 +37,7 @@ public sealed partial class CodeGenerator : IIncrementalGenerator
 
         var queries = QueryParser.ParseQueries(context.SyntaxProvider);
 
-        context.RegisterImplementationSourceOutput(queries.Combine(generationOptions), EmitQueries);
+        context.RegisterImplementationSourceOutput(queries, EmitQueries);
 
         var projectorIds = ProjectorIdParser.ParseEventTags(context.SyntaxProvider);
 
@@ -82,15 +83,11 @@ public sealed partial class CodeGenerator : IIncrementalGenerator
         }
     }
 
-    void EmitQueries(SourceProductionContext context, (ImmutableArray<Query>, GenerationOptions) input)
+    static void EmitQueries(SourceProductionContext context, ImmutableArray<Query> items)
     {
-        var (items, options) = input;
-
         if (!items.IsDefaultOrEmpty)
         {
-            var emitter = new QueryEmitter(options);
-
-            emitter.EmitQueries(context, items);
+            QueryEmitter.EmitQueries(context, items);
         }
     }
 

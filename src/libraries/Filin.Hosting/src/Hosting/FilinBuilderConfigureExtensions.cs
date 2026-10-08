@@ -21,6 +21,9 @@ public static class FilinBuilderConfigureExtensions
     /// <returns>The builder.</returns>
     public static IFilinBuilder AddAssembly(this IFilinBuilder builder, Assembly assembly)
     {
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(assembly);
+
         var attrs = assembly.GetCustomAttributes<TypeManifestProviderAttribute>();
 
         foreach (var attr in attrs)

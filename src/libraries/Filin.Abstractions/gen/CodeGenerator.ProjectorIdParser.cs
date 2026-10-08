@@ -1,9 +1,9 @@
 using System.Collections.Immutable;
 
+using Filin.Generators.Specs.Types;
+
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-
-using Filin.Generators.Specs.Types;
 
 namespace Filin.Generators;
 
@@ -69,16 +69,16 @@ partial class CodeGenerator
 
                     var (name, version, targetType) = item;
 
-                    var IdFormated = name;
+                    var idFormated = name;
 
                     if (version is not 0)
                     {
-                        IdFormated = $"{name}{Constants.VersionSeparator}{version}";
+                        idFormated = $"{name}{Constants.VersionSeparator}{version}";
                     }
 
                     return new ProjectorId(
                         TargetType: targetType,
-                        Id: IdFormated,
+                        Id: idFormated,
                         Raw: (ProjectorName: name, Version: version));
                 }).WithTrackingName($"select_{nameof(ProjectorId)}")
                 .Collect()
@@ -93,7 +93,7 @@ partial class CodeGenerator
 
         sealed class ProjectorIdComparer : IEqualityComparer<ProjectorId>, IComparer<ProjectorId>
         {
-            internal static readonly ProjectorIdComparer Instance = new ProjectorIdComparer();
+            internal static readonly ProjectorIdComparer Instance = new();
 
             public int Compare(ProjectorId x, ProjectorId y) => ObjectSpecComparer.Instance.Compare(x.TargetType, y.TargetType);
             public bool Equals(ProjectorId x, ProjectorId y) => ObjectSpecComparer.Instance.Equals(x.TargetType, y.TargetType);

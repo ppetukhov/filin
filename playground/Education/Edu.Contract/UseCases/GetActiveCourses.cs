@@ -10,5 +10,5 @@ namespace Edu.UseCases;
 public sealed record GetActiveCourses : IQuery<ActiveCourses>
 {
     /// <inheritdoc/>
-    public TagCollection GetTags() => [];
+    public Tags GetTags() => [];
 }

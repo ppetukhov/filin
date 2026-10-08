@@ -1,5 +1,21 @@
 <Project>
 
+  <ProjectExtensions Condition="'$(FilinGeneratorTargetImported)' == ''">
+    
+    <PropertyGroup>
+      <FilinGeneratorTargetImported>true</FilinGeneratorTargetImported>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <CompilerVisibleProperty Include="RootNamespace" />
+      <CompilerVisibleProperty Include="MSBuildProjectDirectory" />
+      <CompilerVisibleProperty Include="FilinEventTypeExtensionsClass" />
+      <CompilerVisibleProperty Include="FilinEventTypeToDcbEventExtensionsClass" />
+      <CompilerVisibleProperty Include="QueryExtensionsClass" />
+      <CompilerVisibleProperty Include="FilinTagExtensionsClass" />
+    </ItemGroup>
+  </ProjectExtensions>
+  
   <!-- Get the analyzer from the Filin.Generator NuGet package -->
   <Target Name="_FilinGeneratorGatherAnalyzers">
     <ItemGroup>
@@ -41,7 +57,7 @@
       disabled, and that Filin will not work at all unless a more up to date IDE or compiler version are used.
     -->
     <Error Condition ="'$(FilinGeneratorSharpCurrentCompilerVersionIsNotNewEnough)' == 'true'"
-           Code="CHRK0001"
+           Code="FLN0001"
            Text="The Filin source generators have been disabled on the current configuration, as they need Roslyn 4.3 in order to work."/>
   </Target>
 

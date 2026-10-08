@@ -17,7 +17,7 @@ static class DbDataSourseServiceCollectionExtensions
 
         services.TryAddKeyedSingleton<DbDataSource>(connectionName, (sp, key) =>
         {
-            var connectionString = sp.GetRequiredService<IConfiguration>().GetConnectionString((string)key!) ?? throw new FilinConfigurationException($"ConnectionString '{key}' not found");
+            var connectionString = sp.GetRequiredService<IConfiguration>().GetConnectionString((string)key!) ?? throw new ConfigurationException($"ConnectionString '{key}' not found");
 
             return DbConnectionFactory.CreateDataSource(invariant, connectionString);
         });

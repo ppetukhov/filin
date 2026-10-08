@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 using Filin.Compliance.Classification;
+using Filin.Compliance.Redaction;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,23 +13,30 @@ using Microsoft.Extensions.Logging;
 
 namespace Filin.Hosting;
 
+/// <summary>
+/// Provides extension methods for registering default infrastructure services to <see cref="IFilinBuilder"/>.
+/// </summary>
 public static class FilinBuilderDefaultServicesExtensions
 {
+    /// <summary>
+    /// Adds the default core and infrastructure services required for the Filin framework to function.
+    /// </summary>
+    /// <param name="builder">The <see cref="IFilinBuilder"/> instance to add services to.</param>
+    /// <returns>The same <see cref="IFilinBuilder"/> instance so that multiple calls can be chained.</returns>
     [RequiresAssemblyFiles("Calls Filin.Hosting.DefaultExecutorServices.ApplyConfiguration(IFilinBuilder)")]
     [RequiresUnreferencedCode("Calls Filin.Hosting.SerializationServiceCollectionExtentions.AddStorageSerialization()")]
     [RequiresDynamicCode("Calls Filin.Hosting.SerializationServiceCollectionExtentions.AddStorageSerialization()")]
     public static IFilinBuilder AddDefaultServices(this IFilinBuilder builder)
     {
-        var services = builder.Services;
+        ArgumentNullException.ThrowIfNull(builder);
 
-        // Common services
-        services.AddOptions();
+        var services = builder.Services
+            .AddOptions()
+            .AddLogging(builder => builder.EnableRedaction())
+            .AddRedaction(builder => builder.SetRedactor<ConnectionStringRedactor>(AppConfigClassifications.ConnectionString))
+            .AddStorageSerialization();
+
         services.TryAddSingleton(TimeProvider.System);
-
-        services.AddLogging(builder => builder.EnableRedaction());
-        services.AddRedaction(builder => builder.SetRedactor<ConnectionStringRedactor>(AppConfigClassifications.ConnectionString));
-
-        services.AddStorageSerialization();
 
         var relevantAssembles = new RelevantAssemblies([.. Internal.ReferencedAssemblyProvider.GetRelevantAssemblies()]);
 

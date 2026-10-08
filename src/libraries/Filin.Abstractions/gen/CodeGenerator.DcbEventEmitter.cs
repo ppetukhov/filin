@@ -17,11 +17,12 @@ partial class CodeGenerator
 {
     sealed class DcbEventEmitter(GenerationOptions options)
     {
-        readonly SyntaxToken ToDcbEventMethodIdentifierToken = Identifier(options.ToDcbEventMethod);
-        readonly ClassDeclarationSyntax GeneratedExtensionsClassNameSyntax = ClassDeclaration(
+        static readonly SyntaxToken ToDcbEventMethodIdentifierToken = Identifier(Constants.ToDcbEventMethod);
+
+        readonly ClassDeclarationSyntax _generatedExtensionsClassNameSyntax = ClassDeclaration(
             attributeLists: SingletonList(Emitter.GeneratedCodeAttributeSyntax),
             modifiers: TokenList(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.StaticKeyword), Token(SyntaxKind.PartialKeyword)),
-            identifier: Identifier(options.EventTypeToDcbEventExtensionsClassName),
+            identifier: Identifier(options.EventTypeToDcbEventExtensionsClass),
             typeParameterList: null,
             parameterList: null,
             baseList: null,
@@ -57,9 +58,10 @@ partial class CodeGenerator
 
             var cu = CompilationUnit()
                 .AddMembers(
-                    FileScopedNamespaceDeclaration(ParseName(options.EmittingNamespace)),
-                    GeneratedExtensionsClassNameSyntax.AddMembers([.. toDcbEventExtentions])
+                    FileScopedNamespaceDeclaration(ParseName(options.RootNamespace)),
+                    _generatedExtensionsClassNameSyntax.AddMembers([.. toDcbEventExtentions])
                 )
+                .WithLeadingTrivia(Emitter.HeaderSyntaxTriviaList)
                 .NormalizeWhitespace();
 
             ctx.CancellationToken.ThrowIfCancellationRequested();
@@ -73,7 +75,7 @@ partial class CodeGenerator
         #region Extentions ToDcbEvent()
 
         // static DcbEvent ToDcbEvent(this V1.CourseCreated evt, IWithQueryTags command) => evt.ToDcbEvent(command.GetTags());
-        MethodDeclarationSyntax CreateToDcbEvent_IWithQueryTags(ObjectSpec targetType) =>
+        static MethodDeclarationSyntax CreateToDcbEvent_IWithQueryTags(ObjectSpec targetType) =>
             MethodDeclaration(
                 attributeLists: SingletonList(Emitter.AggressiveInliningAttributeSyntax),
                 modifiers: TokenList(Token(Emitter.MethodAccessibility(targetType.Accessibility)), Token(SyntaxKind.StaticKeyword)),
@@ -103,17 +105,17 @@ partial class CodeGenerator
                 body: null,
                 expressionBody: ArrowExpressionClause(
                     InvocationExpression(
-                        IdentifierName(Identifier("evt")).Member(options.ToDcbEventMethod),
+                        IdentifierName(Identifier("evt")).Member(Constants.ToDcbEventMethod),
                         ArgumentList()
                             .AddArguments(
-                                Argument(InvocationExpression(IdentifierName("command").Member(options.GetTagsMethod)))
+                                Argument(InvocationExpression(IdentifierName("command").Member(Constants.GetTagsMethod)))
                             )
                     )
                 ),
                 semicolonToken: Token(SyntaxKind.SemicolonToken));
 
-        // static DcbEvent ToDcbEvent(this {targetType} evt, TagCollection tags)
-        MethodDeclarationSyntax CreateToDcbEvent_Tags(ObjectSpec targetType, int tagsCount)
+        // static DcbEvent ToDcbEvent(this {targetType} evt, Tags tags)
+        static MethodDeclarationSyntax CreateToDcbEvent_Tags(ObjectSpec targetType, int tagsCount)
         {
             // Tags = {tagsExpr}
             ExpressionSyntax tagsExpr = tagsCount switch
@@ -130,11 +132,11 @@ partial class CodeGenerator
                                             )
                                         )
                                 ),
-                                InvocationExpression(IdentifierName(Identifier("evt")).Member(options.GetTagsMethod)),
+                                InvocationExpression(IdentifierName(Identifier("evt")).Member(Constants.GetTagsMethod)),
                                 CollectionExpression()
                                     .AddElements(
                                         SpreadElement(IdentifierName(Identifier("tags"))),
-                                        SpreadElement(InvocationExpression(IdentifierName(Identifier("evt")).Member(options.GetTagsMethod)))
+                                        SpreadElement(InvocationExpression(IdentifierName(Identifier("evt")).Member(Constants.GetTagsMethod)))
                                     )
                             ) // tags is { IsEmpty: true } ? evt.GetTags() : [.. tags, .. evt.GetTags()]
             };
@@ -159,7 +161,7 @@ partial class CodeGenerator
                             Parameter(
                                 attributeLists: default,
                                 modifiers: default,
-                                Emitter.TagCollectionTypeSyntax,
+                                Emitter.TagsTypeSyntax,
                                 Identifier("tags"),
                                 null)
                         ]
@@ -177,7 +179,7 @@ partial class CodeGenerator
                                     AssignmentExpression(
                                         SyntaxKind.SimpleAssignmentExpression,
                                         IdentifierName("EventType"),
-                                        InvocationExpression(IdentifierName(Identifier("evt")).Member(options.GetEventTypeMethod))
+                                        InvocationExpression(IdentifierName(Identifier("evt")).Member(Constants.GetEventTypeMethod))
                                     ),
                                     AssignmentExpression(
                                         SyntaxKind.SimpleAssignmentExpression,

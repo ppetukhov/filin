@@ -6,7 +6,7 @@ namespace Filin.EventStore.Postgres;
 
 sealed record PgEventPayload
 {
-    static readonly object NullData = new object();
+    static readonly object NullData = new();
 
     [JsonPropertyName(ColumnNames.Position)]
     public ulong Position { get; init; }
@@ -33,7 +33,7 @@ sealed record PgEventPayload
 #pragma warning disable CS0618 // Type or member is obsolete
         var eventType = Filin.EventType.UnsafeCreate(EventType, (uint)EventTypeHash);
 #pragma warning restore CS0618 // Type or member is obsolete
-        TagCollection tags;
+        Tags tags;
 
         if (Tags is { Length: > 0 } tgNames && TagHashes is { Length: > 0 } tgHashes)
         {

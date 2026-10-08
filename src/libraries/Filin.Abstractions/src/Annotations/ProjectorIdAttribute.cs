@@ -17,7 +17,7 @@ public sealed class ProjectorIdAttribute(string name, uint version) : Attribute
     /// Gets or sets the version of the projector.
     /// </summary>
     /// <value>The default value is 0.</value>
-    public uint Version { get; set; } = version;
+    public uint Version => version;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProjectorIdAttribute"/> class with a default version of 0.

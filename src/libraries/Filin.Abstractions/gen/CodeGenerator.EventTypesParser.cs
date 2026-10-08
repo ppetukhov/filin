@@ -1,13 +1,13 @@
 using System.Collections.Immutable;
 
+using Filin.Generators.Specs.Types;
+
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-using Filin.Generators.Specs.Types;
-
 namespace Filin.Generators;
 
-sealed partial class CodeGenerator
+partial class CodeGenerator
 {
     sealed class EventTypesParser
     {
@@ -99,7 +99,7 @@ sealed partial class CodeGenerator
 
         sealed class EventTypeFieldNameComparer : IEqualityComparer<EventType>
         {
-            internal static readonly EventTypeFieldNameComparer Instance = new EventTypeFieldNameComparer();
+            internal static readonly EventTypeFieldNameComparer Instance = new();
             public bool Equals(EventType x, EventType y) => string.Equals(x.FieldName, y.FieldName, StringComparison.Ordinal);
             public int GetHashCode(EventType obj) => obj.FieldName.GetHashCode();
         }

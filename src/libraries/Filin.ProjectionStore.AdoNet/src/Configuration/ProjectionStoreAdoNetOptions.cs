@@ -56,14 +56,17 @@ public sealed class ProjectionStoreAdoNetOptions : IStorageProviderSerializerOpt
     /// <param name="value"><inheritdoc cref="ProjectionStoreAdoNetOptions" path="/summary"/></param>
     /// <param name="context"><inheritdoc cref="ValidationContext" path="/summary"/></param>
     /// <returns><inheritdoc cref="ValidationResult" path="/summary"/></returns>
-    public static ValidationResult? IsValidConnectionName(object value, ValidationContext context) =>
+    public static ValidationResult? IsValidConnectionName(object value, ValidationContext? context) =>
         (value is not string connectionName || string.IsNullOrWhiteSpace(connectionName))
-        && context.ObjectInstance is ProjectionStoreAdoNetOptions opt
+        && context is not null && context.ObjectInstance is ProjectionStoreAdoNetOptions opt
         && string.IsNullOrWhiteSpace(opt.ConnectionString)
             ? new ValidationResult($"Required '{nameof(ConnectionString)}' or '{nameof(ConnectionName)}'. {typeof(ProjectionStoreAdoNetOptions).FullName}")
             : ValidationResult.Success;
 }
 
+/// <summary>
+/// Provides compile-time generated validation for <see cref="ProjectionStoreAdoNetOptions"/> using data annotations.
+/// </summary>
 [OptionsValidator]
 public sealed partial class ProjectionStoreAdoNetOptionsValidator : IValidateOptions<ProjectionStoreAdoNetOptions>
 {

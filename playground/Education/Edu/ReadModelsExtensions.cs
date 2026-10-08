@@ -1,3 +1,5 @@
+#pragma warning disable CA1034 // Do not nest type . Alternatively, change its accessibility so that it is not externally visible.
+
 namespace Edu.ReadModels;
 
 /// <summary>

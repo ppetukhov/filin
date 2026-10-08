@@ -13,7 +13,7 @@ namespace Filin;
 /// <param name="Tags">The pre-sorted collection of domain Tags.</param>
 [DebuggerTypeProxy(typeof(DcbQueryItemDebugView))]
 [DebuggerDisplay("{Internal.DcbQueryItemDebugView.GetDisplayString(this),nq}")]
-public readonly record struct DcbQueryItem(EventTypeCollection EventTypes, TagCollection Tags) : IEquatable<DcbQueryItem>, IComparable<DcbQueryItem>
+public readonly record struct DcbQueryItem(EventTypes EventTypes, Tags Tags) : IEquatable<DcbQueryItem>, IComparable<DcbQueryItem>
 {
     /// <summary>
     /// Gets a value indicating whether the query item defines empty boundaries.
@@ -25,7 +25,7 @@ public readonly record struct DcbQueryItem(EventTypeCollection EventTypes, TagCo
     /// </summary>
     /// <param name="eventTypes">The stack-allocated or heap-allocated span of interested event types.</param>
     public DcbQueryItem(params ReadOnlySpan<EventType> eventTypes)
-        : this(new EventTypeCollection(eventTypes), default)
+        : this(new EventTypes(eventTypes), default)
     {
     }
 
@@ -34,7 +34,7 @@ public readonly record struct DcbQueryItem(EventTypeCollection EventTypes, TagCo
     /// </summary>
     /// <param name="tags">The stack-allocated or heap-allocated span of query Tags.</param>
     public DcbQueryItem(params ReadOnlySpan<Tag> tags)
-        : this(default, new TagCollection(tags))
+        : this(default, new Tags(tags))
     {
     }
 
@@ -44,9 +44,12 @@ public readonly record struct DcbQueryItem(EventTypeCollection EventTypes, TagCo
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public DcbQueryItem Or(params ReadOnlySpan<EventType> eventTypes)
     {
-        if (eventTypes.IsEmpty) return this;
+        if (eventTypes.IsEmpty)
+        {
+            return this;
+        }
 
-        EventTypeCollection mergedTypes = [.. EventTypes, .. eventTypes];
+        EventTypes mergedTypes = [.. EventTypes, .. eventTypes];
         return new DcbQueryItem(mergedTypes, Tags);
     }
 
@@ -56,9 +59,12 @@ public readonly record struct DcbQueryItem(EventTypeCollection EventTypes, TagCo
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public DcbQueryItem And(params ReadOnlySpan<Tag> tags)
     {
-        if (tags.IsEmpty) return this;
+        if (tags.IsEmpty)
+        {
+            return this;
+        }
 
-        TagCollection mergedTags = [.. Tags, .. tags];
+        Tags mergedTags = [.. Tags, .. tags];
         return new DcbQueryItem(EventTypes, mergedTags);
     }
 
@@ -68,11 +74,18 @@ public readonly record struct DcbQueryItem(EventTypeCollection EventTypes, TagCo
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public DcbQueryItem Add(DcbQueryItem other)
     {
-        if (IsEmpty) return other;
-        if (other.IsEmpty) return this;
+        if (IsEmpty)
+        {
+            return other;
+        }
 
-        EventTypeCollection mergedTypes = [.. EventTypes, .. other.EventTypes];
-        TagCollection mergedTags = [.. Tags, .. other.Tags];
+        if (other.IsEmpty)
+        {
+            return this;
+        }
+
+        EventTypes mergedTypes = [.. EventTypes, .. other.EventTypes];
+        Tags mergedTags = [.. Tags, .. other.Tags];
 
         return new DcbQueryItem(mergedTypes, mergedTags);
     }
@@ -83,13 +96,8 @@ public readonly record struct DcbQueryItem(EventTypeCollection EventTypes, TagCo
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int CompareTo(DcbQueryItem other)
     {
-        int typeComparison = EventTypes.CompareTo(other.EventTypes);
-        if (typeComparison != 0)
-        {
-            return typeComparison;
-        }
-
-        return Tags.CompareTo(other.Tags);
+        var typeComparison = EventTypes.CompareTo(other.EventTypes);
+        return typeComparison != 0 ? typeComparison : Tags.CompareTo(other.Tags);
     }
 
     /// <summary>
@@ -122,12 +130,12 @@ public readonly record struct DcbQueryItem(EventTypeCollection EventTypes, TagCo
         var queryTagsSpan = Tags.AsSpan();
         var eventTagsSpan = @event.Tags.AsSpan();
 
-        int i = 0; // Pointer for query Tags subset
-        int j = 0; // Pointer for event Tags superset
+        var i = 0; // Pointer for query Tags subset
+        var j = 0; // Pointer for event Tags superset
 
         while (i < queryTagsSpan.Length && j < eventTagsSpan.Length)
         {
-            int cmp = queryTagsSpan[i].CompareTo(eventTagsSpan[j]);
+            var cmp = queryTagsSpan[i].CompareTo(eventTagsSpan[j]);
 
             if (cmp == 0)
             {
@@ -161,4 +169,36 @@ public readonly record struct DcbQueryItem(EventTypeCollection EventTypes, TagCo
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override int GetHashCode() => HashCode.Combine(EventTypes, Tags);
+
+    /// <summary>
+    /// Determines whether one <see cref="DcbQueryItem"/> instance is less than another.
+    /// </summary>
+    /// <param name="left">The first instance to compare.</param>
+    /// <param name="right">The second instance to compare.</param>
+    /// <returns><see langword="true"/> if <paramref name="left"/> is less than <paramref name="right"/>; otherwise, <see langword="false"/>.</returns>
+    public static bool operator <(DcbQueryItem left, DcbQueryItem right) => left.CompareTo(right) < 0;
+
+    /// <summary>
+    /// Determines whether one <see cref="DcbQueryItem"/> instance is less than or equal to another.
+    /// </summary>
+    /// <param name="left">The first instance to compare.</param>
+    /// <param name="right">The second instance to compare.</param>
+    /// <returns><see langword="true"/> if <paramref name="left"/> is less than or equal to <paramref name="right"/>; otherwise, <see langword="false"/>.</returns>
+    public static bool operator <=(DcbQueryItem left, DcbQueryItem right) => left.CompareTo(right) <= 0;
+
+    /// <summary>
+    /// Determines whether one <see cref="DcbQueryItem"/> instance is greater than another.
+    /// </summary>
+    /// <param name="left">The first instance to compare.</param>
+    /// <param name="right">The second instance to compare.</param>
+    /// <returns><see langword="true"/> if <paramref name="left"/> is greater than <paramref name="right"/>; otherwise, <see langword="false"/>.</returns>
+    public static bool operator >(DcbQueryItem left, DcbQueryItem right) => left.CompareTo(right) > 0;
+
+    /// <summary>
+    /// Determines whether one <see cref="DcbQueryItem"/> instance is greater than or equal to another.
+    /// </summary>
+    /// <param name="left">The first instance to compare.</param>
+    /// <param name="right">The second instance to compare.</param>
+    /// <returns><see langword="true"/> if <paramref name="left"/> is greater than or equal to <paramref name="right"/>; otherwise, <see langword="false"/>.</returns>
+    public static bool operator >=(DcbQueryItem left, DcbQueryItem right) => left.CompareTo(right) >= 0;
 }

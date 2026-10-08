@@ -13,64 +13,39 @@ static class Constants
     public const string DeciderAttribute = "Filin.DeciderAttribute";
 
     /// <summary>
-    /// Defualt value is <c>Filin</c>.
-    /// </summary>
-    public const string DefaultEmittingNamespace = "Filin";
-
-    /// <summary>
-    /// Default value is <c>EventTypeExtensions</c>.
-    /// </summary>
-    public const string DefaultEventTypeExtensionsClassName = "EventTypeExtensions";
-
-    /// <summary>
-    /// Default value is <c>EventTypeToDcbEventExtensions</c>.
-    /// </summary>
-    public const string DefaultEventTypeToDcbEventExtensionsClassName = "EventTypeToDcbEventExtensions";
-
-    /// <summary>
     /// Default value is <c>GetEventType</c>.
     /// </summary>
-    public const string DefaultGetEventTypeMethod = "GetEventType";
+    public const string GetEventTypeMethod = "GetEventType";
 
     /// <summary>
     /// Default value is <c>GetQuery</c>.
     /// </summary>
-    public const string DefaultQueryMethod = "GetQuery";
-
-    /// <summary>
-    /// Default value is <c>QueryExtensions</c>.
-    /// </summary>
-    public const string DefaultQueryExtensionsClass = "QueryExtensions";
+    public const string GetQueryMethod = "GetQuery";
 
     /// <summary>
     /// Default value is <c>GetProjectionId</c>.
     /// </summary>
-    public const string DefaultGetProjectionIdMethod = "GetProjectionId";
+    public const string GetProjectionIdMethod = "GetProjectionId";
 
     /// <summary>
     /// Default value is <c>GetTag</c>.
     /// </summary>
-    public const string DefaultGetTagMethod = "GetTag";
+    public const string GetTagMethod = "GetTag";
 
     /// <summary>
     /// Default value is <c>GetTags</c>.
     /// </summary>
-    public const string DefaultGetTagsMethod = "GetTags";
+    public const string GetTagsMethod = "GetTags";
 
     /// <summary>
     /// Default value is <c>ProjectorId</c>.
     /// </summary>
-    public const string DefaultProjectorIdProperty = "ProjectorId";
-
-    /// <summary>
-    /// Default value is <c>TagsGeneratedExtensions</c>.
-    /// </summary>
-    public const string DefaultTagExtensionsClassName = "TagExtensions";
+    public const string ProjectorIdProperty = "ProjectorId";
 
     /// <summary>
     /// Default value is <c>ToDcbEvent</c>.
     /// </summary>
-    public const string DefaultToDcbEventMethod = "ToDcbEvent";
+    public const string ToDcbEventMethod = "ToDcbEvent";
 
     /// <summary>
     /// Value is <c>Filin.EventTagAttribute</c>.
@@ -105,7 +80,7 @@ static class Constants
     /// <summary>
     /// Value is <c>global::Filin.IDecider`2</c>.
     /// </summary>
-    public const string IDecider = "global::Filin.IDecider`2";
+    public const string IDeciderFullName = "global::Filin.IDecider`2";
 
     /// <summary>
     /// Value is <c>global::Filin.IdSpan</c>.
@@ -115,12 +90,12 @@ static class Constants
     /// <summary>
     /// Value is <c>global::Filin.IWithQueryTags</c>.
     /// </summary>
-    public const string IWithQueryTags = "global::Filin.IWithQueryTags";
+    public const string IWithQueryTagsFullName = "global::Filin.IWithQueryTags";
 
     /// <summary>
     /// Value is <c>global::Filin.IProjector`1</c>.
     /// </summary>
-    public const string IProjector = "global::Filin.IProjector`1";
+    public const string IProjectorFullName = "global::Filin.IProjector`1";
 
     /// <summary>
     /// Value is <c>Filin.QueryEventTypesAttribute</c>.
@@ -178,9 +153,9 @@ static class Constants
     public const string TypeManifestOptionsFullName = "global::Filin.Configuration.TypeManifestOptions";
 
     /// <summary>
-    /// Value is <c>global::Filin.Hosting.TypeManifestProviderBase</c>.
+    /// Value is <c>global::Filin.Configuration.TypeManifestProviderBase</c>.
     /// </summary>
-    public const string TypeManifestProviderBaseFullName = "global::Filin.Hosting.TypeManifestProviderBase";
+    public const string TypeManifestProviderBaseFullName = "global::Filin.Configuration.TypeManifestProviderBase";
 
     /// <summary>
     /// Value is <c>Filin.TypeManifestProviderAttribute</c>.
@@ -188,7 +163,7 @@ static class Constants
     public const string TypeManifestProviderAttribute = "Filin.TypeManifestProviderAttribute";
 
     /// <summary>
-    /// Value is <c>global::Filin.TagCollection</c>.
+    /// Value is <c>global::Filin.Tags</c>.
     /// </summary>
-    public const string TagCollectionFullName = $"global::Filin.TagCollection";
+    public const string TagsFullName = $"global::Filin.Tags";
 }

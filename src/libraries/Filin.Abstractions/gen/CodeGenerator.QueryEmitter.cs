@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.Runtime.CompilerServices;
 using System.Text;
 
 using Filin.Generators.Extensions;
@@ -16,11 +15,12 @@ namespace Filin.Generators;
 
 partial class CodeGenerator
 {
-    sealed class QueryEmitter(GenerationOptions options)
+    static class QueryEmitter
     {
         static readonly TypeSyntax ProjectionIdTypeSyntax = ParseTypeName(Constants.ProjectionIdTypeFullName);
-        static readonly TypeSyntax TagCollectionTypeSyntax = ParseTypeName(Constants.TagCollectionFullName);
+        static readonly TypeSyntax TagsTypeSyntax = ParseTypeName(Constants.TagsFullName);
         static readonly TypeSyntax ImmutableArrayTagParameterTypeSyntax = ParseTypeName($"global::System.Collections.Immutable.ImmutableArray<({Constants.IdSpanTypeFullName}, global::System.Collections.Immutable.ImmutableArray<int>)>");
+
         static readonly SyntaxToken IsMatchTagParamToken = Identifier("IsMatchTagParam");
         static readonly SyntaxToken CreateQueryCoreToken = Identifier("CreateQueryCore");
         static readonly SyntaxToken CreateProjectionIdCoreToken = Identifier("CreateProjectionIdCore");
@@ -28,11 +28,10 @@ partial class CodeGenerator
         static readonly SyntaxToken QueryPartsToken = Identifier("QueryParts");
         static readonly SyntaxToken QueryTagParamsToken = Identifier("QueryTagParams");
 
-        readonly MethodDeclarationSyntax GetQueryWithTagParamsMethod = CreateGetQueryMethod(Identifier(options.GetQueryMethod), hasTagParams: true);
-        readonly MethodDeclarationSyntax GetQueryMethod = CreateGetQueryMethod(Identifier(options.GetQueryMethod), hasTagParams: false);
-
-        readonly MethodDeclarationSyntax GetProjectionIdWithTagParamsMethod = CreateGetProjectionIdMethod(Identifier(options.ProjectorIdProperty), Identifier(options.GetProjectionIdMethod), hasTagParams: true);
-        readonly MethodDeclarationSyntax GetProjectionIdMethod = CreateGetProjectionIdMethod(Identifier(options.ProjectorIdProperty), Identifier(options.GetProjectionIdMethod), hasTagParams: false);
+        static readonly MethodDeclarationSyntax GetQueryWithTagParamsMethod = CreateGetQueryMethod(Identifier(Constants.GetQueryMethod), hasTagParams: true);
+        static readonly MethodDeclarationSyntax GetQueryMethod = CreateGetQueryMethod(Identifier(Constants.GetQueryMethod), hasTagParams: false);
+        static readonly MethodDeclarationSyntax GetProjectionIdWithTagParamsMethod = CreateGetProjectionIdMethod(Identifier(Constants.ProjectorIdProperty), Identifier(Constants.GetProjectionIdMethod), hasTagParams: true);
+        static readonly MethodDeclarationSyntax GetProjectionIdMethod = CreateGetProjectionIdMethod(Identifier(Constants.ProjectorIdProperty), Identifier(Constants.GetProjectionIdMethod), hasTagParams: false);
 
         static readonly ClassDeclarationSyntax QueriesGeneratedSyntax = ClassDeclaration(
             attributeLists: SingletonList(Emitter.GeneratedCodeAttributeSyntax),
@@ -43,7 +42,6 @@ partial class CodeGenerator
             baseList: null,
             constraintClauses: default,
             members: default);
-
 
         static readonly MethodDeclarationSyntax IsMatchTagParamMethodSyntax = IsMatchTagParamMethod();
         static readonly MethodDeclarationSyntax CreateQueryCoreMethodSyntax = CreateQueryCoreMethod();
@@ -175,7 +173,6 @@ partial class CodeGenerator
         }
 
         // static bool IsMatchTagParam(Identity tagParam, Tag tag) => tag.AsSpan().StartsWith(tagParam.AsSpan())
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static MethodDeclarationSyntax IsMatchTagParamMethod() =>
             MethodDeclaration(
                 attributeLists: SingletonList(Emitter.AggressiveInliningAttributeSyntax),
@@ -199,7 +196,6 @@ partial class CodeGenerator
                 semicolonToken: Token(SyntaxKind.SemicolonToken));
 
         // static DcbQuery CreateQueryCore(ImmutableArray<DcbQueryItem> queryParts, ImmutableArray<(Identity, ImmutableArray<int>)> queryTagParams, ImmutableSortedSet<Tag> tags)
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static MethodDeclarationSyntax CreateQueryCoreMethod()
         {
             #region Method Block
@@ -373,7 +369,7 @@ partial class CodeGenerator
                     SeparatedList([
                         Parameter(attributeLists: default, modifiers: default, Emitter.ImmutableArrayQueryItemTypeSyntax, Identifier("queryParts"), null),
                         Parameter(attributeLists: default, modifiers: default, ImmutableArrayTagParameterTypeSyntax, Identifier("queryTagParams"), null),
-                        Parameter(attributeLists: default, modifiers: default, TagCollectionTypeSyntax, Identifier("tags"), null)]
+                        Parameter(attributeLists: default, modifiers: default, TagsTypeSyntax, Identifier("tags"), null)]
                     )),
                 body: statements,
                 expressionBody: null,
@@ -381,7 +377,6 @@ partial class CodeGenerator
         }
 
         // static DcbQuery CreateProjectionIdCore(ImmutableArray<(Identity, ImmutableArray<int>)> queryTagParams, ImmutableHashSet<Tag> tags)
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static MethodDeclarationSyntax CreateProjectionIdCore()
         {
             #region Method Block
@@ -633,7 +628,7 @@ partial class CodeGenerator
                     SeparatedList([
                         Parameter(attributeLists: default, modifiers: default, Emitter.ProjectoIdTypeSyntax, Identifier("projectorId"), null),
                         Parameter(attributeLists: default, modifiers: default, ImmutableArrayTagParameterTypeSyntax, Identifier("queryTagParams"), null),
-                        Parameter(attributeLists: default, modifiers: default, TagCollectionTypeSyntax, Identifier("tags"), null)]
+                        Parameter(attributeLists: default, modifiers: default, TagsTypeSyntax, Identifier("tags"), null)]
                     )),
                 body: statements,
                 expressionBody: null,
@@ -641,7 +636,6 @@ partial class CodeGenerator
         }
 
         // static DcbQuery methodName(ImmutableHashSet<Tag> tags)
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static MethodDeclarationSyntax CreateGetQueryMethod(SyntaxToken methodName, bool hasTagParams) =>
             MethodDeclaration(
                 attributeLists: default,
@@ -651,7 +645,7 @@ partial class CodeGenerator
                 identifier: methodName,
                 typeParameterList: default,
                 constraintClauses: default,
-                parameterList: ParameterList(SingletonSeparatedList(Parameter(attributeLists: default, modifiers: default, TagCollectionTypeSyntax, hasTagParams ? Identifier("tags") : Emitter.DiscardIdentifierToken, null))),
+                parameterList: ParameterList(SingletonSeparatedList(Parameter(attributeLists: default, modifiers: default, TagsTypeSyntax, hasTagParams ? Identifier("tags") : Emitter.DiscardIdentifierToken, null))),
                 body: null,
                 expressionBody: hasTagParams
                     ? ArrowExpressionClause(
@@ -665,8 +659,7 @@ partial class CodeGenerator
                 semicolonToken: Token(SyntaxKind.SemicolonToken));
 
         // static ProjectionId methodName(ImmutableSortedSet<Tag> tags)
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static MethodDeclarationSyntax CreateGetProjectionIdMethod(SyntaxToken ProjectorIdIdentifier, SyntaxToken methodName, bool hasTagParams) =>
+        static MethodDeclarationSyntax CreateGetProjectionIdMethod(SyntaxToken projectorIdIdentifier, SyntaxToken methodName, bool hasTagParams) =>
             MethodDeclaration(
                 attributeLists: default,
                 modifiers: TokenList(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.StaticKeyword)),
@@ -675,46 +668,26 @@ partial class CodeGenerator
                 identifier: methodName,
                 typeParameterList: default,
                 constraintClauses: default,
-                parameterList: ParameterList(SingletonSeparatedList(Parameter(attributeLists: default, modifiers: default, TagCollectionTypeSyntax, hasTagParams ? Identifier("tags") : Emitter.DiscardIdentifierToken, null))),
+                parameterList: ParameterList(SingletonSeparatedList(Parameter(attributeLists: default, modifiers: default, TagsTypeSyntax, hasTagParams ? Identifier("tags") : Emitter.DiscardIdentifierToken, null))),
                 body: null,
                 expressionBody: hasTagParams
                     ? ArrowExpressionClause(
                         InvocationExpression(QualifiedName(IdentifierName(Emitter.QueriesGeneratedToken), IdentifierName(CreateProjectionIdCoreToken)),
                             ArgumentList().AddArguments(
-                                Argument(IdentifierName(ProjectorIdIdentifier)),
+                                Argument(IdentifierName(projectorIdIdentifier)),
                                 Argument(IdentifierName(QueryTagParamsToken)),
                                 Argument(IdentifierName(Identifier("tags")))
                                 )))
                     : ArrowExpressionClause(ObjectCreationExpression(ProjectionIdTypeSyntax, ArgumentList()
                             .AddArguments(
-                                Argument(IdentifierName(ProjectorIdIdentifier)),
+                                Argument(IdentifierName(projectorIdIdentifier)),
                                 Argument(DefaultExpression(ParseTypeName(Constants.IdSpanTypeFullName)))
                             ), null)),
                 semicolonToken: Token(SyntaxKind.SemicolonToken));
 
-        internal void EmitQueries(SourceProductionContext ctx, ImmutableArray<Query> queries)
+        static IEnumerable<NamespaceDeclarationSyntax> GenerateClassHeirerarhy(SourceProductionContext ctx, ImmutableArray<Query> queries)
         {
-            if (queries is { IsDefaultOrEmpty: true })
-            {
-                return;
-            }
-
-            var cu = CompilationUnit()
-                .AddUsings(UsingDirective(ParseName("global::System.Collections.Immutable")))
-                .AddMembers(QueriesGeneratedSyntax.AddMembers(IsMatchTagParamMethodSyntax, CreateQueryCoreMethodSyntax, CreateProjectionIdCoreSyntax))
-                .AddMembers([.. GenerateClassHeirerarhy(ctx, queries)])
-                .NormalizeWhitespace();
-
-            ctx.CancellationToken.ThrowIfCancellationRequested();
-
-            var sourceText = SourceText.From(cu.ToFullString(), Encoding.UTF8);
-
-            ctx.AddSource("Queries.g.cs", sourceText);
-        }
-
-        IEnumerable<NamespaceDeclarationSyntax> GenerateClassHeirerarhy(SourceProductionContext ctx, ImmutableArray<Query> queries)
-        {
-            IEnumerable<MemberDeclarationSyntax> MembersFactory((ObjectSpec TargetType, Query Item) tuple)
+            static IEnumerable<MemberDeclarationSyntax> MembersFactory((ObjectSpec TargetType, Query Item) tuple)
             {
                 var (_, query) = tuple;
 
@@ -731,6 +704,27 @@ partial class CodeGenerator
             }
 
             return Emitter.GenerateClassHeirerarhyCore(queries.Select(static x => (x.TargetType, x)), MembersFactory, ctx.CancellationToken);
+        }
+
+        internal static void EmitQueries(SourceProductionContext ctx, ImmutableArray<Query> queries)
+        {
+            if (queries is { IsDefaultOrEmpty: true })
+            {
+                return;
+            }
+
+            var cu = CompilationUnit()
+                .AddUsings(UsingDirective(ParseName("global::System.Collections.Immutable")))
+                .AddMembers(QueriesGeneratedSyntax.AddMembers(IsMatchTagParamMethodSyntax, CreateQueryCoreMethodSyntax, CreateProjectionIdCoreSyntax))
+                .AddMembers([.. GenerateClassHeirerarhy(ctx, queries)])
+                .WithLeadingTrivia(Emitter.HeaderSyntaxTriviaList)
+                .NormalizeWhitespace();
+
+            ctx.CancellationToken.ThrowIfCancellationRequested();
+
+            var sourceText = SourceText.From(cu.ToFullString(), Encoding.UTF8);
+
+            ctx.AddSource("Queries.g.cs", sourceText);
         }
     }
 }

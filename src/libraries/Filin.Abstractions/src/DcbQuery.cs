@@ -73,7 +73,7 @@ public readonly struct DcbQuery : IEquatable<DcbQuery>, IComparable<DcbQuery>
     /// Determines whether the collection contains a specific query item using high-performance binary search.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public readonly bool Contains(DcbQueryItem item) => IsEmpty ? false : AsSpan().BinarySearch(item) >= 0;
+    public readonly bool Contains(DcbQueryItem item) => !IsEmpty && AsSpan().BinarySearch(item) >= 0;
 
     /// <summary>
     /// Combines the current query specification with an additional <see cref="DcbQueryItem"/> boundary block.
@@ -82,12 +82,7 @@ public readonly struct DcbQuery : IEquatable<DcbQuery>, IComparable<DcbQuery>
     /// <param name="queryItem">The query item constraint to append.</param>
     /// <returns>A new <see cref="DcbQuery"/> instance containing the combined, optimized boundary specifications.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public readonly DcbQuery Or(DcbQueryItem queryItem)
-    {
-        if (IsEmpty) return [queryItem];
-
-        return [.. this, queryItem];
-    }
+    public readonly DcbQuery Or(DcbQueryItem queryItem) => IsEmpty ? [queryItem] : [.. this, queryItem];
 
     /// <summary>
     /// Combines the current query specification with another composite <see cref="DcbQuery"/> block.
@@ -96,13 +91,7 @@ public readonly struct DcbQuery : IEquatable<DcbQuery>, IComparable<DcbQuery>
     /// <param name="query">The other composite query specification to merge with.</param>
     /// <returns>A new <see cref="DcbQuery"/> instance representing the union of both specifications.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public readonly DcbQuery Or(DcbQuery query)
-    {
-        if (IsEmpty) return query;
-        if (query.IsEmpty) return this;
-
-        return [.. this, .. query];
-    }
+    public readonly DcbQuery Or(DcbQuery query) => IsEmpty ? query : query.IsEmpty ? this : [.. this, .. query];
 
     /// <summary>
     /// Determines whether the specified domain event matches any of the consistency constraints 
@@ -122,7 +111,7 @@ public readonly struct DcbQuery : IEquatable<DcbQuery>, IComparable<DcbQuery>
         }
 
         var itemsSpan = _items.AsSpan();
-        for (int i = 0; i < itemsSpan.Length; i++)
+        for (var i = 0; i < itemsSpan.Length; i++)
         {
             if (itemsSpan[i].MatchesEvent(@event))
             {
@@ -138,17 +127,19 @@ public readonly struct DcbQuery : IEquatable<DcbQuery>, IComparable<DcbQuery>
     /// </summary>
     public ReadOnlySpan<DcbQueryItem> AsSpan() => _items.AsSpan();
 
-    /// <summary>
-    /// Returns a high-performance stack-only enumerator over the collection.
-    /// </summary>
-    public Enumerator GetEnumerator() => new(_items);
+    /// <inheritdoc cref="IEnumerable{T}"/>
+    public DcbQueryEnumerator GetEnumerator() => new(_items);
 
+    /// <inheritdoc/>
     public bool Equals(DcbQuery other) => AsSpan().SequenceEqual(other.AsSpan());
 
+    /// <inheritdoc/>
     public override bool Equals(object? obj) => obj is DcbQuery collection && Equals(collection);
 
+    /// <inheritdoc/>
     public override int GetHashCode() => IsEmpty ? 0 : CombineHashCode(_items);
 
+    /// <inheritdoc/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int CompareTo(DcbQuery other) => AsSpan().SequenceCompareTo(other.AsSpan());
 
@@ -172,14 +163,14 @@ public readonly struct DcbQuery : IEquatable<DcbQuery>, IComparable<DcbQuery>
         // 1. Sort items by tags first to group identical boundaries together
         Array.Sort(array, CompareItemsByTags);
 
-        int index = 1;
-        for (int i = 1; i < array.Length; i++)
+        var index = 1;
+        for (var i = 1; i < array.Length; i++)
         {
             // Check if the current item has the exact same tag boundary as the previous unique item
             if (array[i].Tags.Equals(array[index - 1].Tags))
             {
                 // This invokes CollectionBuilder under the hood, ensuring automatic sorting and deduplication.
-                EventTypeCollection mergedTypes = [.. array[index - 1].EventTypes, .. array[i].EventTypes];
+                EventTypes mergedTypes = [.. array[index - 1].EventTypes, .. array[i].EventTypes];
 
                 // Reconstruct the immutable query item with the combined event types
                 array[index - 1] = new DcbQueryItem(mergedTypes, array[index - 1].Tags);
@@ -261,52 +252,4 @@ public readonly struct DcbQuery : IEquatable<DcbQuery>, IComparable<DcbQuery>
     /// <param name="right">The right operand.</param>
     /// <returns><see langword="true"/> if the left instance follows or equals the right instance; otherwise, <see langword="false"/>.</returns>
     public static bool operator >=(DcbQuery left, DcbQuery right) => left.CompareTo(right) >= 0;
-
-    /// <summary>
-    /// Provides a high-performance, stack-only enumerator over a collection.
-    /// </summary>
-    public ref struct Enumerator
-    {
-        int _index;
-        readonly ReadOnlySpan<DcbQueryItem> _span;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal Enumerator(ReadOnlySpan<DcbQueryItem> values)
-        {
-            _span = values;
-            _index = -1;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool MoveNext()
-        {
-            int nextIndex = _index + 1;
-            if (nextIndex < _span.Length)
-            {
-                _index = nextIndex;
-                return true;
-            }
-
-            _index = nextIndex;
-            return false;
-        }
-
-        public readonly DcbQueryItem Current
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                if (_index < 0 || _index >= _span.Length)
-                {
-                    ThrowInvalidOperationException();
-                }
-                return _span[_index];
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        [DoesNotReturn]
-        static void ThrowInvalidOperationException() =>
-            throw new InvalidOperationException("DcbQuery.Enumerator.Current value has not been set.");
-    }
 }

@@ -5,7 +5,7 @@ namespace Filin.Storage;
 /// <summary>
 /// Represents the result of an event append operation submitted to the <see cref="IEventStore"/>.
 /// </summary>
-public readonly partial struct AppendResult
+public readonly struct AppendResult : IEquatable<AppendResult>
 {
     /// <summary>
     /// Represents a pre-allocated failed result indicating that a business conflict occurred when appending events.
@@ -17,9 +17,9 @@ public readonly partial struct AppendResult
     /// </summary>
     public static readonly AppendResult Empty = new(false);
 
-    readonly object? _value; // Stores either a single DcbEvent or a IReadOnlyList<DcbEventSequenced> list.
     readonly EventPosition _pos;
     readonly DateTimeOffset _ts;
+    readonly object? _value; // Stores either a single DcbEvent or a IReadOnlyList<DcbEventSequenced> list.
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AppendResult"/> struct with a single appended event.
@@ -95,15 +95,12 @@ public readonly partial struct AppendResult
     public readonly int Count
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get
+        get => _value switch
         {
-            return _value switch
-            {
-                DcbEvent => 1,
-                IReadOnlyList<DcbEventSequenced> evts => evts.Count,
-                _ => 0
-            };
-        }
+            DcbEvent => 1,
+            IReadOnlyList<DcbEventSequenced> evts => evts.Count,
+            _ => 0
+        };
     }
 
     /// <summary>
@@ -118,7 +115,7 @@ public readonly partial struct AppendResult
 
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public readonly Enumerator GetEnumerator() =>
+    public readonly AppendResultEnumerator GetEnumerator() =>
         _value switch
         {
             DcbEvent evt => new(_pos, _ts, evt),
@@ -126,6 +123,38 @@ public readonly partial struct AppendResult
             _ => throw InvalidStateException()
         };
 
+    /// <inheritdoc/>
+    public bool Equals(AppendResult other) => _pos == other._pos && _ts == other._ts
+        && (_value, other._value) switch
+        {
+            (DcbEvent evt, DcbEvent evt2) => evt.Equals(evt2),
+            (IReadOnlyList<DcbEventSequenced> evts, IReadOnlyList<DcbEventSequenced> evts2) => evts.Count == evts2.Count && Enumerable.SequenceEqual(evts, evts2),
+            (null, null) => true,
+            _ => false
+        };
+
+    /// <inheritdoc/>
+    public override bool Equals(object? obj) => obj is AppendResult res && Equals(res);
+
+    /// <inheritdoc/>
+    public override int GetHashCode() => HashCode.Combine(_pos, _ts, _value);
+
     [MethodImpl(MethodImplOptions.NoInlining)]
     static InvalidOperationException InvalidStateException() => new("The AppendResult state is invalid.");
+
+    /// <summary>
+    /// Determines whether two <see cref="AppendResult"/> instances are equal.
+    /// </summary>
+    /// <param name="left">The first <see cref="AppendResult"/> instance to compare.</param>
+    /// <param name="right">The second <see cref="AppendResult"/> instance to compare.</param>
+    /// <returns><see langword="true"/> if the instances are equal; otherwise, <see langword="false"/>.</returns>
+    public static bool operator ==(AppendResult left, AppendResult right) => left.Equals(right);
+
+    /// <summary>
+    /// Determines whether two <see cref="AppendResult"/> instances are not equal.
+    /// </summary>
+    /// <param name="left">The first <see cref="AppendResult"/> instance to compare.</param>
+    /// <param name="right">The second <see cref="AppendResult"/> instance to compare.</param>
+    /// <returns><see langword="true"/> if the instances are not equal; otherwise, <see langword="false"/>.</returns>
+    public static bool operator !=(AppendResult left, AppendResult right) => !(left == right);
 }

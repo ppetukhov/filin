@@ -1,0 +1,22 @@
+namespace Filin.Internal;
+
+/// <inheritdoc cref="IProjectorProxy{TState}"/>
+sealed class ProjectorProxy<TProjector, TState> : IProjectorProxy<TState>
+    where TProjector : IProjector<TState>
+    where TState : notnull
+{
+    /// <inheritdoc/>
+    public ProjectorId ProjectorId => TProjector.ProjectorId;
+
+    /// <inheritdoc/>
+    public DcbQuery GetQuery(Tags tags) => TProjector.GetQuery(tags);
+
+    /// <inheritdoc/>
+    public ProjectionId GetProjectionId(Tags tags) => TProjector.GetProjectionId(tags);
+
+    /// <inheritdoc/>
+    public TState Project(DcbEventSequenced domainEvent) => TProjector.Project(domainEvent);
+
+    /// <inheritdoc/>
+    public TState Project(TState state, DcbEventSequenced domainEvent) => TProjector.Project(state, domainEvent);
+}
