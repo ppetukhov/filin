@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(NetCurrent);$(NetMinimum)</TargetFrameworks>
+    <IsPackable>true</IsPackable>
+    <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
+  </PropertyGroup>
+ 
+  <ItemGroup>
+    <PackageReference Include="Npgsql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(CommonPath)\AdoNet\AdoNetInvariants.cs" LinkBase="Storage" />
+    <Compile Include="$(CommonPath)\AdoNet\DbConnectionFactory.cs" LinkBase="Storage" />
+    <Compile Include="$(CommonPath)\AdoNet\DbExtensions.cs" LinkBase="Storage" />
+    <Compile Include="$(CommonPath)\Hosting\DbDataSourseServiceCollectionExtensions.cs" LinkBase="Hosting" />
+    <Compile Include="$(CommonPath)\Text\ValueStringBuilder.cs" LinkBase="Internal" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="$(LibrariesProjectRoot)\Filin.Hosting\src\Filin.Hosting.csproj" />
+  </ItemGroup>
+
+</Project>

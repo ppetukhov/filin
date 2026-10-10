@@ -38,9 +38,6 @@
 	<File Path="src/libraries/Common/src/AdoNet/DbConnectionFactory.cs" />
     <File Path="src/libraries/Common/src/AdoNet/DbExtensions.cs" />
   </Folder>
-  <Folder Name="/src/libraries/Common/src/Configuration/">
-    <File Path="src/libraries/Common/src/Configuration/FromExistingServiceCollectionExtensions.cs" />
-  </Folder>
   <Folder Name="/src/libraries/Common/src/Hosting/">
     <File Path="src/libraries/Common/src/Hosting/ReferencedAssemblyProvider.cs" />
 	<File Path="src/libraries/Common/src/Hosting/DbDataSourseServiceCollectionExtensions.cs" />
@@ -70,9 +67,9 @@
   <Folder Name="/src/libraries/Filin.Compliance/src/">
     <Project Path="src/libraries/Filin.Compliance/src/Filin.Compliance.csproj" Id="f250fc49-1a6e-454f-82c5-48c7b0c1c7b5" />
   </Folder>
-  <Folder Name="/src/libraries/Filin.EventStore.Postgres/" />
-  <Folder Name="/src/libraries/Filin.EventStore.Postgres/src/">
-    <Project Path="src/libraries/Filin.EventStore.Postgres/src/Filin.EventStore.Postgres.csproj" Id="06d0752e-79be-472c-b5cb-1276e049cb17" />
+  <Folder Name="/src/libraries/Filin.EventStore.AdoNet/" />
+  <Folder Name="/src/libraries/Filin.EventStore.AdoNet/src/">
+    <Project Path="src/libraries/Filin.EventStore.AdoNet/src/Filin.EventStore.AdoNet.csproj" Id="06d0752e-79be-472c-b5cb-1276e049cb17" />
   </Folder>
   <Folder Name="/src/libraries/Filin.Hosting/" />
   <Folder Name="/src/libraries/Filin.Hosting/src/">
