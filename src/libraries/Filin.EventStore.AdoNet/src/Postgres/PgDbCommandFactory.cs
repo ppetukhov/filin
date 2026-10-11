@@ -7,6 +7,7 @@ using System.Text;
 using Filin.AdoNet;
 using Filin.EventStore.AdoNet.Internal;
 using Filin.Storage;
+using Filin.Text;
 
 namespace Filin.EventStore.AdoNet.Postgres;
 

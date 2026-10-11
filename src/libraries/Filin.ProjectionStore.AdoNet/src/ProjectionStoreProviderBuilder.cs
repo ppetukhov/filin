@@ -1,4 +1,5 @@
 using Filin;
+using Filin.AdoNet;
 using Filin.Configuration;
 using Filin.Hosting;
 using Filin.ProjectionStore.AdoNet;
@@ -9,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 [assembly: ApplicationPart("Filin.ProjectionStore.AdoNet")]
-[assembly: ProviderBuilder("AdoNet", "ProjectionStore", "Executor", typeof(ProjectionStoreProviderBuilder))]
+[assembly: RegisterProvider(name: "AdoNet", kind: "ProjectionStore", type: typeof(ProjectionStoreProviderBuilder))]
 
 namespace Filin.ProjectionStore.AdoNet;
 

@@ -9,42 +9,45 @@ namespace Filin.Generators.Extensions;
 /// </summary>
 static class StringExtensions
 {
-    /// <summary>
-    /// Returns the provided string as a literal expression.
-    /// </summary>
-    /// <param name="str">
-    /// The string.
-    /// </param>
-    /// <returns>
-    /// The literal expression.
-    /// </returns>
-    internal static LiteralExpressionSyntax GetLiteralExpression(this string str)
+    extension(string str)
     {
-        var syntaxToken = SyntaxFactory.Literal(
-            SyntaxFactory.TriviaList(),
-            @"""" + str + @"""",
-            str,
-            SyntaxFactory.TriviaList());
+        /// <summary>
+        /// Returns the provided string as a literal expression.
+        /// </summary>
+        /// <returns>
+        /// The literal expression.
+        /// </returns>
+        internal LiteralExpressionSyntax GetLiteralExpression()
+        {
+            var syntaxToken = SyntaxFactory.Literal(
+                SyntaxFactory.TriviaList(),
+                @"""" + str + @"""",
+                str,
+                SyntaxFactory.TriviaList());
 
-        return SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, syntaxToken);
+            return SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, syntaxToken);
+        }
+
+        internal string EscapeIdentifier() => IsCSharpKeyword(str) ? "@" + str : str;
     }
 
-    internal static SyntaxToken ToIdentifier(this string identifier)
+    extension(string identifier)
     {
-        identifier = identifier.TrimStart('@');
+        internal SyntaxToken ToIdentifier()
+        {
+            identifier = identifier.TrimStart('@');
 
-        return IsCSharpKeyword(identifier)
-            ? SyntaxFactory.VerbatimIdentifier(
-                SyntaxTriviaList.Empty,
-                identifier,
-                identifier,
-                SyntaxTriviaList.Empty)
-            : SyntaxFactory.Identifier(SyntaxTriviaList.Empty, identifier, SyntaxTriviaList.Empty);
+            return IsCSharpKeyword(identifier)
+                ? SyntaxFactory.VerbatimIdentifier(
+                    SyntaxTriviaList.Empty,
+                    identifier,
+                    identifier,
+                    SyntaxTriviaList.Empty)
+                : SyntaxFactory.Identifier(SyntaxTriviaList.Empty, identifier, SyntaxTriviaList.Empty);
+        }
+
+        internal IdentifierNameSyntax ToIdentifierName() => SyntaxFactory.IdentifierName(identifier.ToIdentifier());
     }
-
-    internal static string EscapeIdentifier(this string str) => IsCSharpKeyword(str) ? "@" + str : str;
-
-    internal static IdentifierNameSyntax ToIdentifierName(this string identifier) => SyntaxFactory.IdentifierName(identifier.ToIdentifier());
 
     static bool IsCSharpKeyword(string identifier) =>
         identifier switch

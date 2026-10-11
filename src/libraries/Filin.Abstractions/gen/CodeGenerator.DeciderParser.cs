@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-using Filin.Generators.Specs.Types;
+using Filin.Generators.Specs;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;

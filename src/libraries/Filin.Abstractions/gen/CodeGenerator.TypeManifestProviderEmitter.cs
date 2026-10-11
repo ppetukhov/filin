@@ -7,8 +7,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-using SourceGenerators;
-
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Filin.Generators;

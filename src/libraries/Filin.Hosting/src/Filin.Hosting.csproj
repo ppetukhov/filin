@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <RootNamespace>Filin</RootNamespace>
+    <RootNamespace>Filin.Hosting</RootNamespace>
     <TargetFrameworks>$(NetCurrent);$(NetMinimum)</TargetFrameworks>
     <IsPackable>true</IsPackable>
   </PropertyGroup>
@@ -11,10 +11,6 @@
     <PackageReference Include="Microsoft.Extensions.DependencyModel" />
     <PackageReference Include="Microsoft.Extensions.Options" />
     <PackageReference Include="Microsoft.Extensions.Telemetry" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="$(CommonPath)\Hosting\ReferencedAssemblyProvider.cs" LinkBase="Hosting" />
   </ItemGroup>
  
   <ItemGroup>

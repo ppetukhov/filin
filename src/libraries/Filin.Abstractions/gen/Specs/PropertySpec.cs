@@ -1,8 +1,6 @@
 using Microsoft.CodeAnalysis;
 
-using SourceGenerators;
-
-namespace Filin.Generators.Specs.Members;
+namespace Filin.Generators.Specs;
 
 sealed record PropertySpec(IPropertySymbol Property) : MemberSpec(Property, new TypeRef(Property.Type))
 {

@@ -5,9 +5,7 @@ using Filin.Generators.Extensions;
 
 using Microsoft.CodeAnalysis;
 
-using SourceGenerators;
-
-namespace Filin.Generators.Specs.Types;
+namespace Filin.Generators.Specs;
 
 [DebuggerDisplay("Name={DisplayString}, Kind={SpecKind}")]
 abstract record TypeSpec(ITypeSymbol TypeSymbol)

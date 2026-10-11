@@ -14,7 +14,7 @@
     <Compile Include="$(CommonPath)\AdoNet\AdoNetInvariants.cs" LinkBase="Storage" />
     <Compile Include="$(CommonPath)\AdoNet\DbConnectionFactory.cs" LinkBase="Storage" />
     <Compile Include="$(CommonPath)\AdoNet\DbExtensions.cs" LinkBase="Storage" />
-    <Compile Include="$(CommonPath)\Hosting\DbDataSourseServiceCollectionExtensions.cs" LinkBase="Hosting" />
+    <Compile Include="$(CommonPath)\AdoNet\DbDataSourseServiceCollectionExtensions.cs" LinkBase="Storage" />
     <Compile Include="$(CommonPath)\Text\ValueStringBuilder.cs" LinkBase="Internal" />
   </ItemGroup>
   

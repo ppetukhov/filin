@@ -12,7 +12,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <None Include="..\gen\Filin.Generators.targets" Pack="true" Visible="false" PackagePath="build\$(PackageId).targets;buildTransitive\$(PackageId).targets" />
+    <None Include="..\gen\Filin.Generators.targets" Pack="true" Visible="false" PackagePath="build\$(PackageId).targets;buildMultiTargeting\$(PackageId).targets;buildTransitive\$(PackageId).targets" />
   </ItemGroup>
   
   <Target Name="PackInternalAnalyzers">

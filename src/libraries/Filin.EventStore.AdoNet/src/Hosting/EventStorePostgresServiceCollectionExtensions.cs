@@ -20,38 +20,40 @@ namespace Filin.Hosting;
 /// </summary>
 public static class EventStorePostgresServiceCollectionExtensions
 {
-    /// <summary>
-    /// Configure Postgres event storage for <see cref="IEventStore"/>.
-    /// </summary>
-    public static IServiceCollection AddEventStoreAdoNet(
-        this IServiceCollection services,
-        Action<OptionsBuilder<EventStoreAdoNetOptions>>? configureOptions = null)
+    extension(IServiceCollection services)
     {
-        configureOptions?.Invoke(services.AddOptions<EventStoreAdoNetOptions>());
-
-        services.TryAddEnumerable(ServiceDescriptor.Transient<IPostConfigureOptions<EventStoreAdoNetOptions>, EventStoreAdoNetOptionsProvider>());
-        services.TryAddEnumerable(ServiceDescriptor.Transient<IPostConfigureOptions<EventStoreAdoNetOptions>, DefaultStorageProviderSerializerOptionsConfigurator<EventStoreAdoNetOptions>>());
-        services.TryAddEnumerable(ServiceDescriptor.Transient<IValidateOptions<EventStoreAdoNetOptions>, EventStorePostgresOptionsValidator>());
-
-        var streamChannel = Channel.CreateUnboundedPrioritized(new UnboundedPrioritizedChannelOptions<EventStreamMessage> { SingleReader = true, SingleWriter = false });
-
-        services.TryAddSingleton(streamChannel);
-        services.TryAddSingleton(streamChannel.Writer);
-
-        services.TryAddSingleton<DbCommandFactory>(sp =>
+        /// <summary>
+        /// Configure Postgres event storage for <see cref="IEventStore"/>.
+        /// </summary>
+        public IServiceCollection AddEventStoreAdoNet(
+            Action<OptionsBuilder<EventStoreAdoNetOptions>>? configureOptions = null)
         {
-            var opt = sp.GetRequiredService<IOptions<EventStoreAdoNetOptions>>();
+            configureOptions?.Invoke(services.AddOptions<EventStoreAdoNetOptions>());
 
-            var dbSource = string.IsNullOrEmpty(opt.Value.ConnectionName)
-                ? DbConnectionFactory.CreateDataSource(opt.Value.Invariant, opt.Value.ConnectionString)
-                : sp.GetRequiredKeyedService<DbDataSource>(opt.Value.ConnectionName);
+            services.TryAddEnumerable(ServiceDescriptor.Transient<IPostConfigureOptions<EventStoreAdoNetOptions>, EventStoreAdoNetOptionsProvider>());
+            services.TryAddEnumerable(ServiceDescriptor.Transient<IPostConfigureOptions<EventStoreAdoNetOptions>, DefaultStorageProviderSerializerOptionsConfigurator<EventStoreAdoNetOptions>>());
+            services.TryAddEnumerable(ServiceDescriptor.Transient<IValidateOptions<EventStoreAdoNetOptions>, EventStorePostgresOptionsValidator>());
 
-            return ActivatorUtilities.CreateInstance<PgDbCommandFactory>(sp, dbSource, opt.Value.StorageSerializer);
-        });
+            var streamChannel = Channel.CreateUnboundedPrioritized(new UnboundedPrioritizedChannelOptions<EventStreamMessage> { SingleReader = true, SingleWriter = false });
 
-        return services
-            .AddAppendEventsBlock<AppendEventsBlock>()
-            .AddEventStore<EventStore.AdoNet.EventStore>()
-            .AddHostedService<EventStreamingService>();
+            services.TryAddSingleton(streamChannel);
+            services.TryAddSingleton(streamChannel.Writer);
+
+            services.TryAddSingleton<DbCommandFactory>(sp =>
+            {
+                var opt = sp.GetRequiredService<IOptions<EventStoreAdoNetOptions>>();
+
+                var dbSource = string.IsNullOrEmpty(opt.Value.ConnectionName)
+                    ? DbConnectionFactory.CreateDataSource(opt.Value.Invariant, opt.Value.ConnectionString)
+                    : sp.GetRequiredKeyedService<DbDataSource>(opt.Value.ConnectionName);
+
+                return ActivatorUtilities.CreateInstance<PgDbCommandFactory>(sp, dbSource, opt.Value.StorageSerializer);
+            });
+
+            return services
+                .AddAppendEventsBlock<AppendEventsBlock>()
+                .AddEventStore<EventStore.AdoNet.EventStore>()
+                .AddHostedService<EventStreamingService>();
+        }
     }
 }

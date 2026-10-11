@@ -16,38 +16,41 @@ namespace Filin.Hosting;
 /// <summary>
 /// Provides extension methods for registering default infrastructure services to <see cref="IFilinBuilder"/>.
 /// </summary>
+[SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "False positive for the new extension syntax.")]
 public static class FilinBuilderDefaultServicesExtensions
 {
-    /// <summary>
-    /// Adds the default core and infrastructure services required for the Filin framework to function.
-    /// </summary>
-    /// <param name="builder">The <see cref="IFilinBuilder"/> instance to add services to.</param>
-    /// <returns>The same <see cref="IFilinBuilder"/> instance so that multiple calls can be chained.</returns>
-    [RequiresAssemblyFiles("Calls Filin.Hosting.DefaultExecutorServices.ApplyConfiguration(IFilinBuilder)")]
-    [RequiresUnreferencedCode("Calls Filin.Hosting.SerializationServiceCollectionExtentions.AddStorageSerialization()")]
-    [RequiresDynamicCode("Calls Filin.Hosting.SerializationServiceCollectionExtentions.AddStorageSerialization()")]
-    public static IFilinBuilder AddDefaultServices(this IFilinBuilder builder)
+    extension(IFilinBuilder builder)
     {
-        ArgumentNullException.ThrowIfNull(builder);
-
-        var services = builder.Services
-            .AddOptions()
-            .AddLogging(builder => builder.EnableRedaction())
-            .AddRedaction(builder => builder.SetRedactor<ConnectionStringRedactor>(AppConfigClassifications.ConnectionString))
-            .AddStorageSerialization();
-
-        services.TryAddSingleton(TimeProvider.System);
-
-        var relevantAssembles = new RelevantAssemblies([.. Internal.ReferencedAssemblyProvider.GetRelevantAssemblies()]);
-
-        foreach (var assembly in relevantAssembles.Assembles)
+        /// <summary>
+        /// Adds the default core and infrastructure services required for the Filin framework to function.
+        /// </summary>
+        /// <returns>The same <see cref="IFilinBuilder"/> instance so that multiple calls can be chained.</returns>
+        [RequiresAssemblyFiles("Calls Filin.Hosting.DefaultExecutorServices.ApplyConfiguration(IFilinBuilder)")]
+        [RequiresUnreferencedCode("Calls Filin.Hosting.SerializationServiceCollectionExtentions.AddStorageSerialization()")]
+        [RequiresDynamicCode("Calls Filin.Hosting.SerializationServiceCollectionExtentions.AddStorageSerialization()")]
+        public IFilinBuilder AddDefaultServices()
         {
-            _ = builder.AddAssembly(assembly);
+            ArgumentNullException.ThrowIfNull(builder);
+
+            var services = builder.Services
+                .AddOptions()
+                .AddLogging(builder => builder.EnableRedaction())
+                .AddRedaction(builder => builder.SetRedactor<ConnectionStringRedactor>(AppConfigClassifications.ConnectionString))
+                .AddStorageSerialization();
+
+            services.TryAddSingleton(TimeProvider.System);
+
+            var relevantAssembles = new RelevantAssemblies([.. ReferencedAssemblyProvider.GetRelevantAssemblies()]);
+
+            foreach (var assembly in relevantAssembles.Assembles)
+            {
+                _ = builder.AddAssembly(assembly);
+            }
+
+            ApplyConfiguration(builder, relevantAssembles);
+
+            return builder;
         }
-
-        ApplyConfiguration(builder, relevantAssembles);
-
-        return builder;
     }
 
     [RequiresAssemblyFiles("Calls Filin.Hosting.DefaultExecutorServices.GetRegisteredProviders()")]
@@ -72,12 +75,9 @@ public static class FilinBuilderDefaultServicesExtensions
 
         foreach (var asm in relevantAssemblies.Assembles)
         {
-            foreach (var attr in asm.GetCustomAttributes<ProviderBuilderAttribute>())
+            foreach (var attr in asm.GetCustomAttributes<RegisterProviderAttribute>())
             {
-                if (string.Equals(attr.Target, "Executor", StringComparison.OrdinalIgnoreCase))
-                {
-                    result[(attr.Kind, attr.Name)] = attr.Type;
-                }
+                result[(attr.Kind, attr.Name)] = attr.Type;
             }
         }
 

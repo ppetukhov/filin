@@ -1,8 +1,7 @@
+using System.Runtime.CompilerServices;
 using System.Text;
 
 using Microsoft.CodeAnalysis;
-
-using SourceGenerators;
 
 namespace Filin.Generators.Extensions;
 
@@ -14,53 +13,89 @@ static class SymbolExtentions
         genericsOptions: SymbolDisplayGenericsOptions.None,
         miscellaneousOptions: SymbolDisplayMiscellaneousOptions.UseSpecialTypes);
 
-    internal static Accessibility GetGlobalAccessibility(this ISymbol symbol)
+    extension(ISymbol symbol)
     {
-        var accessibility = Accessibility.Public;
-
-        do
+        internal Accessibility GetGlobalAccessibility()
         {
-            var access = symbol.DeclaredAccessibility;
+            var accessibility = Accessibility.Public;
 
-            if (access != Accessibility.NotApplicable && access < accessibility)
+            do
             {
-                accessibility = access;
+                var access = symbol.DeclaredAccessibility;
+
+                if (access != Accessibility.NotApplicable && access < accessibility)
+                {
+                    accessibility = access;
+                }
+
+                symbol = symbol.ContainingType;
+            } while (symbol is not null && symbol.Kind is not SymbolKind.Namespace);
+
+            return accessibility;
+        }
+    }
+    extension(INamedTypeSymbol type)
+    {
+        internal List<ITypeSymbol>? GetAllTypeArgumentsInScope()
+        {
+            if (!type.IsGenericType)
+            {
+                return null;
             }
 
-            symbol = symbol.ContainingType;
-        } while (symbol is not null && symbol.Kind is not SymbolKind.Namespace);
+            List<ITypeSymbol>? args = null;
+            TraverseContainingTypes(type);
+            return args;
 
-        return accessibility;
+            void TraverseContainingTypes(INamedTypeSymbol current)
+            {
+                if (current.ContainingType is INamedTypeSymbol parent)
+                {
+                    TraverseContainingTypes(parent);
+                }
+
+                if (!current.TypeArguments.IsEmpty)
+                {
+                    (args ??= new()).AddRange(current.TypeArguments);
+                }
+            }
+        }
     }
 
-    /// <summary>
-    /// Returns unique identifier compatible name based on the fully qualified type name, including fully qualified type arguments.
-    /// Names are truncated at 500 characters. (1023 is maximum identifier length)
-    /// </summary>
-    /// <remarks>
-    /// When names are longer than 500 characters a hash code of the original string is appended to maintain identifier uniqueness.
-    /// Examples:
-    /// Namespace1.Namespace2.Type -> Namespace1__Namespace2__Type ;
-    /// Namespace.GenericType&lt;Namespace.Type&gt; -> Namespace__GenericType___Namespace__Type___ ;
-    /// </remarks>
-    internal static string ToIdentifierCompatibleSubstring(this ITypeSymbol type)
+    extension(ITypeSymbol type)
     {
-        var sb = new StringBuilder(50);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal string GetFullyQualifiedName() => type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
-        ToIdentifierCompatibleSubstringBuilder(type, sb);
-
-        //Replace . with __; remove invalid characters
-        _ = sb.Replace(".", "__").Replace("[", "").Replace("]", "");
-
-        // string.GetHashCode uses randomized string hashing.
-        // Causes false negatives in Baseline tests if threshold is too small
-        if (sb.Length > 500)
+        /// <summary>
+        /// Returns unique identifier compatible name based on the fully qualified type name, including fully qualified type arguments.
+        /// Names are truncated at 500 characters. (1023 is maximum identifier length)
+        /// </summary>
+        /// <remarks>
+        /// When names are longer than 500 characters a hash code of the original string is appended to maintain identifier uniqueness.
+        /// Examples:
+        /// Namespace1.Namespace2.Type -> Namespace1__Namespace2__Type ;
+        /// Namespace.GenericType&lt;Namespace.Type&gt; -> Namespace__GenericType___Namespace__Type___ ;
+        /// </remarks>
+        internal string ToIdentifierCompatibleSubstring()
         {
-            var hash = ((uint)sb.ToString().GetHashCode()).ToString("D10", System.Globalization.NumberFormatInfo.InvariantInfo);
-            _ = sb.Remove(490, sb.Length - 490).Append(hash);
-        }
+            var sb = new StringBuilder(50);
 
-        return sb.ToString();
+            ToIdentifierCompatibleSubstringBuilder(type, sb);
+
+            //Replace . with __; remove invalid characters
+            _ = sb.Replace(".", "__").Replace("[", "").Replace("]", "");
+
+            // string.GetHashCode uses randomized string hashing.
+            // Causes false negatives in Baseline tests if threshold is too small
+            if (sb.Length > 500)
+            {
+                var hash = ((uint)sb.ToString().GetHashCode()).ToString("D10", System.Globalization.NumberFormatInfo.InvariantInfo);
+                _ = sb.Remove(490, sb.Length - 490).Append(hash);
+            }
+
+            return sb.ToString();
+        }
     }
 
     static void ToIdentifierCompatibleSubstringBuilder(ITypeSymbol type, StringBuilder displaySubstring)

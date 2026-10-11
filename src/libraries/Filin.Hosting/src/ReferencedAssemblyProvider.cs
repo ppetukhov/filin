@@ -1,27 +1,22 @@
-using Microsoft.Extensions.DependencyModel;
-
 using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-
-#if NETCOREAPP3_1_OR_GREATER
 using System.Runtime.Loader;
-#endif
 
-namespace Filin.Hosting.Internal;
+using Microsoft.Extensions.DependencyModel;
+
+namespace Filin.Hosting;
 
 static class ReferencedAssemblyProvider
 {
-    [RequiresAssemblyFiles("Calls Filin.Hosting.Internal.ReferencedAssemblyProvider.AddFromDependencyContext(HashSet<Assembly>, Assembly)")]
+    [RequiresAssemblyFiles("Calls Filin.Hosting.ReferencedAssemblyProvider.AddFromDependencyContext(HashSet<Assembly>, Assembly)")]
     internal static IEnumerable<Assembly> GetRelevantAssemblies()
     {
         var parts = new HashSet<Assembly>();
 
         AddFromDependencyContext(parts);
 
-#if NETCOREAPP3_1_OR_GREATER
         AddFromAssemblyLoadContext(parts);
-#endif
 
         foreach (var loadedAsm in AppDomain.CurrentDomain.GetAssemblies())
         {
@@ -55,7 +50,6 @@ static class ReferencedAssemblyProvider
         }
     }
 
-#if NETCOREAPP3_1_OR_GREATER
     public static void AddFromAssemblyLoadContext(HashSet<Assembly> parts, Assembly? assembly = null)
     {
         ArgumentNullException.ThrowIfNull(parts);
@@ -75,7 +69,6 @@ static class ReferencedAssemblyProvider
             AddAssembly(parts, asm);
         }
     }
-#endif
 
     [RequiresAssemblyFiles("Calls Microsoft.Extensions.DependencyModel.DependencyContext.Default")]
     internal static void AddFromDependencyContext(HashSet<Assembly> parts, Assembly? assembly = null)
@@ -88,7 +81,7 @@ static class ReferencedAssemblyProvider
         if (assembly != null && assembly.IsDefined(typeof(ApplicationPartAttribute)))
         {
             AddAssembly(parts, assembly);
-            assemblies.Add(assembly);
+            _ = assemblies.Add(assembly);
         }
 
         if (dependencyContext == null)
@@ -96,11 +89,9 @@ static class ReferencedAssemblyProvider
             return;
         }
 
-#if NETCOREAPP3_1_OR_GREATER
         var assemblyContext = assembly is not null
             ? AssemblyLoadContext.GetLoadContext(assembly) ?? AssemblyLoadContext.Default
             : AssemblyLoadContext.Default;
-#endif
 
         foreach (var lib in dependencyContext.RuntimeLibraries)
         {
@@ -112,7 +103,6 @@ static class ReferencedAssemblyProvider
 #pragma warning disable CA1031 // Do not catch general exception types
             try
             {
-#if NET5_0_OR_GREATER
                 var name = lib.GetRuntimeAssemblyNames(dependencyContext, System.Runtime.InteropServices.RuntimeInformation.RuntimeIdentifier).FirstOrDefault();
                 if (name is null)
                 {
@@ -120,19 +110,7 @@ static class ReferencedAssemblyProvider
                 }
 
                 var asm = assemblyContext.LoadFromAssemblyName(name);
-#else
-                var name = lib.GetRuntimeAssemblyNames(dependencyContext, Microsoft.DotNet.PlatformAbstractions.RuntimeEnvironment.GetRuntimeIdentifier()).FirstOrDefault();
-                if (name is null)
-                {
-                    continue;
-                }
 
-#if NETCOREAPP3_1_OR_GREATER
-                var asm = assemblyContext.LoadFromAssemblyName(name);
-#else
-                var asm = Assembly.Load(name);
-#endif
-#endif
                 if (asm.IsDefined(typeof(ApplicationPartAttribute)) && assemblies.Add(asm))
                 {
                     AddAssembly(parts, asm);
@@ -153,18 +131,13 @@ static class ReferencedAssemblyProvider
             return [];
         }
 
-#if NETCOREAPP3_1_OR_GREATER
         var assemblyContext = AssemblyLoadContext.GetLoadContext(assembly) ?? AssemblyLoadContext.Default;
-#endif
 
         return ExpandApplicationParts(
             new[] { assembly }.Concat(assembly.GetCustomAttributes<ApplicationPartAttribute>()
                 .Select(name =>
-#if NETCOREAPP3_1_OR_GREATER
                     assemblyContext.LoadFromAssemblyName(new AssemblyName(name.AssemblyName))
-#else
-                    Assembly.Load(new AssemblyName(name.AssemblyName))
-#endif
+
                 )));
 
         static IEnumerable<Assembly> ExpandApplicationParts(IEnumerable<Assembly> assemblies)
@@ -189,18 +162,13 @@ static class ReferencedAssemblyProvider
                     return;
                 }
 
-#if NETCOREAPP3_1_OR_GREATER
                 var assemblyContext = AssemblyLoadContext.GetLoadContext(assembly) ?? AssemblyLoadContext.Default;
-#endif
 
                 foreach (var attribute in attributes)
                 {
                     var assemblyName = new AssemblyName(attribute.AssemblyName);
-#if NETCOREAPP3_1_OR_GREATER
                     var referenced = assemblyContext.LoadFromAssemblyName(assemblyName);
-#else
-                    var referenced = Assembly.Load(assemblyName);
-#endif
+
                     if (assemblies.Add(referenced))
                     {
                         ExpandAssembly(assemblies, referenced);

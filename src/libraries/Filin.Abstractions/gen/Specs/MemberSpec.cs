@@ -4,9 +4,7 @@ using Filin.Generators.Extensions;
 
 using Microsoft.CodeAnalysis;
 
-using SourceGenerators;
-
-namespace Filin.Generators.Specs.Members;
+namespace Filin.Generators.Specs;
 
 abstract record MemberSpec
 {

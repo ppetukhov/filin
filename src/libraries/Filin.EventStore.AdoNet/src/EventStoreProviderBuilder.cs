@@ -1,4 +1,5 @@
 using Filin;
+using Filin.AdoNet;
 using Filin.Configuration;
 using Filin.EventStore.AdoNet;
 using Filin.Hosting;
@@ -9,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 [assembly: ApplicationPart("Filin.EventStore.AdoNet")]
-[assembly: ProviderBuilder(name: "AdoNet", kind: "EventStore", target: "Executor", type: typeof(EventStoreProviderBuilder))]
+[assembly: RegisterProvider(name: "AdoNet", kind: "EventStore", type: typeof(EventStoreProviderBuilder))]
 
 namespace Filin.EventStore.AdoNet;
 

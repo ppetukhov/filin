@@ -1,4 +1,4 @@
-namespace Filin.Generators.Specs.Types;
+namespace Filin.Generators.Specs;
 
 sealed class TypeSpecComparer : IEqualityComparer<TypeSpec>
 {

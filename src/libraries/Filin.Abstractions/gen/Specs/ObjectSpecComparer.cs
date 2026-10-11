@@ -1,4 +1,4 @@
-namespace Filin.Generators.Specs.Types;
+namespace Filin.Generators.Specs;
 
 sealed class ObjectSpecComparer : IEqualityComparer<ObjectSpec>, IComparer<ObjectSpec>
 {

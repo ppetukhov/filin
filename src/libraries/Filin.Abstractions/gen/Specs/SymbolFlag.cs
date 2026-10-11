@@ -1,4 +1,4 @@
-namespace Filin.Generators.Specs.Types;
+namespace Filin.Generators.Specs;
 
 [Flags]
 enum SymbolFlag : byte

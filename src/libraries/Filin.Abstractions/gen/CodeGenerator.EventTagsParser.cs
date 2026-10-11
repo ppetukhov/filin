@@ -1,8 +1,7 @@
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 
-using Filin.Generators.Specs.Members;
-using Filin.Generators.Specs.Types;
+using Filin.Generators.Specs;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;

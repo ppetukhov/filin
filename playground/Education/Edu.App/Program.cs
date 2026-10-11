@@ -278,8 +278,6 @@ if (!apptLifeTime.ApplicationStopping.IsCancellationRequested)
     catch (OperationCanceledException) { }
 }
 
-Console.ReadLine();
-
 #pragma warning restore CA1873 // Avoid potentially expensive logging
 #pragma warning restore CA1848 // Use the LoggerMessage delegates
 #pragma warning restore CA1303 // Do not pass literals as localized parameters
