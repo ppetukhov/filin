@@ -52,10 +52,6 @@
   <Folder Name="/src/libraries/Filin.Abstractions/tests/">
     <Project Path="src/libraries/Filin.Abstractions/tests/Filin.Abstractions.Tests.csproj" />
   </Folder>
-  <Folder Name="/src/libraries/Filin.Compliance/" />
-  <Folder Name="/src/libraries/Filin.Compliance/src/">
-    <Project Path="src/libraries/Filin.Compliance/src/Filin.Compliance.csproj" Id="f250fc49-1a6e-454f-82c5-48c7b0c1c7b5" />
-  </Folder>
   <Folder Name="/src/libraries/Filin.EventStore.AdoNet/" />
   <Folder Name="/src/libraries/Filin.EventStore.AdoNet/src/">
     <Project Path="src/libraries/Filin.EventStore.AdoNet/src/Filin.EventStore.AdoNet.csproj" Id="06d0752e-79be-472c-b5cb-1276e049cb17" />

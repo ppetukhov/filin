@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
 using Filin.AdoNet;
-using Filin.Compliance.Classification;
 using Filin.Storage;
 
 using Microsoft.Extensions.Options;
@@ -16,7 +15,6 @@ public sealed class ProjectionStoreAdoNetOptions : IStorageProviderSerializerOpt
     /// <summary>
     /// Connection string for ADO.NET ProjectionStore storage.
     /// </summary>
-    [ConnectionString]
     public required string ConnectionString { get; set; }
 
     /// <summary>

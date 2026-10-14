@@ -1,5 +1,3 @@
-using Filin.Compliance.Classification;
-
 using Microsoft.Extensions.Logging;
 
 namespace Filin.ProjectionStore.AdoNet;
@@ -10,7 +8,7 @@ static partial class ProjectionStoreLogger
         EventId = (int)ProjectionStoreCode.ProjectionInitStore,
         EventName = "StorageInitialized",
         Message = "Initialized storage provider: ProviderName={ProviderName} Invariant={InvariantName} ConnectionString={ConnectionString}.")]
-    internal static partial void RelationalProviderInitProvider(this ILogger logger, string ProviderName, string InvariantName, [ConnectionString] string ConnectionString);
+    internal static partial void RelationalProviderInitProvider(this ILogger logger, string ProviderName, string InvariantName, string ConnectionString);
 
     [LoggerMessage(LogLevel.Trace,
         EventId = (int)ProjectionStoreCode.ProjectionReading,

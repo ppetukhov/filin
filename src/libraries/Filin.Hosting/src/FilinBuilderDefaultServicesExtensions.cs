@@ -3,13 +3,9 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
-using Filin.Compliance.Classification;
-using Filin.Compliance.Redaction;
-
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
 
 namespace Filin.Hosting;
 
@@ -34,8 +30,6 @@ public static class FilinBuilderDefaultServicesExtensions
 
             var services = builder.Services
                 .AddOptions()
-                .AddLogging(builder => builder.EnableRedaction())
-                .AddRedaction(builder => builder.SetRedactor<ConnectionStringRedactor>(AppConfigClassifications.ConnectionString))
                 .AddStorageSerialization();
 
             services.TryAddSingleton(TimeProvider.System);
