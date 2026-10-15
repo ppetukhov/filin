@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
@@ -53,13 +52,8 @@ public static class FilinBuilderDefaultServicesExtensions
         var cfg = builder.Configuration.GetSection("Filin");
         var knownProviderTypes = GetRegisteredProviders(relevantAssemblies);
 
-        if (bool.TryParse(cfg["EnableDistributedTracing"], out var enableDistributedTracing) && enableDistributedTracing)
-        {
-            builder.Services.TryAddSingleton(DistributedContextPropagator.Current);
-        }
-
         ApplySubsection(builder, cfg, knownProviderTypes, "EventStore");
-        ApplyNamedSubsections(builder, cfg, knownProviderTypes, "ProjectionStore");
+        ApplySubsection(builder, cfg, knownProviderTypes, "ProjectionStore");
     }
 
     [RequiresAssemblyFiles("Calls Filin.Hosting.Internal.ReferencedAssemblyProvider.GetRelevantAssemblies()")]
@@ -83,17 +77,6 @@ public static class FilinBuilderDefaultServicesExtensions
         if (cfg.GetSection(sectionName) is { } section && section.Exists())
         {
             ConfigureProvider(builder: builder, knownProviderTypes: knownProviderTypes, kind: sectionName, name: null, configurationSection: section);
-        }
-    }
-
-    static void ApplyNamedSubsections(IFilinBuilder builder, IConfigurationSection cfg, Dictionary<(string Kind, string? Name), Type> knownProviderTypes, string sectionName)
-    {
-        if (cfg.GetSection(sectionName) is { } section && section.Exists())
-        {
-            foreach (var child in section.GetChildren())
-            {
-                ConfigureProvider(builder: builder, knownProviderTypes: knownProviderTypes, kind: sectionName, name: child.Key, configurationSection: child);
-            }
         }
     }
 

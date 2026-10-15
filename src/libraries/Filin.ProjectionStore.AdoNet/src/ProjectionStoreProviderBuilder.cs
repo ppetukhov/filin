@@ -49,16 +49,11 @@ sealed class ProjectionStoreProviderBuilder : IProviderBuilder<IFilinBuilder>
             }
         });
 
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            name = ProviderConstants.DefaultStorageProvider;
-        }
-
         if (!string.IsNullOrEmpty(invariant) && !string.IsNullOrEmpty(connectionName))
         {
             _ = builder.Services.TryAddDbDataSource(invariant: invariant, connectionName: connectionName);
         }
 
-        _ = builder.Services.AddProjectionStoreAdoNet(name, OptBuilder);
+        _ = builder.Services.AddProjectionStoreAdoNet(OptBuilder);
     }
 }

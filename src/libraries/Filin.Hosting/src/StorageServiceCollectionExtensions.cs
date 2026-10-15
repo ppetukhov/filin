@@ -20,24 +20,19 @@ public static class StorageServiceCollectionExtensions
         /// Registers a named projection store provider implementation in the service collection.
         /// </summary>
         /// <typeparam name="T">The concrete implementation type of the <see cref="IProjectionStore"/>.</typeparam>
-        /// <param name="name">The unique identifier name of the storage provider instance.</param>
         /// <param name="implementationFactory">The factory delegate used to construct the named storage provider instance.</param>
         /// <returns>The same <see cref="IServiceCollection"/> instance so that multiple calls can be chained.</returns>
-        public IServiceCollection AddProjectionStore<T>(string name, Func<IServiceProvider, string, T> implementationFactory)
+        public IServiceCollection AddProjectionStore<T>(Func<IServiceProvider, T> implementationFactory)
             where T : IProjectionStore
         {
             ArgumentNullException.ThrowIfNull(collection);
-            ArgumentException.ThrowIfNullOrEmpty(name);
             ArgumentNullException.ThrowIfNull(implementationFactory);
 
             collection
-                .RemoveAllKeyed<IProjectionStore>(name)
-                .TryAddKeyedSingleton<IProjectionStore>(name, (sp, key) => implementationFactory(sp, (string)key!));
+                .RemoveAll<IProjectionStore>()
+                .TryAddSingleton<IProjectionStore>((sp) => implementationFactory(sp));
 
-            // Check if it is the default implementation
-            return string.Equals(name, ProviderConstants.DefaultStorageProvider, StringComparison.OrdinalIgnoreCase)
-                ? collection.Replace(ServiceDescriptor.Singleton(sp => sp.GetRequiredKeyedService<IProjectionStore>(ProviderConstants.DefaultStorageProvider)))
-                : collection;
+            return collection;
         }
 
         /// <summary>

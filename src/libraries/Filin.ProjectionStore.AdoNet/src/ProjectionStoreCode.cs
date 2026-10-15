@@ -7,23 +7,23 @@ enum ProjectionStoreCode
 {
     ProjectionStoreBase = 200,
 
-    ProjectionInitStore = ProjectionStoreBase + 1,
+    StorageInitialized = ProjectionStoreBase + 1,
 
-    ProjectionReading = ProjectionStoreBase + 11,
-    ProjectionRead = ProjectionStoreBase + 12,
-    ProjectionNoStateFound = ProjectionStoreBase + 13,
-    ProjectionNoDeserializer = ProjectionStoreBase + 14,
-    ProjectionReadError = ProjectionStoreBase + 15,
+    StateReading = ProjectionStoreBase + 11,
+    StateRead = ProjectionStoreBase + 12,
+    StateNotFound = ProjectionStoreBase + 13,
+    NoDeserializer = ProjectionStoreBase + 14,
+    StateReadError = ProjectionStoreBase + 15,
 
-    ProjectionWriting = ProjectionStoreBase + 21,
-    ProjectionWrote = ProjectionStoreBase + 22,
-    ProjectionWriteError = ProjectionStoreBase + 23,
+    StateWriting = ProjectionStoreBase + 21,
+    StateWrote = ProjectionStoreBase + 22,
+    StateWriteError = ProjectionStoreBase + 23,
 
-    ProjectionClearing = ProjectionStoreBase + 31,
-    ProjectionCleared = ProjectionStoreBase + 32,
-    ProjectionClearingError = ProjectionStoreBase + 33,
+    StateClearing = ProjectionStoreBase + 31,
+    StateCleared = ProjectionStoreBase + 32,
+    StateClearingError = ProjectionStoreBase + 33,
 
-    ProjectionBatchWriting = ProjectionStoreBase + 34,
-    ProjectionBatchWrote = ProjectionStoreBase + 35,
-    ProjectionBatchWriteError = ProjectionStoreBase + 36,
+    StateBatchWriting = ProjectionStoreBase + 34,
+    StateBatchWrote = ProjectionStoreBase + 35,
+    StateBatchWriteError = ProjectionStoreBase + 36,
 }

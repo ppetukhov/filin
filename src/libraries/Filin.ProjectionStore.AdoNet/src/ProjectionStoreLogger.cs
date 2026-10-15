@@ -5,94 +5,100 @@ namespace Filin.ProjectionStore.AdoNet;
 static partial class ProjectionStoreLogger
 {
     [LoggerMessage(LogLevel.Information,
-        EventId = (int)ProjectionStoreCode.ProjectionInitStore,
+        EventId = (int)ProjectionStoreCode.StorageInitialized,
         EventName = "StorageInitialized",
-        Message = "Initialized storage provider: ProviderName={ProviderName} Invariant={InvariantName} ConnectionString={ConnectionString}.")]
-    internal static partial void RelationalProviderInitProvider(this ILogger logger, string ProviderName, string InvariantName, string ConnectionString);
+        Message = "Initialized storage provider.")]
+    internal static partial void StorageInitialized(this ILogger logger);
 
     [LoggerMessage(LogLevel.Trace,
-        EventId = (int)ProjectionStoreCode.ProjectionReading,
+        EventId = (int)ProjectionStoreCode.StateReading,
         EventName = "StateReading",
         SkipEnabledCheck = true,
-        Message = "Reading state: ProviderName={ProviderName} ProjectionId={ProjectionId}.")]
-    internal static partial void RelationalProviderReading(this ILogger logger, string ProviderName, ProjectionId ProjectionId);
+        Message = "Reading state: ProjectionId={ProjectionId}.")]
+    internal static partial void StateReading(this ILogger logger, ProjectionId ProjectionId);
 
     [LoggerMessage(LogLevel.Information,
-        EventId = (int)ProjectionStoreCode.ProjectionNoStateFound,
+        EventId = (int)ProjectionStoreCode.StateNotFound,
         EventName = "StateNotFound",
-        Message = "No state found: ProviderName={ProviderName} ProjectionId={ProjectionId}.")]
-    internal static partial void RelationalProviderNoStateFound(this ILogger logger, string ProviderName, ProjectionId ProjectionId);
+        Message = "No state found: ProjectionId={ProjectionId}.")]
+    internal static partial void StateNotFound(this ILogger logger, ProjectionId ProjectionId);
 
     [LoggerMessage(LogLevel.Trace,
-        EventId = (int)ProjectionStoreCode.ProjectionRead,
+        EventId = (int)ProjectionStoreCode.StateRead,
         EventName = "StateRead",
         SkipEnabledCheck = true,
-        Message = "Read state: ProviderName={ProviderName} ProjectionId={ProjectionId}.")]
-    internal static partial void RelationalProviderRead(this ILogger logger, string ProviderName, ProjectionId ProjectionId);
+        Message = "Read state: ProjectionId={ProjectionId}.")]
+    internal static partial void StateRead(this ILogger logger, ProjectionId ProjectionId);
 
     [LoggerMessage(LogLevel.Error,
-        EventId = (int)ProjectionStoreCode.ProjectionReadError,
+        EventId = (int)ProjectionStoreCode.NoDeserializer,
+        EventName = "NoDeserializer",
+        Message = "No deserializer found: ProjectionId={ProjectionId}.")]
+    internal static partial void NoDeserializer(this ILogger logger, Exception Exception, ProjectionId ProjectionId);
+
+    [LoggerMessage(LogLevel.Error,
+        EventId = (int)ProjectionStoreCode.StateReadError,
         EventName = "StateReadError",
-        Message = "Error reading state: ProviderName={ProviderName} ProjectionId={ProjectionId}.")]
-    internal static partial void RelationalProviderReadError(this ILogger logger, Exception Exception, string ProviderName, ProjectionId ProjectionId);
+        Message = "Error reading state: ProjectionId={ProjectionId}.")]
+    internal static partial void StateReadError(this ILogger logger, Exception Exception, ProjectionId ProjectionId);
 
     [LoggerMessage(LogLevel.Trace,
-        EventId = (int)ProjectionStoreCode.ProjectionWriting,
+        EventId = (int)ProjectionStoreCode.StateWriting,
         EventName = "StateWriting",
         SkipEnabledCheck = true,
-        Message = "Writing state: ProviderName={ProviderName} ProjectionId={ProjectionId} Position={Position}.")]
-    internal static partial void RelationalProviderWriting(this ILogger logger, string ProviderName, ProjectionId ProjectionId, EventPosition Position);
+        Message = "Writing state: ProjectionId={ProjectionId} Position={Position}.")]
+    internal static partial void StateWriting(this ILogger logger, ProjectionId ProjectionId, EventPosition Position);
 
     [LoggerMessage(LogLevel.Trace,
-        EventId = (int)ProjectionStoreCode.ProjectionBatchWriting,
+        EventId = (int)ProjectionStoreCode.StateBatchWriting,
         EventName = "StateBatchWriting",
         SkipEnabledCheck = true,
-        Message = "Writing state: ProviderName={ProviderName} ProjectionsCount={ProjectionsCount}.")]
-    internal static partial void RelationalProviderBatchWriting(this ILogger logger, string ProviderName, int ProjectionsCount);
+        Message = "Writing state: ProjectionsCount={ProjectionsCount}.")]
+    internal static partial void StateBatchWriting(this ILogger logger, int ProjectionsCount);
 
     [LoggerMessage(LogLevel.Error,
-        EventId = (int)ProjectionStoreCode.ProjectionWriteError,
+        EventId = (int)ProjectionStoreCode.StateWriteError,
         EventName = "StateWriteError",
-        Message = "Error writing state: ProviderName={ProviderName} ProjectionId={ProjectionId} Position={Position}.")]
-    internal static partial void RelationalProviderWriteError(this ILogger logger, Exception Exception, string ProviderName, ProjectionId ProjectionId, EventPosition Position);
+        Message = "Error writing state: ProjectionId={ProjectionId} Position={Position}.")]
+    internal static partial void StateWriteError(this ILogger logger, Exception Exception, ProjectionId ProjectionId, EventPosition Position);
 
     [LoggerMessage(LogLevel.Error,
-        EventId = (int)ProjectionStoreCode.ProjectionBatchWriteError,
-        EventName = "ProjectionBatchWriteError",
-        Message = "Error writing state: ProviderName={ProviderName}.")]
-    internal static partial void RelationalProviderBatchWriteError(this ILogger logger, Exception Exception, string ProviderName);
+        EventId = (int)ProjectionStoreCode.StateBatchWriteError,
+        EventName = "StateBatchWriteError",
+        Message = "Error writing state.")]
+    internal static partial void StateBatchWriteError(this ILogger logger, Exception Exception);
 
     [LoggerMessage(LogLevel.Trace,
-        EventId = (int)ProjectionStoreCode.ProjectionWrote,
+        EventId = (int)ProjectionStoreCode.StateWrote,
         EventName = "StateWrote",
         SkipEnabledCheck = true,
-        Message = "Wrote state: ProviderName={ProviderName} ProjectionId={ProjectionId} Position={Position}.")]
-    internal static partial void RelationalProviderWrote(this ILogger logger, string ProviderName, ProjectionId ProjectionId, EventPosition Position);
+        Message = "Wrote state: ProjectionId={ProjectionId} Position={Position}.")]
+    internal static partial void StateWrote(this ILogger logger, ProjectionId ProjectionId, EventPosition Position);
 
     [LoggerMessage(LogLevel.Trace,
-        EventId = (int)ProjectionStoreCode.ProjectionBatchWrote,
+        EventId = (int)ProjectionStoreCode.StateBatchWrote,
         EventName = "StateBatchWrote",
         SkipEnabledCheck = true,
-        Message = "Wrote state: ProviderName={ProviderName}.")]
-    internal static partial void RelationalProviderBatchWrote(this ILogger logger, string ProviderName);
+        Message = "Wrote state.")]
+    internal static partial void StateBatchWrote(this ILogger logger);
 
     [LoggerMessage(LogLevel.Trace,
-        EventId = (int)ProjectionStoreCode.ProjectionClearing,
+        EventId = (int)ProjectionStoreCode.StateClearing,
         EventName = "StateClearing",
         SkipEnabledCheck = true,
-        Message = "Clearing state: ProviderName={ProviderName} ProjectionId={ProjectionId} Position={Position}.")]
-    internal static partial void RelationalProviderClearing(this ILogger logger, string ProviderName, ProjectionId ProjectionId, EventPosition Position);
+        Message = "Clearing state: ProjectionId={ProjectionId} Position={Position}.")]
+    internal static partial void StateClearing(this ILogger logger, ProjectionId ProjectionId, EventPosition Position);
 
     [LoggerMessage(LogLevel.Error,
-        EventId = (int)ProjectionStoreCode.ProjectionClearingError,
+        EventId = (int)ProjectionStoreCode.StateClearingError,
         EventName = "StateClearingError",
-        Message = "Error clearing state: ProviderName={ProviderName} ProjectionId={ProjectionId} Position={Position}.")]
-    internal static partial void RelationalProviderDeleteError(this ILogger logger, Exception Exception, string ProviderName, ProjectionId ProjectionId, EventPosition Position);
+        Message = "Error clearing state: ProjectionId={ProjectionId} Position={Position}.")]
+    internal static partial void StateClearingError(this ILogger logger, Exception Exception, ProjectionId ProjectionId, EventPosition Position);
 
     [LoggerMessage(LogLevel.Trace,
-        EventId = (int)ProjectionStoreCode.ProjectionCleared,
+        EventId = (int)ProjectionStoreCode.StateCleared,
         EventName = "StateCleared",
         SkipEnabledCheck = true,
-        Message = "Cleared state: ProviderName={ProviderName} ProjectionId={ProjectionId} Position={Position}.")]
-    internal static partial void RelationalProviderCleared(this ILogger logger, string ProviderName, ProjectionId ProjectionId, EventPosition Position);
+        Message = "Cleared state: ProjectionId={ProjectionId} Position={Position}.")]
+    internal static partial void StateCleared(this ILogger logger, ProjectionId ProjectionId, EventPosition Position);
 }

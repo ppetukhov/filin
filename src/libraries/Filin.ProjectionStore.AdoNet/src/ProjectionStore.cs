@@ -17,12 +17,11 @@ namespace Filin.ProjectionStore.AdoNet;
 /// </summary>
 /// <remarks>
 /// </remarks>
-[DebuggerDisplay("Name = {name}, ConnectionName = {options.Value.ConnectionName}")]
+[DebuggerDisplay("Invariant = {options.Value.Invariant}")]
 sealed class ProjectionStore(
     DbDataSource dataSource,
     ILoggerFactory loggerFactory,
-    IOptions<ProjectionStoreAdoNetOptions> options,
-    string name) : IProjectionStore
+    IOptions<ProjectionStoreAdoNetOptions> options) : IProjectionStore
 {
     readonly ILogger _logger = loggerFactory.CreateLogger("Filin.ProjectionStore.AdoNet");
     readonly IStorageSerializer _serializer = options.Value.StorageSerializer;
@@ -40,7 +39,7 @@ sealed class ProjectionStore(
     {
         if (_logger.IsEnabled(LogLevel.Trace))
         {
-            _logger.RelationalProviderReading(name, projectionId);
+            _logger.StateReading(projectionId);
         }
 
         try
@@ -87,19 +86,19 @@ sealed class ProjectionStore(
 
             if (projection is null)
             {
-                _logger.RelationalProviderNoStateFound(name, projectionId);
+                _logger.StateNotFound(projectionId);
             }
 
             if (_logger.IsEnabled(LogLevel.Trace))
             {
-                _logger.RelationalProviderRead(name, projectionId);
+                _logger.StateRead(projectionId);
             }
 
             return projection;
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not ProjectionStoreException)
         {
-            _logger.RelationalProviderReadError(ex, name, projectionId);
+            _logger.StateReadError(ex, projectionId);
 
             throw;
         }
@@ -112,7 +111,7 @@ sealed class ProjectionStore(
 
         if (_logger.IsEnabled(LogLevel.Trace))
         {
-            _logger.RelationalProviderWriting(name, projection.Id, projection.Position);
+            _logger.StateWriting(projection.Id, projection.Position);
         }
 
         try
@@ -141,14 +140,14 @@ sealed class ProjectionStore(
         }
         catch (Exception ex)
         {
-            _logger.RelationalProviderWriteError(ex, name, projection.Id, projection.Position);
+            _logger.StateWriteError(ex, projection.Id, projection.Position);
 
             throw;
         }
 
         if (_logger.IsEnabled(LogLevel.Trace))
         {
-            _logger.RelationalProviderWrote(name, projection.Id, projection.Position);
+            _logger.StateWrote(projection.Id, projection.Position);
         }
     }
 
@@ -163,7 +162,7 @@ sealed class ProjectionStore(
 
         if (_logger.IsEnabled(LogLevel.Trace))
         {
-            _logger.RelationalProviderBatchWriting(name, count);
+            _logger.StateBatchWriting(count);
         }
 
         try
@@ -202,14 +201,14 @@ sealed class ProjectionStore(
         }
         catch (Exception ex)
         {
-            _logger.RelationalProviderBatchWriteError(ex, name);
+            _logger.StateBatchWriteError(ex);
 
             throw;
         }
 
         if (_logger.IsEnabled(LogLevel.Trace))
         {
-            _logger.RelationalProviderBatchWrote(name);
+            _logger.StateBatchWrote();
         }
     }
 
@@ -218,7 +217,7 @@ sealed class ProjectionStore(
     {
         if (_logger.IsEnabled(LogLevel.Trace))
         {
-            _logger.RelationalProviderClearing(name, projectionId, position);
+            _logger.StateClearing(projectionId, position);
         }
 
         try
@@ -243,14 +242,14 @@ sealed class ProjectionStore(
         }
         catch (Exception ex)
         {
-            _logger.RelationalProviderDeleteError(ex, name, projectionId, position);
+            _logger.StateClearingError(ex, projectionId, position);
 
             throw;
         }
 
         if (_logger.IsEnabled(LogLevel.Trace))
         {
-            _logger.RelationalProviderCleared(name, projectionId, position);
+            _logger.StateCleared(projectionId, position);
         }
     }
 
@@ -293,7 +292,7 @@ sealed class ProjectionStore(
             return oldValue;
         }
 
-        _logger.RelationalProviderInitProvider(name, dataSource.GetType().FullName ?? string.Empty, dataSource.ConnectionString);
+        _logger.StorageInitialized();
 
         return opQueries;
     }
@@ -302,10 +301,10 @@ sealed class ProjectionStore(
     {
         if (!options.Value.ProjectionTypes.TryGetValue(projectionId.ProjectorId, out var type))
         {
-            var ex = new EventStoreException("Unknown runtime type for projectorId.");
+            var ex = new ProjectionStoreException("Unknown runtime type for projectorId.");
             ex.Data[nameof(ProjectionId.ProjectorId)] = projectionId.ProjectorId;
 
-            _logger.RelationalProviderReadError(Exception: ex, ProviderName: name, ProjectionId: projectionId);
+            _logger.NoDeserializer(ex, projectionId);
 
             throw ex;
         }

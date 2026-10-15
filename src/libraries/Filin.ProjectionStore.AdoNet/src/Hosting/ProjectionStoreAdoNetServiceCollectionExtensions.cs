@@ -18,32 +18,18 @@ public static class ProjectionStoreAdoNetServiceCollectionExtensions
         /// Configure AdoNet storage as the default <see cref="Storage.IProjectionStore"/>.
         /// </summary>
         public IServiceCollection AddProjectionStoreAdoNet(Action<ProjectionStoreAdoNetOptions> configureOptions) =>
-            services.AddProjectionStoreAdoNet(ProviderConstants.DefaultStorageProvider, ob => ob.Configure(configureOptions));
+            services.AddProjectionStoreAdoNet(ob => ob.Configure(configureOptions));
 
         /// <summary>
         /// Configure AdoNet storage for <see cref="Storage.IProjectionStore"/>.
         /// </summary>
-        public IServiceCollection AddProjectionStoreAdoNet(string name, Action<ProjectionStoreAdoNetOptions> configureOptions) =>
-            services.AddProjectionStoreAdoNet(name, ob => ob.Configure(configureOptions));
-
-        /// <summary>
-        /// Configure AdoNet storage for <see cref="Storage.IProjectionStore"/>.
-        /// </summary>
-        public IServiceCollection AddProjectionStoreAdoNet(Action<OptionsBuilder<ProjectionStoreAdoNetOptions>>? configureOptions = null) =>
-            services.AddProjectionStoreAdoNet(ProviderConstants.DefaultStorageProvider, configureOptions);
-
-        /// <summary>
-        /// Configure AdoNet storage for <see cref="Storage.IProjectionStore"/>.
-        /// </summary>
-        public IServiceCollection AddProjectionStoreAdoNet(
-            string name,
-            Action<OptionsBuilder<ProjectionStoreAdoNetOptions>>? configureOptions = null)
+        public IServiceCollection AddProjectionStoreAdoNet(Action<OptionsBuilder<ProjectionStoreAdoNetOptions>>? configureOptions = null)
         {
-            configureOptions?.Invoke(services.AddOptions<ProjectionStoreAdoNetOptions>(name));
+            configureOptions?.Invoke(services.AddOptions<ProjectionStoreAdoNetOptions>());
             services.TryAddEnumerable(ServiceDescriptor.Transient<IPostConfigureOptions<ProjectionStoreAdoNetOptions>, ProjectionStoreAdoNetOptionsProvider>());
             services.TryAddEnumerable(ServiceDescriptor.Transient<IPostConfigureOptions<ProjectionStoreAdoNetOptions>, DefaultStorageProviderSerializerOptionsConfigurator<ProjectionStoreAdoNetOptions>>());
             services.TryAddEnumerable(ServiceDescriptor.Transient<IValidateOptions<ProjectionStoreAdoNetOptions>, ProjectionStoreAdoNetOptionsValidator>());
-            return services.AddProjectionStore(name, ProjectionStoreFactory.Create);
+            return services.AddProjectionStore(ProjectionStoreFactory.Create);
         }
     }
 }

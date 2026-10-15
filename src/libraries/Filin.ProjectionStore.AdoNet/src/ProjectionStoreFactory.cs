@@ -10,16 +10,14 @@ namespace Filin.ProjectionStore.AdoNet;
 
 static class ProjectionStoreFactory
 {
-    internal static ProjectionStore Create(IServiceProvider services, string name)
+    internal static ProjectionStore Create(IServiceProvider services)
     {
-        var optionsMonitor = services.GetRequiredService<IOptionsMonitor<ProjectionStoreAdoNetOptions>>();
+        var opt = services.GetRequiredService<IOptions<ProjectionStoreAdoNetOptions>>();
 
-        var opt = optionsMonitor.Get(name);
+        var dbSource = string.IsNullOrEmpty(opt.Value.ConnectionName)
+            ? DbConnectionFactory.CreateDataSource(opt.Value.Invariant, opt.Value.ConnectionString)
+            : services.GetRequiredKeyedService<DbDataSource>(opt.Value.ConnectionName);
 
-        var dbSource = string.IsNullOrEmpty(opt.ConnectionName)
-            ? DbConnectionFactory.CreateDataSource(opt.Invariant, opt.ConnectionString)
-            : services.GetRequiredKeyedService<DbDataSource>(opt.ConnectionName);
-
-        return ActivatorUtilities.CreateInstance<ProjectionStore>(services, dbSource, Options.Create(opt), name);
+        return ActivatorUtilities.CreateInstance<ProjectionStore>(services, dbSource, opt);
     }
 }
