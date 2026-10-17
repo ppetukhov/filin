@@ -1,5 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-
 using Filin.AdoNet;
 using Filin.Storage;
 
@@ -10,7 +8,6 @@ using Microsoft.Extensions.Options;
 namespace Filin.Configuration;
 
 /// <inheritdoc cref="IConfigureOptions{TOptions}"/>
-[RequiresDynamicCode("Calls System.Type.MakeGenericType(params Type[])")]
 sealed class ProjectionStoreAdoNetOptionsProvider(IServiceProvider sp, IOptions<TypeManifestOptions> typeManifestOptions) : IPostConfigureOptions<ProjectionStoreAdoNetOptions>
 {
     /// <inheritdoc/>

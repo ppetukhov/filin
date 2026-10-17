@@ -23,12 +23,8 @@ public static class StorageServiceCollectionExtensions
         /// <returns>The same <see cref="IServiceCollection"/> instance so that multiple calls can be chained.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="collection"/> is <see langword="null"/>.</exception>
         public IServiceCollection AddProjectionStore<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>()
-            where T : class, IProjectionStore
-        {
-            ArgumentNullException.ThrowIfNull(collection);
-
-            return collection.RemoveAll<IProjectionStore>().AddSingleton<IProjectionStore, T>();
-        }
+            where T : class, IProjectionStore =>
+            collection.RemoveAll<IProjectionStore>().AddSingleton<IProjectionStore, T>();
 
         /// <summary>
         /// Registers a projection store provider implementation in the service collection.
@@ -39,7 +35,6 @@ public static class StorageServiceCollectionExtensions
         public IServiceCollection AddProjectionStore<T>(Func<IServiceProvider, T> implementationFactory)
             where T : IProjectionStore
         {
-            ArgumentNullException.ThrowIfNull(collection);
             ArgumentNullException.ThrowIfNull(implementationFactory);
 
             collection
@@ -56,12 +51,8 @@ public static class StorageServiceCollectionExtensions
         /// <returns>The same <see cref="IServiceCollection"/> instance so that multiple calls can be chained.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="collection"/> is <see langword="null"/>.</exception>
         public IServiceCollection AddEventStore<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>()
-            where T : class, IEventStore
-        {
-            ArgumentNullException.ThrowIfNull(collection);
-
-            return collection.RemoveAll<IEventStore>().AddSingleton<IEventStore, T>();
-        }
+            where T : class, IEventStore =>
+            collection.RemoveAll<IEventStore>().AddSingleton<IEventStore, T>();
 
         /// <summary>
         /// Registers a central event store provider implementation as a singleton service if it has not already been registered.
@@ -73,7 +64,6 @@ public static class StorageServiceCollectionExtensions
         public IServiceCollection AddEventStore<T>(Func<IServiceProvider, T> implementationFactory)
             where T : IEventStore
         {
-            ArgumentNullException.ThrowIfNull(collection);
             ArgumentNullException.ThrowIfNull(implementationFactory);
 
             return collection.RemoveAll<IEventStore>().AddSingleton<IEventStore>(sp => implementationFactory(sp));
@@ -86,12 +76,8 @@ public static class StorageServiceCollectionExtensions
         /// <returns>The same <see cref="IServiceCollection"/> instance so that multiple calls can be chained.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="collection"/> is <see langword="null"/>.</exception>
         public IServiceCollection AddAppendEventsBlock<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>()
-            where T : class, IAppendEventsBlock
-        {
-            ArgumentNullException.ThrowIfNull(collection);
-
-            return collection.AddSingleton<IAppendEventsBlock, T>();
-        }
+            where T : class, IAppendEventsBlock =>
+            collection.AddSingleton<IAppendEventsBlock, T>();
 
         /// <summary>
         /// Registers a dataflow propagator block capable of processing both single and batched event append requests implementation as a singleton service.
@@ -103,7 +89,6 @@ public static class StorageServiceCollectionExtensions
         public IServiceCollection AddAppendEventsBlock<T>(Func<IServiceProvider, T> implementationFactory)
             where T : IAppendEventsBlock
         {
-            ArgumentNullException.ThrowIfNull(collection);
             ArgumentNullException.ThrowIfNull(implementationFactory);
 
             return collection.AddSingleton<IAppendEventsBlock>(sp => implementationFactory(sp));

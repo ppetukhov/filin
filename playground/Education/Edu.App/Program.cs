@@ -1,7 +1,6 @@
 // See https://aka.ms/new-console-template for more information
 
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 
 using Edu.App.Properties;
 using Edu.ReadModels;
@@ -27,7 +26,6 @@ Console.WriteLine("Ins App 1");
 var hostBuilder = CreateHostBuilder(args);
 #pragma warning restore IL3002 // Avoid calling members marked with 'RequiresAssemblyFilesAttribute' when publishing as a single-file
 
-[RequiresAssemblyFiles("Calls Microsoft.Extensions.Hosting.FilinGenericHostExtensions.UseFilin(Action<IFilinBuilder>)")]
 static IHostBuilder CreateHostBuilder(string[] args) =>
     Host.CreateDefaultBuilder(args)
         .UseFilin(builder => builder

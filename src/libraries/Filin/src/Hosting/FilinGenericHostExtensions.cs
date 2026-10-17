@@ -1,175 +1,58 @@
 using System.Diagnostics.CodeAnalysis;
 
-using Filin.Configuration;
-using Filin.Internal;
-using Filin.Storage;
-
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 
 namespace Filin.Hosting;
 
 /// <summary>
 /// Extension methods for <see cref="IHostBuilder"/>.
 /// </summary>
-public static class FilinGenericHostExtensions
+public static class FilinHostBuilderExtensions
 {
-    /// <summary>
-    /// Configures the host app builder to host an Filin.
-    /// </summary>
-    /// <param name="hostAppBuilder">The host app builder.</param>
-    /// <returns>The host builder.</returns>
-    /// <remarks>
-    /// Calling this method multiple times on the same <see cref="IHostApplicationBuilder"/> instance will result in one Filin being configured.
-    /// </remarks>
-    [RequiresAssemblyFiles("Calls Filin.Hosting.DefaultExecutorServices.AddDefaultServices(IFilinBuilder)")]
-    [RequiresUnreferencedCode("Calls Filin.Hosting.DefaultExecutorServices.AddDefaultServices(IFilinBuilder)")]
-    [RequiresDynamicCode("Calls Filin.Hosting.DefaultExecutorServices.AddDefaultServices(IFilinBuilder)")]
-    public static IHostApplicationBuilder UseFilin(
-        this IHostApplicationBuilder hostAppBuilder)
+    extension(IHostBuilder hostBuilder)
     {
-        ArgumentNullException.ThrowIfNull(hostAppBuilder);
+        /// <summary>
+        /// Configures the host builder to host an Filin.
+        /// </summary>
+        /// <returns>The host builder.</returns>
+        /// <remarks>
+        /// Calling this method multiple times on the same <see cref="IHostBuilder"/> instance will result in one Filin being configured.
+        /// </remarks>
+        [RequiresUnreferencedCode("Calls Filin.Hosting.FilinServiceCollectionExtensions.extension(IServiceCollection).AddFilin()")]
+        public IHostBuilder UseFilin() => hostBuilder.ConfigureServices((_, services) => services.AddFilin());
 
-        return hostAppBuilder.UseFilin(_ => { });
-    }
+        /// <summary>
+        /// Configures the host builder to host an Filin.
+        /// </summary>
+        /// <param name="configure">The delegate used to configure the Filin.</param>
+        /// <returns>The host builder.</returns>
+        /// <remarks>
+        /// Calling this method multiple times on the same <see cref="IHostBuilder"/> instance will result in one Filin being configured.
+        /// However, the effects of <paramref name="configure"/> will be applied once for each call.
+        /// </remarks>
+        [RequiresUnreferencedCode("Calls Filin.Hosting.FilinServiceCollectionExtensions.extension(IServiceCollection).AddFilin(Action<IFilinBuilder>)")]
+        public IHostBuilder UseFilin(Action<IFilinBuilder> configure)
+        {
+            ArgumentNullException.ThrowIfNull(configure);
 
-    /// <summary>
-    /// Configures the host builder to host an Filin.
-    /// </summary>
-    /// <param name="hostAppBuilder">The host app builder.</param>
-    /// <param name="configureDelegate">The delegate used to configure the Filin.</param>
-    /// <returns>The host builder.</returns>
-    /// <remarks>
-    /// Calling this method multiple times on the same <see cref="IHostApplicationBuilder"/> instance will result in one Filin being configured.
-    /// However, the effects of <paramref name="configureDelegate"/> will be applied once for each call.
-    /// </remarks>
-    [RequiresAssemblyFiles("Calls Filin.Hosting.DefaultExecutorServices.AddDefaultServices(IFilinBuilder)")]
-    [RequiresUnreferencedCode("Calls Filin.Hosting.DefaultExecutorServices.AddDefaultServices(IFilinBuilder)")]
-    [RequiresDynamicCode("Calls Filin.Hosting.DefaultExecutorServices.AddDefaultServices(IFilinBuilder)")]
-    public static IHostApplicationBuilder UseFilin(
-        this IHostApplicationBuilder hostAppBuilder,
-        Action<IFilinBuilder> configureDelegate)
-    {
-        ArgumentNullException.ThrowIfNull(hostAppBuilder);
-        ArgumentNullException.ThrowIfNull(configureDelegate);
+            return hostBuilder.ConfigureServices((_, services) => services.AddFilin(configure));
+        }
 
-        configureDelegate(AddFilinCore(hostAppBuilder.Services, hostAppBuilder.Configuration));
+        /// <summary>
+        /// Configures the host builder to host an Filin.
+        /// </summary>
+        /// <param name="configure">The delegate used to configure the Filin.</param>
+        /// <returns>The host builder.</returns>
+        /// <remarks>
+        /// Calling this method multiple times on the same <see cref="IHostBuilder"/> instance will result in one Filin being configured.
+        /// However, the effects of <paramref name="configure"/> will be applied once for each call.
+        /// </remarks>
+        [RequiresUnreferencedCode("Calls Filin.Hosting.FilinServiceCollectionExtensions.extension(IServiceCollection).AddFilin()")]
+        public IHostBuilder UseFilin(Action<HostBuilderContext, IFilinBuilder> configure)
+        {
+            ArgumentNullException.ThrowIfNull(configure);
 
-        return hostAppBuilder;
-    }
-
-    /// <summary>
-    /// Configures the host builder to host an Filin.
-    /// </summary>
-    /// <param name="hostBuilder">The host builder.</param>
-    /// <returns>The host builder.</returns>
-    /// <remarks>
-    /// Calling this method multiple times on the same <see cref="IHostBuilder"/> instance will result in one Filin being configured.
-    /// </remarks>
-    [RequiresAssemblyFiles("Calls Filin.Hosting.DefaultExecutorServices.AddDefaultServices(IFilinBuilder)")]
-    [RequiresUnreferencedCode("Calls Filin.Hosting.DefaultExecutorServices.AddDefaultServices(IFilinBuilder)")]
-    [RequiresDynamicCode("Calls Filin.Hosting.DefaultExecutorServices.AddDefaultServices(IFilinBuilder)")]
-    public static IHostBuilder UseFilin(
-        this IHostBuilder hostBuilder)
-    {
-        ArgumentNullException.ThrowIfNull(hostBuilder);
-
-        return hostBuilder.UseFilin((_, __) => { });
-    }
-
-    /// <summary>
-    /// Configures the host builder to host an Filin.
-    /// </summary>
-    /// <param name="hostBuilder">The host builder.</param>
-    /// <param name="configureDelegate">The delegate used to configure the Filin.</param>
-    /// <returns>The host builder.</returns>
-    /// <remarks>
-    /// Calling this method multiple times on the same <see cref="IHostBuilder"/> instance will result in one Filin being configured.
-    /// However, the effects of <paramref name="configureDelegate"/> will be applied once for each call.
-    /// </remarks>
-    [RequiresAssemblyFiles("Calls Filin.Hosting.DefaultExecutorServices.AddDefaultServices(IFilinBuilder)")]
-    [RequiresUnreferencedCode("Calls Filin.Hosting.DefaultExecutorServices.AddDefaultServices(IFilinBuilder)")]
-    [RequiresDynamicCode("Calls Filin.Hosting.DefaultExecutorServices.AddDefaultServices(IFilinBuilder)")]
-    public static IHostBuilder UseFilin(
-        this IHostBuilder hostBuilder,
-        Action<IFilinBuilder> configureDelegate)
-    {
-        ArgumentNullException.ThrowIfNull(hostBuilder);
-        ArgumentNullException.ThrowIfNull(configureDelegate);
-
-        return hostBuilder.UseFilin((_, builder) => configureDelegate(builder));
-    }
-
-    /// <summary>
-    /// Configures the host builder to host an Filin.
-    /// </summary>
-    /// <param name="hostBuilder">The host builder.</param>
-    /// <param name="configureDelegate">The delegate used to configure the Filin.</param>
-    /// <returns>The host builder.</returns>
-    /// <remarks>
-    /// Calling this method multiple times on the same <see cref="IHostBuilder"/> instance will result in one Filin being configured.
-    /// However, the effects of <paramref name="configureDelegate"/> will be applied once for each call.
-    /// </remarks>
-    [RequiresAssemblyFiles("Calls Filin.Hosting.DefaultExecutorServices.AddDefaultServices(IFilinBuilder)")]
-    [RequiresUnreferencedCode("Calls Filin.Hosting.DefaultExecutorServices.AddDefaultServices(IFilinBuilder)")]
-    [RequiresDynamicCode("Calls Filin.Hosting.DefaultExecutorServices.AddDefaultServices(IFilinBuilder)")]
-    public static IHostBuilder UseFilin(
-        this IHostBuilder hostBuilder,
-        Action<HostBuilderContext, IFilinBuilder> configureDelegate)
-    {
-        ArgumentNullException.ThrowIfNull(hostBuilder);
-        ArgumentNullException.ThrowIfNull(configureDelegate);
-
-        return hostBuilder.ConfigureServices((context, services) => configureDelegate(context, AddFilinCore(services, context.Configuration)));
-    }
-
-    /// <summary>
-    /// Configures the service collection to host an Filin.
-    /// </summary>
-    /// <param name="services">The service collection.</param>
-    /// <param name="hostBuilderContext"></param>
-    /// <param name="configureDelegate">The delegate used to configure the Filin.</param>
-    /// <returns>The service collection.</returns>
-    /// <remarks>
-    /// Calling this method multiple times on the same <see cref="IHostBuilder"/> instance will result in one Filin being configured.
-    /// However, the effects of <paramref name="configureDelegate"/> will be applied once for each call.
-    /// </remarks>
-    [RequiresAssemblyFiles("Calls Filin.Hosting.DefaultExecutorServices.AddDefaultServices(IFilinBuilder)")]
-    [RequiresUnreferencedCode("Calls Filin.Hosting.DefaultExecutorServices.AddDefaultServices(IFilinBuilder)")]
-    [RequiresDynamicCode("Calls Filin.Hosting.DefaultExecutorServices.AddDefaultServices(IFilinBuilder)")]
-    public static IServiceCollection AddFilin(
-        this IServiceCollection services,
-        HostBuilderContext hostBuilderContext,
-        Action<IFilinBuilder> configureDelegate)
-    {
-        ArgumentNullException.ThrowIfNull(hostBuilderContext);
-        ArgumentNullException.ThrowIfNull(configureDelegate);
-
-        var builder = AddFilinCore(services, hostBuilderContext.Configuration);
-
-        configureDelegate(builder);
-
-        return services;
-    }
-
-    [RequiresAssemblyFiles("Calls Filin.Hosting.DefaultExecutorServices.AddDefaultServices(IFilinBuilder)")]
-    [RequiresUnreferencedCode("Calls Filin.Hosting.DefaultExecutorServices.AddDefaultServices(IFilinBuilder)")]
-    [RequiresDynamicCode("Calls Filin.Hosting.DefaultExecutorServices.AddDefaultServices(IFilinBuilder)")]
-    static FilinBuilder AddFilinCore(IServiceCollection services, IConfiguration configuration)
-    {
-        var builder = new FilinBuilder(services, configuration);
-
-        _ = builder.AddDefaultServices();
-
-        services.TryAddEnumerable(ServiceDescriptor.Transient<IConfigureOptions<FilinOptions>, FilinOptionsProvider>());
-        services.TryAddSingleton(_ => new LRUCache<ProjectionId, Task<Projection?>>(10_000, TimeSpan.FromMinutes(5)));
-        services.TryAddSingleton<SaveProjectionBlock>();
-        services.TryAddSingleton<HandlersFactory>();
-        services.TryAddSingleton<IMediator, Mediator>();
-
-        return builder;
+            return hostBuilder.ConfigureServices((context, services) => configure(context, services.AddFilin()));
+        }
     }
 }

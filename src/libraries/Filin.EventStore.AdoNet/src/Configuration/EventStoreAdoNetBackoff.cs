@@ -8,6 +8,7 @@ namespace Filin.Configuration;
 /// Backoff parameters.
 /// </summary>
 [DebuggerDisplay("Exponent: {Exponent}, MaxDelay: {MaxDelay}")]
+[RequiresUnreferencedCode("Requires dynamic access to code that use reflection for TimeSpan")]
 public sealed class EventStoreAdoNetBackoff
 {
     /// <summary>
@@ -22,7 +23,6 @@ public sealed class EventStoreAdoNetBackoff
     /// </summary>
     /// <remarks>default: 10 ms, min: 1 ms, max: 1 min</remarks>
     [Range(typeof(TimeSpan), "00:00:00.003", "00:01:00")]
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
     public TimeSpan InitalDelay { get; set; } = TimeSpan.FromMilliseconds(10);
 
     /// <summary>
@@ -30,7 +30,6 @@ public sealed class EventStoreAdoNetBackoff
     /// </summary>
     /// <remarks>default: 1 min, min: 0 sec, max: 30 min</remarks>
     [Range(typeof(TimeSpan), "00:00:00", "00:30:00")]
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
     public TimeSpan MaxDelay { get; set; } = TimeSpan.FromMinutes(1);
 
     /// <summary>

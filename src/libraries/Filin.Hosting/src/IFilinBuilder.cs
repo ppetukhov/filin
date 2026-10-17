@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Filin.Hosting;
@@ -12,9 +11,4 @@ public interface IFilinBuilder
     /// The services shared by the Filin and host.
     /// </summary>
     IServiceCollection Services { get; }
-
-    /// <summary>
-    /// Gets the configuration.
-    /// </summary>
-    IConfiguration Configuration { get; }
 }

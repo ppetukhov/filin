@@ -22,11 +22,8 @@ public static class SerializationServiceCollectionExtentions
         /// </summary>
         /// <returns>The same <see cref="IServiceCollection"/> instance so that multiple calls can be chained.</returns>
         [RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Deserialize(ref Utf8JsonReader, Type, JsonSerializerOptions)")]
-        [RequiresDynamicCode("JSON serialization and deserialization might require types that cannot be statically analyzed and might need runtime code generation. Use System.Text.Json source generation for native AOT applications.")]
         public IServiceCollection AddStorageSerialization()
         {
-            ArgumentNullException.ThrowIfNull(collection);
-
             collection.TryAddEnumerable(ServiceDescriptor.Transient<IPostConfigureOptions<JsonStorageSerializerOptions>, JsonStorageSerializerOptionsProvider>());
 
             collection.TryAddSingleton<IStorageSerializer, JsonStorageSerializer>();

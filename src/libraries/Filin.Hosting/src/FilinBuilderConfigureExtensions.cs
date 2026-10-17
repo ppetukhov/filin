@@ -21,13 +21,9 @@ public static class FilinBuilderConfigureExtensions
         /// Adds the default core and infrastructure services required for the Filin framework to function.
         /// </summary>
         /// <returns>The same <see cref="IFilinBuilder"/> instance so that multiple calls can be chained.</returns>
-        [RequiresAssemblyFiles("Calls Filin.Hosting.DefaultExecutorServices.ApplyConfiguration(IFilinBuilder)")]
-        [RequiresUnreferencedCode("Calls Filin.Hosting.SerializationServiceCollectionExtentions.AddStorageSerialization()")]
-        [RequiresDynamicCode("Calls Filin.Hosting.SerializationServiceCollectionExtentions.AddStorageSerialization()")]
+        [RequiresUnreferencedCode("Calls Filin.Hosting.SerializationServiceCollectionExtentions.extension(IServiceCollection).AddStorageSerialization()")]
         public IFilinBuilder AddDefaultServices()
         {
-            ArgumentNullException.ThrowIfNull(builder);
-
             var services = builder.Services
                 .AddOptions()
                 .AddStorageSerialization();
@@ -46,8 +42,6 @@ public static class FilinBuilderConfigureExtensions
         /// <returns>The builder.</returns>
         public IFilinBuilder AddAssembly(params ReadOnlySpan<Assembly> assemblies)
         {
-            ArgumentNullException.ThrowIfNull(builder);
-
             foreach (var assembly in assemblies)
             {
                 var attrs = assembly.GetCustomAttributes<TypeManifestProviderAttribute>();
