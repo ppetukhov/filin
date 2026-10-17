@@ -113,11 +113,8 @@ partial class CodeGenerator
                             .AddArgumentListArguments(AttributeArgument(TypeOfExpression(QualifiedName(IdentifierName(_namespaceMetadata), IdentifierName(metadataClass.Identifier.Text)))))
                 ));
 
-            var assemblyAttributes = Emitter.GenerateApplicationPartsAttributes(typeDefinitions);
-            assemblyAttributes.Add(metadataAttribute);
-
             var cu = CompilationUnit()
-                .WithAttributeLists(List(assemblyAttributes))
+                .WithAttributeLists(SingletonList(metadataAttribute))
                 .AddMembers(
                     EventTypesGeneratedSyntax.AddMembers([.. fieldMembers]),
                     NamespaceDeclaration(ParseName(options.RootNamespace)).AddMembers(

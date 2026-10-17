@@ -1,9 +1,14 @@
+using Filin.AdoNet;
+using Filin.Storage;
+
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace Filin.Configuration;
 
 /// <inheritdoc cref="IConfigureOptions{TOptions}"/>
-sealed class EventStoreAdoNetOptionsProvider(IOptions<TypeManifestOptions> typeManifestOptions) : IPostConfigureOptions<EventStoreAdoNetOptions>
+sealed class EventStoreAdoNetOptionsProvider(IServiceProvider sp, IOptions<TypeManifestOptions> typeManifestOptions) : IPostConfigureOptions<EventStoreAdoNetOptions>
 {
     /// <inheritdoc/>
     public void PostConfigure(string? name, EventStoreAdoNetOptions options)
@@ -12,5 +17,26 @@ sealed class EventStoreAdoNetOptionsProvider(IOptions<TypeManifestOptions> typeM
         {
             options.EventTypes[kv.Key] = kv.Value;
         }
+
+        if (options.DataSource is null && !string.IsNullOrEmpty(options.Invariant) && AdoNetInvariants.Invariants.Contains(options.Invariant))
+        {
+            if (!string.IsNullOrEmpty(options.ConnectionName))
+            {
+                var connectionString = sp.GetRequiredService<IConfiguration>().GetConnectionString(options.ConnectionName);
+
+                if (connectionString is not null)
+                {
+                    options.DataSource = DbConnectionFactory.CreateDataSource(options.Invariant, connectionString);
+                }
+            }
+            else if (!string.IsNullOrEmpty(options.ConnectionString))
+            {
+                options.DataSource = DbConnectionFactory.CreateDataSource(options.Invariant, options.ConnectionString);
+            }
+        }
+
+        options.StorageSerializer ??= string.IsNullOrEmpty(options.SerializerKey)
+                ? sp.GetRequiredService<IStorageSerializer>()
+                : sp.GetRequiredKeyedService<IStorageSerializer>(options.SerializerKey);
     }
 }

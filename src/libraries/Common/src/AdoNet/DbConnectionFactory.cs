@@ -103,6 +103,35 @@ static class DbConnectionFactory
         return factory.CreateDataSource(connectionString);
     }
 
+    public static bool IsValidDataSource(string invariantName, DbDataSource dataSource, [NotNullWhen(false)] out string? errorMessage)
+    {
+        ArgumentNullException.ThrowIfNull(dataSource);
+
+        var factory = FactoryCache.GetOrAdd(invariantName, GetFactory).Factory;
+
+        using var expectedConnection = factory.CreateConnection();
+
+        if (expectedConnection is null)
+        {
+            errorMessage = $"Database provider factory: '{invariantName}' did not return a connection object.";
+            return false;
+        }
+
+        using var actualConnection = dataSource.CreateConnection();
+
+        var expectedType = expectedConnection.GetType();
+        var actualType = actualConnection.GetType();
+
+        if (expectedType.IsAssignableFrom(actualType))
+        {
+            errorMessage = default;
+            return true;
+        }
+
+        errorMessage = $"The configured data source creates connections of type '{actualType.FullName}', but invariant '{invariantName}' uses '{expectedType.FullName}'.";
+        return false;
+    }
+
     sealed class CachedFactory(DbProviderFactory factory, string factoryName, string factoryDescription, string factoryAssemblyQualifiedNameKey)
     {
         /// <summary>

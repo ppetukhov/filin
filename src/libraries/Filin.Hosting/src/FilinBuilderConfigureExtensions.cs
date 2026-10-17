@@ -18,24 +18,45 @@ public static class FilinBuilderConfigureExtensions
     extension(IFilinBuilder builder)
     {
         /// <summary>
-        /// Adds an assembly to the builder.
+        /// Adds the default core and infrastructure services required for the Filin framework to function.
         /// </summary>
-        /// <param name="assembly">The assembly.</param>
-        /// <returns>The builder.</returns>
-        public IFilinBuilder AddAssembly(Assembly assembly)
+        /// <returns>The same <see cref="IFilinBuilder"/> instance so that multiple calls can be chained.</returns>
+        [RequiresAssemblyFiles("Calls Filin.Hosting.DefaultExecutorServices.ApplyConfiguration(IFilinBuilder)")]
+        [RequiresUnreferencedCode("Calls Filin.Hosting.SerializationServiceCollectionExtentions.AddStorageSerialization()")]
+        [RequiresDynamicCode("Calls Filin.Hosting.SerializationServiceCollectionExtentions.AddStorageSerialization()")]
+        public IFilinBuilder AddDefaultServices()
         {
             ArgumentNullException.ThrowIfNull(builder);
-            ArgumentNullException.ThrowIfNull(assembly);
 
-            var attrs = assembly.GetCustomAttributes<TypeManifestProviderAttribute>();
+            var services = builder.Services
+                .AddOptions()
+                .AddStorageSerialization();
 
-            foreach (var attr in attrs)
+            services.TryAddSingleton(TimeProvider.System);
+            services.TryAddEnumerable(ServiceDescriptor.Transient<IConfigureOptions<TypeManifestOptions>, TypeManifestProvider>());
+            services.TryAddEnumerable(ServiceDescriptor.Transient<IPostConfigureOptions<TypeManifestOptions>, TypeManifestProvider>());
+
+            return builder;
+        }
+
+        /// <summary>
+        /// Adds an assembly to the builder.
+        /// </summary>
+        /// <param name="assemblies">The assembly.</param>
+        /// <returns>The builder.</returns>
+        public IFilinBuilder AddAssembly(params ReadOnlySpan<Assembly> assemblies)
+        {
+            ArgumentNullException.ThrowIfNull(builder);
+
+            foreach (var assembly in assemblies)
             {
-                builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(ITypeManifestProvider), attr.ProviderType));
-            }
+                var attrs = assembly.GetCustomAttributes<TypeManifestProviderAttribute>();
 
-            builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IConfigureOptions<TypeManifestOptions>, TypeManifestProvider>());
-            builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IPostConfigureOptions<TypeManifestOptions>, TypeManifestProvider>());
+                foreach (var attr in attrs)
+                {
+                    builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(ITypeManifestProvider), attr.ProviderType));
+                }
+            }
 
             return builder;
         }

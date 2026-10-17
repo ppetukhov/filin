@@ -56,7 +56,7 @@ sealed class EventStreamingService(
         {
             // Open a new Connection, which can be used to issue the LISTEN Command 
             // to the Postgres Database.
-            using var connection = new NpgsqlConnection(options.Value.ConnectionString);
+            using var connection = new NpgsqlConnection(options.Value.DataSource.ConnectionString);
 
             connection.Notification += (_, args) =>
             {

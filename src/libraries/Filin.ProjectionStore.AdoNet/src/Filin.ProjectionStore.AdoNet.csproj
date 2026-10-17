@@ -10,11 +10,14 @@
     <Compile Include="$(CommonPath)\AdoNet\AdoNetInvariants.cs" LinkBase="Storage" />
     <Compile Include="$(CommonPath)\AdoNet\DbConnectionFactory.cs" LinkBase="Storage" />
     <Compile Include="$(CommonPath)\AdoNet\DbExtensions.cs" LinkBase="Storage" />
-    <Compile Include="$(CommonPath)\AdoNet\DbDataSourseServiceCollectionExtensions.cs" LinkBase="Storage" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="$(LibrariesProjectRoot)\Filin.Hosting\src\Filin.Hosting.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Hosting\" />
   </ItemGroup>
 
 </Project>

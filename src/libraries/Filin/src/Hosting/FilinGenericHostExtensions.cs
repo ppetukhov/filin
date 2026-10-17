@@ -1,17 +1,16 @@
 using System.Diagnostics.CodeAnalysis;
 
-using Filin;
 using Filin.Configuration;
-using Filin.Hosting;
 using Filin.Internal;
 using Filin.Storage;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.Extensions.Hosting;
+namespace Filin.Hosting;
 
 /// <summary>
 /// Extension methods for <see cref="IHostBuilder"/>.

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Data.Common;
 
 using Filin.AdoNet;
 using Filin.Storage;
@@ -10,18 +11,12 @@ namespace Filin.Configuration;
 /// <summary>
 /// Options for Postgres EventStore storage.
 /// </summary>
-public sealed class EventStoreAdoNetOptions : IStorageProviderSerializerOptions
+public sealed class EventStoreAdoNetOptions : IValidatableObject, IStorageProviderSerializerOptions
 {
     /// <summary>
-    /// Connection string for Postgres EventStore storage.
+    /// Gets config section name.
     /// </summary>
-    public required string ConnectionString { get; set; }
-
-    /// <summary>
-    /// Connection name.
-    /// </summary>
-    [CustomValidation(typeof(EventStoreAdoNetOptions), nameof(IsValidConnectionName))]
-    public string? ConnectionName { get; set; }
+    public const string SectionName = "Filin:EventStore";
 
     /// <summary>
     /// The default ADO.NET invariant used for storage if none is given. 
@@ -29,11 +24,21 @@ public sealed class EventStoreAdoNetOptions : IStorageProviderSerializerOptions
     public const string DefaultAdoNetInvariant = AdoNetInvariants.InvariantNamePostgreSql;
 
     /// <summary>
+    /// Connection name.
+    /// </summary>
+    public string? ConnectionName { get; set; }
+
+    /// <summary>
+    /// Connection string for Postgres EventStore storage.
+    /// </summary>
+    public string? ConnectionString { get; set; }
+
+    /// <summary>
     /// The invariant name for storage.
     /// </summary>
     [Required]
     [CustomValidation(typeof(EventStoreAdoNetOptions), nameof(IsValidInvariant))]
-    public string Invariant { get; } = DefaultAdoNetInvariant;
+    public string Invariant { get; set; } = DefaultAdoNetInvariant;
 
     /// <summary>
     /// The serializer identity.
@@ -78,17 +83,10 @@ public sealed class EventStoreAdoNetOptions : IStorageProviderSerializerOptions
     public required IStorageSerializer StorageSerializer { get; set; }
 
     /// <summary>
-    /// Validate <see cref="ConnectionName"/>.
+    /// Gets Data source.
     /// </summary>
-    /// <param name="value"><inheritdoc cref="EventStoreAdoNetOptions" path="/summary"/></param>
-    /// <param name="context"><inheritdoc cref="ValidationContext" path="/summary"/></param>
-    /// <returns><inheritdoc cref="ValidationResult" path="/summary"/></returns>
-    public static ValidationResult? IsValidConnectionName(object value, ValidationContext? context) =>
-        (value is not string connectionName || string.IsNullOrWhiteSpace(connectionName))
-        && context is not null && context.ObjectInstance is EventStoreAdoNetOptions opt
-        && string.IsNullOrWhiteSpace(opt.ConnectionString)
-            ? new ValidationResult($"Required '{nameof(ConnectionString)}' or '{nameof(ConnectionName)}'. {typeof(EventStoreAdoNetOptions).FullName}")
-            : ValidationResult.Success;
+    [Required]
+    public required DbDataSource DataSource { get; set; }
 
     /// <summary>
     /// Validate <see cref="Invariant"/>.
@@ -98,14 +96,22 @@ public sealed class EventStoreAdoNetOptions : IStorageProviderSerializerOptions
     public static ValidationResult? IsValidInvariant(object value) =>
         (value is string invariant) && string.Equals(invariant, AdoNetInvariants.InvariantNamePostgreSql, StringComparison.Ordinal)
         ? ValidationResult.Success
-        : new ValidationResult($"Supports '{AdoNetInvariants.InvariantNamePostgreSql}'");
-}
+        : new ValidationResult($"{nameof(Invariant)}: The value ('{value}') is not supported for {nameof(EventStoreAdoNetOptions)}.{nameof(Invariant)}. Allowed values: '{AdoNetInvariants.InvariantNamePostgreSql}'");
 
-/// <summary>
-/// Provides compile-time generated validation for <see cref="EventStoreAdoNetOptions"/> using data annotations.
-/// </summary>
-[OptionsValidator]
-public sealed partial class EventStorePostgresOptionsValidator : IValidateOptions<EventStoreAdoNetOptions>
-{
+    /// <inheritdoc/>
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (string.IsNullOrEmpty(ConnectionString) && string.IsNullOrEmpty(ConnectionName) && (DataSource is null))
+        {
+            yield return new ValidationResult($"{nameof(EventStoreAdoNetOptions)}: Required '{nameof(ConnectionString)}' or '{nameof(ConnectionName)}' or '{nameof(DataSource)}'");
+        }
 
+        if (!string.IsNullOrEmpty(Invariant)
+            && AdoNetInvariants.Invariants.Contains(Invariant)
+            && DataSource is not null
+            && !DbConnectionFactory.IsValidDataSource(Invariant, DataSource, out var errorMessage))
+        {
+            yield return new ValidationResult(errorMessage);
+        }
+    }
 }

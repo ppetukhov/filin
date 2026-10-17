@@ -3,11 +3,6 @@ namespace Filin.Generators;
 static class Constants
 {
     /// <summary>
-    /// Value is <c>Filin.ApplicationPartAttribute</c>.
-    /// </summary>
-    public const string ApplicationPartAttribute = "Filin.ApplicationPartAttribute";
-
-    /// <summary>
     /// Value is <c>Filin.DeciderAttribute</c>.
     /// </summary>
     public const string DeciderAttribute = "Filin.DeciderAttribute";

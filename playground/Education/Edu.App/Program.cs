@@ -8,6 +8,8 @@ using Edu.ReadModels;
 using Edu.UseCases;
 
 using Filin;
+using Filin.Configuration;
+using Filin.Hosting;
 using Filin.Storage;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -28,7 +30,10 @@ var hostBuilder = CreateHostBuilder(args);
 [RequiresAssemblyFiles("Calls Microsoft.Extensions.Hosting.FilinGenericHostExtensions.UseFilin(Action<IFilinBuilder>)")]
 static IHostBuilder CreateHostBuilder(string[] args) =>
     Host.CreateDefaultBuilder(args)
-        .UseFilin()
+        .UseFilin(builder => builder
+            .AddEventStoreAdoNet()
+            .AddProjectionStoreAdoNet()
+            .AddAssembly(typeof(CreateCourse).Assembly, typeof(ReadModelsExtensions).Assembly))
         ;
 
 var host = hostBuilder.Build();

@@ -1,6 +1,3 @@
-using Filin;
-
-[assembly: ApplicationPart("Filin")]
 namespace Filin;
 
 /// <inheritdoc cref="IMediator"/>

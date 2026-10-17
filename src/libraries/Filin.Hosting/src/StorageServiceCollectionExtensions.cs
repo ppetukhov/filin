@@ -17,7 +17,21 @@ public static class StorageServiceCollectionExtensions
     extension(IServiceCollection collection)
     {
         /// <summary>
-        /// Registers a named projection store provider implementation in the service collection.
+        /// Registers a projection store provider implementation as a singleton service if it has not already been registered.
+        /// </summary>
+        /// <typeparam name="T">The concrete implementation type of the <see cref="IEventStore"/>.</typeparam>
+        /// <returns>The same <see cref="IServiceCollection"/> instance so that multiple calls can be chained.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="collection"/> is <see langword="null"/>.</exception>
+        public IServiceCollection AddProjectionStore<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>()
+            where T : class, IProjectionStore
+        {
+            ArgumentNullException.ThrowIfNull(collection);
+
+            return collection.RemoveAll<IProjectionStore>().AddSingleton<IProjectionStore, T>();
+        }
+
+        /// <summary>
+        /// Registers a projection store provider implementation in the service collection.
         /// </summary>
         /// <typeparam name="T">The concrete implementation type of the <see cref="IProjectionStore"/>.</typeparam>
         /// <param name="implementationFactory">The factory delegate used to construct the named storage provider instance.</param>

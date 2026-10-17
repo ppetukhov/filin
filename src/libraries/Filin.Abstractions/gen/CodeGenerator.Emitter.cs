@@ -73,8 +73,6 @@ partial class CodeGenerator
         internal static readonly SyntaxToken ThisIdentifierToken = Identifier("@this");
         internal static readonly IdentifierNameSyntax ThisIdentifierNameSyntax = IdentifierName(ThisIdentifierToken);
 
-        internal static readonly NameSyntax ApplicationPartAttributeNameSyntax = ParseName(Constants.ApplicationPartAttribute);
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static SyntaxKind MethodAccessibility(Accessibility accessibility) =>
             accessibility < Accessibility.Public
@@ -206,24 +204,6 @@ partial class CodeGenerator
 
                 token.ThrowIfCancellationRequested();
             }
-        }
-
-        internal static List<AttributeListSyntax> GenerateApplicationPartsAttributes(TypeDefinitions typeDefinitions)
-        {
-            var attributes = new List<AttributeListSyntax>(capacity: typeDefinitions.ApplicationParts.Count);
-
-            foreach (var assemblyName in typeDefinitions.ApplicationParts)
-            {
-                // Generate an assembly-level attribute with an instance of that class.
-                var attribute = AttributeList(
-                    AttributeTargetSpecifier(Token(SyntaxKind.AssemblyKeyword)),
-                    SingletonSeparatedList(
-                        Attribute(ApplicationPartAttributeNameSyntax)
-                            .AddArgumentListArguments(AttributeArgument(assemblyName.GetLiteralExpression()))));
-                attributes.Add(attribute);
-            }
-
-            return attributes;
         }
     }
 }

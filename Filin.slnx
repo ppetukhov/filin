@@ -36,7 +36,6 @@
   <Folder Name="/src/libraries/Common/src/AdoNet/">
 	<File Path="src/libraries/Common/src/AdoNet/AdoNetInvariants.cs" />
 	<File Path="src/libraries/Common/src/AdoNet/DbConnectionFactory.cs" />
-    <File Path="src/libraries/Common/src/AdoNet/DbDataSourseServiceCollectionExtensions.cs" />
     <File Path="src/libraries/Common/src/AdoNet/DbExtensions.cs" />
   </Folder>
   <Folder Name="/src/libraries/Common/src/Text/">

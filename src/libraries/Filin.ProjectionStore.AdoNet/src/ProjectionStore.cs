@@ -18,11 +18,9 @@ namespace Filin.ProjectionStore.AdoNet;
 /// <remarks>
 /// </remarks>
 [DebuggerDisplay("Invariant = {options.Value.Invariant}")]
-sealed class ProjectionStore(
-    DbDataSource dataSource,
-    ILoggerFactory loggerFactory,
-    IOptions<ProjectionStoreAdoNetOptions> options) : IProjectionStore
+sealed class ProjectionStore(IOptions<ProjectionStoreAdoNetOptions> options, ILoggerFactory loggerFactory) : IProjectionStore
 {
+    readonly DbDataSource _dataSource = options.Value.DataSource;
     readonly ILogger _logger = loggerFactory.CreateLogger("Filin.ProjectionStore.AdoNet");
     readonly IStorageSerializer _serializer = options.Value.StorageSerializer;
     readonly ConcurrentDictionary<int, string> _upsertBatchQueries = new();
@@ -46,7 +44,7 @@ sealed class ProjectionStore(
         {
             var opQueries = Interlocked.CompareExchange(ref _currentOperationalQueries, null, null) ?? await InitQueriesAsync(cancellationToken).ConfigureAwait(false);
 
-            using var conn = await dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+            using var conn = await _dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
 
             using var command = conn.CreateCommand();
 
@@ -118,7 +116,7 @@ sealed class ProjectionStore(
         {
             var opQueries = Interlocked.CompareExchange(ref _currentOperationalQueries, null, null) ?? await InitQueriesAsync(cancellationToken).ConfigureAwait(false);
 
-            using var conn = await dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+            using var conn = await _dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
 
             using var command = conn.CreateCommand();
 
@@ -171,7 +169,7 @@ sealed class ProjectionStore(
 
             var commandText = GetUpsertBatchQuery(count);
 
-            using var conn = await dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+            using var conn = await _dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
 
             using var command = conn.CreateCommand();
 
@@ -224,7 +222,7 @@ sealed class ProjectionStore(
         {
             var opQueries = Interlocked.CompareExchange(ref _currentOperationalQueries, null, null) ?? await InitQueriesAsync(cancellationToken).ConfigureAwait(false);
 
-            using var conn = await dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+            using var conn = await _dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
 
             using var command = conn.CreateCommand();
 
@@ -262,7 +260,7 @@ sealed class ProjectionStore(
 
         const string initializationQuery = $"SELECT query_key, query_text FROM Filin_query WHERE query_key IN ('{readStorageKey}','{upsertStorageKey}','{upsertBatchStorageKey}','{clearStorageKey}')";
 
-        using var conn = await dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        using var conn = await _dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
 
         using var command = conn.CreateCommand();
 
