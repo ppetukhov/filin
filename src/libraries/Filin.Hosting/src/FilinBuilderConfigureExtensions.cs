@@ -54,7 +54,7 @@ public static class FilinBuilderConfigureExtensions
 
                 foreach (var attr in attrs)
                 {
-                    builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(ITypeManifestProvider), attr.ProviderType));
+                    builder.Services.TryAddEnumerable(ServiceDescriptor.Transient(typeof(ITypeManifestProvider), attr.ProviderType));
                 }
             }
 
