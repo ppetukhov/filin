@@ -16,8 +16,4 @@
     <ProjectReference Include="$(LibrariesProjectRoot)\Filin.Hosting\src\Filin.Hosting.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Hosting\" />
-  </ItemGroup>
-
 </Project>
