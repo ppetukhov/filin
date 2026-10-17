@@ -6,7 +6,7 @@ namespace Filin.Configuration;
 /// <summary>
 /// Provides validation for <see cref="EventStoreAdoNetOptions.ConnectionName"/>.
 /// </summary>
-public sealed class EventStorePostgresOptionsConnectionNameValidator(IConfiguration configuration) : IValidateOptions<EventStoreAdoNetOptions>
+sealed class EventStorePostgresOptionsConnectionNameValidator(IConfiguration configuration) : IValidateOptions<EventStoreAdoNetOptions>
 {
     /// <inheritdoc/>
     public ValidateOptionsResult Validate(string? name, EventStoreAdoNetOptions options)

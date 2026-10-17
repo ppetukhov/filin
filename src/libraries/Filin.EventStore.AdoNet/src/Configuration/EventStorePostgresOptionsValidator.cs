@@ -6,6 +6,6 @@ namespace Filin.Configuration;
 /// Provides compile-time generated validation for <see cref="EventStoreAdoNetOptions"/> using data annotations.
 /// </summary>
 [OptionsValidator]
-public sealed partial class EventStorePostgresOptionsValidator : IValidateOptions<EventStoreAdoNetOptions>
+sealed partial class EventStorePostgresOptionsValidator : IValidateOptions<EventStoreAdoNetOptions>
 {
 }

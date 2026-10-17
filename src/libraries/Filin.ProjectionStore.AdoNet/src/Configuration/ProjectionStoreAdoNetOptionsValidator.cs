@@ -6,7 +6,7 @@ namespace Filin.Configuration;
 /// Provides compile-time generated validation for <see cref="ProjectionStoreAdoNetOptions"/> using data annotations.
 /// </summary>
 [OptionsValidator]
-public sealed partial class ProjectionStoreAdoNetOptionsValidator : IValidateOptions<ProjectionStoreAdoNetOptions>
+sealed partial class ProjectionStoreAdoNetOptionsValidator : IValidateOptions<ProjectionStoreAdoNetOptions>
 {
 
 }

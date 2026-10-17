@@ -6,7 +6,7 @@ namespace Filin.Configuration;
 /// <summary>
 /// Provides validation for <see cref="ProjectionStoreAdoNetOptions.ConnectionName"/>.
 /// </summary>
-public sealed class ProjectionStoreAdoNetOptionsConnectionNameValidator(IConfiguration configuration) : IValidateOptions<ProjectionStoreAdoNetOptions>
+sealed class ProjectionStoreAdoNetOptionsConnectionNameValidator(IConfiguration configuration) : IValidateOptions<ProjectionStoreAdoNetOptions>
 {
     /// <inheritdoc/>
     public ValidateOptionsResult Validate(string? name, ProjectionStoreAdoNetOptions options)
