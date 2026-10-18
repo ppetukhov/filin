@@ -38,6 +38,9 @@ insert_final_newline = false
 [*.sh]
 end_of_line = lf
 
+[*.txt]
+insert_final_newline = false
+
 # Dotnet Code Style Settings
 # See https://docs.microsoft.com/en-us/visualstudio/ide/editorconfig-code-style-settings-reference
 # See http://kent-boogaart.com/blog/editorconfig-reference-for-c-developers

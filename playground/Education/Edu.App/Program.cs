@@ -71,27 +71,6 @@ var executor = host.Services.GetRequiredService<IMediator>();
 
 long completedCount = 0;
 
-var allCources = new List<(Guid Id, string Name)>(capacity: 5000);
-{
-    var all = Resources.AllCourses.AsSpan();
-
-    var lineRanges = all.Split('\n');
-
-    foreach (var lineRange in lineRanges)
-    {
-        var textLine = all[lineRange];
-
-        var idx = textLine.IndexOf(',');
-
-        var guid = Guid.Parse(textLine[..idx]);
-        var name = new string(textLine[(idx + 1)..]);
-
-        allCources.Add((guid, name));
-    }
-}
-
-var sw = Stopwatch.StartNew();
-
 await Task.Run(async () =>
 {
     const int parallelTasks = 100;
@@ -110,9 +89,39 @@ await Task.Run(async () =>
     Console.WriteLine(" x - Exception");
     Console.WriteLine();
 
+    var allCources = new List<(Guid Id, string Name)>(capacity: 5000);
+    {
+        var all = Resources.AllCourses.AsSpan();
+
+        var lineRanges = all.Split('\n');
+
+        foreach (var lineRange in lineRanges)
+        {
+            var textLine = all[lineRange];
+
+            var idx = textLine.IndexOf(',');
+
+            if (idx >= 0)
+            {
+                var guid = Guid.Parse(textLine[..idx]);
+
+                var span = textLine[(idx + 1)..];
+
+                if (char.IsControl(span[^1]))
+                {
+                    span = span[..^1];
+                }
+
+                var name = new string(span);
+
+                allCources.Add((guid, name));
+            }
+        }
+    }
+
     var tasks = new List<Task<List<(object command, long timeTaken, object result)>>>(capacity: allCources.Count * iterationsCount);
 
-    sw.Restart();
+    var sw = Stopwatch.StartNew();
 
     foreach (var __ in Enumerable.Range(0, iterationsCount))
     {
@@ -201,7 +210,7 @@ await Task.Run(async () =>
                         {
                             if (logger.IsEnabled(LogLevel.Information))
                             {
-                                logger.LogInformation("Ok. {TimeTaken} ms, Command: {Command}; Result: Current chunk name: {Result}", timeTaken, command, res.State.CourseName);
+                                logger.LogInformation("Ok. {TimeTaken} ms, Command: {Command}; Result: Current course name: {Result}", timeTaken, command, res.State.CourseName);
                             }
                         }
                         else
@@ -216,7 +225,9 @@ await Task.Run(async () =>
             }
         }
 
+        Console.WriteLine();
         Console.WriteLine("CreateCourse WhenAll. Timetaken: {0} ms. Total tasks: {1}", sw.ElapsedMilliseconds, completedCount);
+        Console.WriteLine();
     }
     catch (Exception ex)
     {
@@ -230,49 +241,44 @@ await Task.Run(async () =>
         }
     }
 #pragma warning restore CA1031 // Do not catch general exception types
+
+    Console.WriteLine();
+    Console.WriteLine("Timetaken: {0} ms. Total tasks completed: {1}", sw.ElapsedMilliseconds, completedCount);
+    Console.WriteLine();
 }).ConfigureAwait(false);
 
 await Task.Run(async () =>
 {
-    if (completedCount > -1)
-    {
-        if (logger.IsEnabled(LogLevel.Information))
-        {
-            logger.LogInformation("No GetActiveCourses ...");
-        }
-
-        return;
-    }
-
+    var sw = Stopwatch.StartNew();
 #pragma warning disable CA1031 // Do not catch general exception types
     try
     {
         var activeCourses = await executor.QueryAsync<GetActiveCourses, ActiveCourses>(new GetActiveCourses(), apptLifeTime.ApplicationStopping).ConfigureAwait(false);
 
+        sw.Stop();
+
         if (logger.IsEnabled(LogLevel.Information))
         {
-            logger.LogInformation("Active courses {ActiveCourses}", activeCourses?.Courses.Count);
+            logger.LogInformation("Get all active courses {ActiveCourses}. Timetaken: {Timetaken} ms", activeCourses?.Courses.Count, sw.ElapsedMilliseconds);
         }
     }
     catch (Exception e)
     {
+        sw.Stop();
+
         if (logger.IsEnabled(LogLevel.Error))
         {
-            logger.LogError(e, "GetActiveCourses error");
+            logger.LogError(e, "GetActiveCourses error. Timetaken: {Timetaken} ms", sw.ElapsedMilliseconds);
         }
     }
 #pragma warning restore CA1031 // Do not catch general exception types
 }).ConfigureAwait(false);
 
-Console.WriteLine();
-Console.WriteLine();
-Console.WriteLine("Timetaken: {0} ms. Total tasks completed: {1}", sw.ElapsedMilliseconds, completedCount);
-Console.WriteLine();
-Console.WriteLine();
-
 if (!apptLifeTime.ApplicationStopping.IsCancellationRequested)
 {
+    Console.WriteLine();
     Console.WriteLine("Stopped after 5s");
+    Console.WriteLine();
 
     try
     {

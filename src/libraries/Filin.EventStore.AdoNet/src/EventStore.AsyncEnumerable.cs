@@ -87,11 +87,16 @@ sealed partial class EventStore
 
                             var afterParam = command.Parameters[0]; // First param // [COMMAND_PARAMETER_NAME_AFTER];
 
-                            afterParam.Value = (long)Current.Position.Value;
+                            var afterPosition = (long)Current.Position.Value;
 
-                            reader = await GetReaderAsync().ConfigureAwait(false);
+                            if (afterParam.Value is long pos && pos != afterPosition)
+                            {
+                                afterParam.Value = afterPosition;
 
-                            continue;
+                                reader = await GetReaderAsync().ConfigureAwait(false);
+
+                                continue;
+                            }
                         }
 
                         if (logger.IsEnabled(LogLevel.Debug))
