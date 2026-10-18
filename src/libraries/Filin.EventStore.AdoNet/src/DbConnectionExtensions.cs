@@ -24,7 +24,7 @@ static class DbConnectionExtensions
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    var delay = backoff.InitalDelay * Math.Pow(backoff.Exponent, reconnectCount);
+                    var delay = backoff.InitalDelay * Math.Pow(2.0, reconnectCount);
 
                     if (backoff.UseJitter)
                     {

@@ -4,8 +4,6 @@ using System.Data.Common;
 using Filin.AdoNet;
 using Filin.Storage;
 
-using Microsoft.Extensions.Options;
-
 namespace Filin.Configuration;
 
 /// <summary>
@@ -70,7 +68,6 @@ public sealed class EventStoreAdoNetOptions : IValidatableObject, IStorageProvid
     /// <inheritdoc cref="EventStoreAdoNetBackoff" path="/summary"/>
     /// </summary>
     [Required]
-    [ValidateObjectMembers]
     public required EventStoreAdoNetBackoff Backoff { get; set; } = new EventStoreAdoNetBackoff();
 
     /// <summary>
