@@ -59,7 +59,7 @@ sealed class AppendEventsBlock : IAppendEventsBlock, IDisposable
         _executeBlock = new(ExecuteAsync,
             new ExecutionDataflowBlockOptions
             {
-                MaxDegreeOfParallelism = 1,
+                MaxDegreeOfParallelism = options.Value.MaxConcurrentAppendRequests,
                 EnsureOrdered = false
             });
 

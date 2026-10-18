@@ -44,6 +44,13 @@ public sealed class EventStoreAdoNetOptions : IValidatableObject, IStorageProvid
     public string? SerializerKey { get; set; }
 
     /// <summary>
+    /// Gets the maximum number of concurrent append requests.
+    /// </summary>
+    /// <remarks>Default is 2.</remarks>
+    [Range(1, 20)]
+    public int MaxConcurrentAppendRequests { get; set; } = 2;
+
+    /// <summary>
     /// Reading batch size.
     /// </summary>
     /// <remarks>Default is 1000.</remarks>
