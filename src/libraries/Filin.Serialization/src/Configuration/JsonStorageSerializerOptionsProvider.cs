@@ -6,8 +6,5 @@ namespace Filin.Configuration;
 sealed class JsonStorageSerializerOptionsProvider : IPostConfigureOptions<JsonStorageSerializerOptions>
 {
     /// <inheritdoc/>
-    public void PostConfigure(string? name, JsonStorageSerializerOptions options)
-    {
-        options.SerializerOptions.MakeReadOnly();
-    }
+    public void PostConfigure(string? name, JsonStorageSerializerOptions options) => options.SerializerOptions.MakeReadOnly();
 }
