@@ -27,6 +27,7 @@ public static class SerializationServiceCollectionExtentions
             collection.TryAddEnumerable(ServiceDescriptor.Transient<IPostConfigureOptions<JsonStorageSerializerOptions>, JsonStorageSerializerOptionsProvider>());
 
             collection.TryAddSingleton<IStorageSerializer, JsonStorageSerializer>();
+            collection.TryAddKeyedSingleton<IStorageSerializer, JsonStorageSerializer>("json");
 
             return collection;
         }
