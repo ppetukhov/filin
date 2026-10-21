@@ -42,7 +42,7 @@ sealed partial class EventStore(
     {
         ArgumentNullException.ThrowIfNull(dcbEvents);
 
-        if (dcbEvents is not ICollection<DcbEvent> collection)
+        if (dcbEvents is not IReadOnlyCollection<DcbEvent> collection)
         {
             collection = [.. dcbEvents];
         }
@@ -89,5 +89,5 @@ sealed partial class EventStore(
 
     static EventStoreException EventStoreException(Exception ex) => new(message: ex.Message, innerException: ex);
 
-    Task<AppendResult> AppendAsync(ICollection<DcbEvent> events, AppendCondition appendCondition, CancellationToken cancellationToken) => _appendEventsBlockWrapped.AppendEventsAsync(events, appendCondition, cancellationToken);
+    Task<AppendResult> AppendAsync(IReadOnlyCollection<DcbEvent> events, AppendCondition appendCondition, CancellationToken cancellationToken) => _appendEventsBlockWrapped.AppendEventsAsync(events, appendCondition, cancellationToken);
 }

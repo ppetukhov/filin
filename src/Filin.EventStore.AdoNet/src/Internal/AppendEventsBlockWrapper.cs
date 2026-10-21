@@ -46,7 +46,7 @@ sealed class AppendEventsBlockWrapper : IDisposable
         return tcs.Task;
     }
 
-    internal Task<AppendResult> AppendEventsAsync(ICollection<DcbEvent> events, AppendCondition appendCondition, CancellationToken cancellationToken)
+    internal Task<AppendResult> AppendEventsAsync(IReadOnlyCollection<DcbEvent> events, AppendCondition appendCondition, CancellationToken cancellationToken)
     {
         var tcs = new TaskCompletionSource<AppendResult>();
         var context = new LocalContext(this, tcs, cancellationToken);

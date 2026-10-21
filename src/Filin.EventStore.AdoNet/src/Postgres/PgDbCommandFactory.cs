@@ -55,7 +55,7 @@ sealed class PgDbCommandFactory(DbDataSource dataSource, IStorageSerializer seri
         return CreateAppendEventCommandSlow(@event, ref appendCondition);
     }
 
-    internal override DbCommand CreateAppendEventsCommand(ICollection<DcbEvent> events, AppendCondition appendCondition)
+    internal override DbCommand CreateAppendEventsCommand(IReadOnlyCollection<DcbEvent> events, AppendCondition appendCondition)
     {
         if (events.Count == 1)
         {

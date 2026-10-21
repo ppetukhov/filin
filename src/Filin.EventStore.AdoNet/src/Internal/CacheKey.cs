@@ -25,7 +25,7 @@ readonly struct CacheKey : IEquatable<CacheKey>
     internal static ReadOnlySpan<(byte EventTypesCount, byte TagsCount)> FailIfMatch(ref CacheKey item) =>
         MemoryMarshal.Cast<byte, (byte, byte)>(item._buffer[(2 + item.EventsCount)..][..item.FailIfMatchQueryByteCount]);
 
-    internal static bool TryCreate(ICollection<DcbEvent> dcbEvents, DcbQuery failIfMatchQuery, out CacheKey queryKey)
+    internal static bool TryCreate(IReadOnlyCollection<DcbEvent> dcbEvents, DcbQuery failIfMatchQuery, out CacheKey queryKey)
     {
         var bytesCount = 2 + dcbEvents.Count + (2 * failIfMatchQuery.Count);
 
