@@ -33,7 +33,7 @@ BEGIN
             event_type      text,                     -- Original text event type name (e.g., "OrderPaid")
             tag_hashes      bigint[],                 -- Pre-computed arrays of 64-bit business tag hashes
             tags            text[],                   -- Original text business tag values for verification
-            payload         json                      -- Plain text JSON event data (~1KB payload text)
+            payload         json COMPRESSION lz4      -- Plain text JSON event data (~1KB payload text)
         );
     END IF;
 END $$;
@@ -83,12 +83,12 @@ END $$;
 
 -- 4. Compound composite indexing strategy providing sub-millisecond seek speeds within 4GB RAM
 --    Composite B-Tree satisfies structural boundary lookups: hash matching combined with scale bounds.
-CREATE INDEX IF NOT EXISTS idx_dcb_events_type_position_btree 
-ON dcb_events USING btree (event_type_hash, position) 
-WITH (fillfactor = 100);
+CREATE INDEX IF NOT EXISTS dcb_events_event_type_hash_position_idx
+ON dcb_events USING btree (event_type_hash, position)
+WITH (fillfactor = 100, deduplicate_items=False);
 
 -- Inverted index accelerating comprehensive array inclusion operations (@>) across billions of rows.
-CREATE INDEX IF NOT EXISTS idx_dcb_events_tag_hashes_gin 
+CREATE INDEX IF NOT EXISTS dcb_events_tag_hashes_idx
 ON dcb_events USING gin(tag_hashes);
 
 

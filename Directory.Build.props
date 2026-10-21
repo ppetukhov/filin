@@ -15,7 +15,7 @@
 
     <!-- Set the repository root into a variable -->
     <SourceRoot>$(MSBuildThisFileDirectory)</SourceRoot>
-    <LibrariesProjectRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', 'src', 'libraries'))</LibrariesProjectRoot>
+    <CommonDir>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', 'src', 'Common'))</CommonDir>
     <DocsDir>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', 'docs'))</DocsDir>
   </PropertyGroup>
 

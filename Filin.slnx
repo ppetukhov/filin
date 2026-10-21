@@ -25,41 +25,40 @@
     <File Path="eng/Analyzers.targets" />
     <File Path="eng/GeneratorProjects.targets" />
   </Folder>
-  <Folder Name="/src/" />
-  <Folder Name="/src/libraries/">
-    <File Path="src/libraries/Directory.Build.props" />
-    <File Path="src/libraries/Directory.Build.targets" />
+  <Folder Name="/src/">
+    <File Path="src/Directory.Build.props" />
+    <File Path="src/Directory.Build.targets" />
   </Folder>
-  <Folder Name="/src/libraries/Common/" />
-  <Folder Name="/src/libraries/Common/src/" />
-  <Folder Name="/src/libraries/Common/src/AdoNet/">
-	<File Path="src/libraries/Common/src/AdoNet/AdoNetInvariants.cs" />
-	<File Path="src/libraries/Common/src/AdoNet/DbConnectionFactory.cs" />
-    <File Path="src/libraries/Common/src/AdoNet/DbExtensions.cs" />
+  <Folder Name="/src/Common/" />
+  <Folder Name="/src/Common/AdoNet/">
+    <File Path="src/Common/AdoNet/AdoNetInvariants.cs" />
+    <File Path="src/Common/AdoNet/DbConnectionFactory.cs" />
+    <File Path="src/Common/AdoNet/DbExtensions.cs" />
   </Folder>
-  <Folder Name="/src/libraries/Common/src/Text/">
-    <File Path="src/libraries/Common/src/Text/ValueStringBuilder.cs" />
+  <Folder Name="/src/Common/Text/">
+    <File Path="src/Common/Text/ValueStringBuilder.cs" />
   </Folder>
-  <Folder Name="/src/libraries/Filin.Abstractions/" />
-  <Folder Name="/src/libraries/Filin.Abstractions/gen/">
-    <Project Path="src/libraries/Filin.Abstractions/gen/Filin.Generators.csproj" Id="b5cb9853-24b6-4813-99f9-f38489eafb7c" />
+  <Folder Name="/src/Filin.Abstractions/" />
+  <Folder Name="/src/Filin.Abstractions/src/">
+    <Project Path="src/Filin.Abstractions/src/Filin.Abstractions.csproj" Id="b0a37696-6e5c-4928-8270-439c12d7d5bf" />
   </Folder>
-  <Folder Name="/src/libraries/Filin.Abstractions/src/">
-    <Project Path="src/libraries/Filin.Abstractions/src/Filin.Abstractions.csproj" Id="b0a37696-6e5c-4928-8270-439c12d7d5bf" />
+  <Folder Name="/src/Filin.Abstractions/tests/">
+    <Project Path="src/Filin.Abstractions/tests/Filin.Abstractions.Tests.csproj" />
   </Folder>
-  <Folder Name="/src/libraries/Filin.Abstractions/tests/">
-    <Project Path="src/libraries/Filin.Abstractions/tests/Filin.Abstractions.Tests.csproj" />
+  <Folder Name="/src/Filin.EventStore.AdoNet/" />
+  <Folder Name="/src/Filin.EventStore.AdoNet/src/">
+    <Project Path="src/Filin.EventStore.AdoNet/src/Filin.EventStore.AdoNet.csproj" Id="06d0752e-79be-472c-b5cb-1276e049cb17" />
   </Folder>
-  <Folder Name="/src/libraries/Filin.EventStore.AdoNet/" />
-  <Folder Name="/src/libraries/Filin.EventStore.AdoNet/src/">
-    <Project Path="src/libraries/Filin.EventStore.AdoNet/src/Filin.EventStore.AdoNet.csproj" Id="06d0752e-79be-472c-b5cb-1276e049cb17" />
+  <Folder Name="/src/Filin.Generators/" />
+  <Folder Name="/src/Filin.Generators/src/">
+    <Project Path="src/Filin.Abstractions/gen/Filin.Generators.csproj" Id="b5cb9853-24b6-4813-99f9-f38489eafb7c" />
   </Folder>
-  <Folder Name="/src/libraries/Filin.ProjectionStore.AdoNet/" />
-  <Folder Name="/src/libraries/Filin.ProjectionStore.AdoNet/src/">
-    <Project Path="src/libraries/Filin.ProjectionStore.AdoNet/src/Filin.ProjectionStore.AdoNet.csproj" Id="eb354ac5-8c05-4759-b971-90ef55dfb599" />
+  <Folder Name="/src/Filin.ProjectionStore.AdoNet/" />
+  <Folder Name="/src/Filin.ProjectionStore.AdoNet/src/">
+    <Project Path="src/Filin.ProjectionStore.AdoNet/src/Filin.ProjectionStore.AdoNet.csproj" Id="eb354ac5-8c05-4759-b971-90ef55dfb599" />
   </Folder>
-  <Folder Name="/src/libraries/Filin/" />
-  <Folder Name="/src/libraries/Filin/src/">
-    <Project Path="src/libraries/Filin/src/Filin.csproj" Id="92eef5fd-5217-4fba-a2c6-0172833d0b49" />
+  <Folder Name="/src/Filin/" />
+  <Folder Name="/src/Filin/src/">
+    <Project Path="src/Filin/src/Filin.csproj" Id="92eef5fd-5217-4fba-a2c6-0172833d0b49" />
   </Folder>
 </Solution>

@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS projections
     type_name text COLLATE pg_catalog."C.utf8" NOT NULL,
     "position" bigint NOT NULL,
     timestamp_utc timestamp NOT NULL,
-    payload bytea
+    payload bytea  COMPRESSION lz4
 );
 
 -- Index: ix_projections

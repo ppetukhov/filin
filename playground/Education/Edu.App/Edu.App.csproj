@@ -13,9 +13,9 @@
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="$(LibrariesProjectRoot)\Filin.EventStore.AdoNet\src\Filin.EventStore.AdoNet.csproj" />
-    <ProjectReference Include="$(LibrariesProjectRoot)\Filin.ProjectionStore.AdoNet\src\Filin.ProjectionStore.AdoNet.csproj" />
-    <ProjectReference Include="$(LibrariesProjectRoot)\Filin\src\Filin.csproj" />
+    <ProjectReference Include="..\..\..\src\Filin.EventStore.AdoNet\src\Filin.EventStore.AdoNet.csproj" />
+    <ProjectReference Include="..\..\..\src\Filin.ProjectionStore.AdoNet\src\Filin.ProjectionStore.AdoNet.csproj" />
+    <ProjectReference Include="..\..\..\src\Filin\src\Filin.csproj" />
     <ProjectReference Include="..\Edu.Contract\Edu.Contract.csproj" />
     <ProjectReference Include="..\Edu\Edu.csproj" />
   </ItemGroup>

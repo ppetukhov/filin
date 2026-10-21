@@ -13,12 +13,6 @@
     <IsAotCompatible Condition="'$(IsAotCompatible)' == '' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0')) and '$(IsSourceProject)' == 'true'">true</IsAotCompatible>
   </PropertyGroup>
 
-  <!-- Set up common paths -->
-  <PropertyGroup>
-    <CommonPathRoot>$([MSBuild]::NormalizeDirectory('$(LibrariesProjectRoot)', 'Common'))</CommonPathRoot>
-    <CommonPath>$([MSBuild]::NormalizeDirectory('$(CommonPathRoot)', 'src'))</CommonPath>
-  </PropertyGroup>
-
   <ItemGroup Condition="'$(IsSourceProject)' == 'true' or '$(IsGeneratorProject)' == 'true'">
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
       <_Parameter1>$(MSBuildProjectName).Tests</_Parameter1>

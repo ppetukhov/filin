@@ -414,9 +414,6 @@ dotnet_diagnostic.IDE0130.severity = none
 #Do not nest type . Alternatively, change its accessibility so that it is not externally visible.
 dotnet_diagnostic.CA1034.severity = suggestion
 
-[**/libraries/**.cs]
-dotnet_diagnostic.CA1812.severity = suggestion
-
 [**/tests/**.cs]
 # CS1591: Missing XML comment for publicly visible type or member
 dotnet_diagnostic.CS1591.severity = none

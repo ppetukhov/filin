@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(LibrariesProjectRoot)\Filin.Abstractions\gen\Filin.Generators.csproj">
+    <ProjectReference Include="..\..\..\src\Filin.Abstractions\gen\Filin.Generators.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <OutputItemType>Analyzer</OutputItemType>
     </ProjectReference>

@@ -12,7 +12,6 @@ namespace Filin;
 /// </summary>
 [CollectionBuilder(typeof(EventTypes), nameof(Create))]
 [DebuggerTypeProxy(typeof(EventTypesDebugView))]
-
 public readonly struct EventTypes : IEquatable<EventTypes>, IComparable<EventTypes>, ISpanFormattable
 {
     readonly EventType[]? _eventTypes;

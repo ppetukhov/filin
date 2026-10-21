@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>$(NetCurrent);$(NetMinimum)</TargetFrameworks>
@@ -7,9 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(CommonPath)\AdoNet\AdoNetInvariants.cs" LinkBase="Storage" />
-    <Compile Include="$(CommonPath)\AdoNet\DbConnectionFactory.cs" LinkBase="Storage" />
-    <Compile Include="$(CommonPath)\AdoNet\DbExtensions.cs" LinkBase="Storage" />
+    <Compile Include="$(CommonDir)\AdoNet\AdoNetInvariants.cs" LinkBase="Storage" />
+    <Compile Include="$(CommonDir)\AdoNet\DbConnectionFactory.cs" LinkBase="Storage" />
+    <Compile Include="$(CommonDir)\AdoNet\DbExtensions.cs" LinkBase="Storage" />
   </ItemGroup>
 
   <ItemGroup>
