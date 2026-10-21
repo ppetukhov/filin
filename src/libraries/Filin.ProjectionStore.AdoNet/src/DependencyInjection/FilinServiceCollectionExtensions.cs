@@ -1,33 +1,32 @@
-using Filin.Hosting;
+using Filin.Configuration;
+using Filin.Storage;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
-namespace Filin.Configuration;
+namespace Filin.DependencyInjection;
 
 /// <summary>
 /// <see cref="IServiceCollection"/> extensions.
 /// </summary>
-public static class ProjectionStoreAdoNetFilinBuilderExtensions
+public static class FilinServiceCollectionExtensions
 {
-    extension(IFilinBuilder builder)
+    extension(IServiceCollection collection)
     {
         /// <summary>
         /// Configure AdoNet storage for <see cref="Storage.IProjectionStore"/>.
         /// </summary>
-        public IFilinBuilder AddProjectionStoreAdoNet() =>
-            builder.AddProjectionStoreAdoNet(_ => { });
+        public IServiceCollection AddProjectionStoreAdoNet() =>
+            collection.AddProjectionStoreAdoNet(_ => { });
 
         /// <summary>
         /// Configure AdoNet storage for <see cref="Storage.IProjectionStore"/>.
         /// </summary>
-        public IFilinBuilder AddProjectionStoreAdoNet(Action<ProjectionStoreAdoNetOptions> configure)
+        public IServiceCollection AddProjectionStoreAdoNet(Action<ProjectionStoreAdoNetOptions> configure)
         {
             ArgumentNullException.ThrowIfNull(configure);
-
-            var collection = builder.Services;
 
             _ = collection
                 .AddOptions<ProjectionStoreAdoNetOptions>()
@@ -49,13 +48,12 @@ public static class ProjectionStoreAdoNetFilinBuilderExtensions
                 .Configure(configure);
 
             collection.TryAddEnumerable(ServiceDescriptor.Transient<IPostConfigureOptions<ProjectionStoreAdoNetOptions>, ProjectionStoreAdoNetOptionsProvider>());
-            collection.TryAddEnumerable(ServiceDescriptor.Transient<IPostConfigureOptions<ProjectionStoreAdoNetOptions>, DefaultStorageProviderSerializerOptionsConfigurator<ProjectionStoreAdoNetOptions>>());
             collection.TryAddEnumerable(ServiceDescriptor.Transient<IValidateOptions<ProjectionStoreAdoNetOptions>, ProjectionStoreAdoNetOptionsConnectionNameValidator>());
             collection.TryAddEnumerable(ServiceDescriptor.Transient<IValidateOptions<ProjectionStoreAdoNetOptions>, ProjectionStoreAdoNetOptionsValidator>());
 
-            _ = collection.AddProjectionStore<ProjectionStore.AdoNet.ProjectionStore>();
+            collection.TryAddSingleton<IProjectionStore, ProjectionStore.AdoNet.ProjectionStore>();
 
-            return builder;
+            return collection;
         }
     }
 }

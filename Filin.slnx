@@ -4,9 +4,10 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Folder Name="/playground/" />
-  <Folder Name="/playground/Education/">
+  <Folder Name="/playground/">
     <File Path="playground/Directory.Build.props" />
+  </Folder>
+  <Folder Name="/playground/Education/">
     <Project Path="playground/Education/Edu.App/Edu.App.csproj" Id="52698aac-1988-4001-be45-65ad8a617283" />
     <Project Path="playground/Education/Edu.Contract/Edu.Contract.csproj" />
     <Project Path="playground/Education/Edu/Edu.csproj" />
@@ -23,8 +24,6 @@
   <Folder Name="/eng/">
     <File Path="eng/Analyzers.targets" />
     <File Path="eng/GeneratorProjects.targets" />
-    <File Path="eng/NoTargetsSdk.BeforeTargets.targets" />
-    <File Path="eng/Versioning.targets" />
   </Folder>
   <Folder Name="/src/" />
   <Folder Name="/src/libraries/">
@@ -55,17 +54,9 @@
   <Folder Name="/src/libraries/Filin.EventStore.AdoNet/src/">
     <Project Path="src/libraries/Filin.EventStore.AdoNet/src/Filin.EventStore.AdoNet.csproj" Id="06d0752e-79be-472c-b5cb-1276e049cb17" />
   </Folder>
-  <Folder Name="/src/libraries/Filin.Hosting/" />
-  <Folder Name="/src/libraries/Filin.Hosting/src/">
-    <Project Path="src/libraries/Filin.Hosting/src/Filin.Hosting.csproj" Id="54ed932d-7300-4753-89a4-b86a244954c4" />
-  </Folder>
   <Folder Name="/src/libraries/Filin.ProjectionStore.AdoNet/" />
   <Folder Name="/src/libraries/Filin.ProjectionStore.AdoNet/src/">
     <Project Path="src/libraries/Filin.ProjectionStore.AdoNet/src/Filin.ProjectionStore.AdoNet.csproj" Id="eb354ac5-8c05-4759-b971-90ef55dfb599" />
-  </Folder>
-  <Folder Name="/src/libraries/Filin.Serialization/" />
-  <Folder Name="/src/libraries/Filin.Serialization/src/">
-    <Project Path="src/libraries/Filin.Serialization/src/Filin.Serialization.csproj" />
   </Folder>
   <Folder Name="/src/libraries/Filin/" />
   <Folder Name="/src/libraries/Filin/src/">

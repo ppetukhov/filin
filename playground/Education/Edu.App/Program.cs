@@ -7,8 +7,7 @@ using Edu.ReadModels;
 using Edu.UseCases;
 
 using Filin;
-using Filin.Configuration;
-using Filin.Hosting;
+using Filin.DependencyInjection;
 using Filin.Storage;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -17,24 +16,17 @@ using Microsoft.Extensions.Logging;
 
 #pragma warning disable CA1303 // Do not pass literals as localized parameters
 #pragma warning disable CA1848 // Use the LoggerMessage delegates
-#pragma warning disable CA1873 // Avoid potentially expensive logging
 
 Console.Clear();
-Console.WriteLine("Ins App 1");
+Console.WriteLine("Edu App");
 
-#pragma warning disable IL3002 // Avoid calling members marked with 'RequiresAssemblyFilesAttribute' when publishing as a single-file
-var hostBuilder = CreateHostBuilder(args);
-#pragma warning restore IL3002 // Avoid calling members marked with 'RequiresAssemblyFilesAttribute' when publishing as a single-file
-
-static IHostBuilder CreateHostBuilder(string[] args) =>
-    Host.CreateDefaultBuilder(args)
-        .UseFilin(builder => builder
-            .AddEventStoreAdoNet()
-            .AddProjectionStoreAdoNet()
-            .AddAssembly(typeof(CreateCourse).Assembly, typeof(ReadModelsExtensions).Assembly))
-        ;
-
-var host = hostBuilder.Build();
+var host = Host.CreateDefaultBuilder(args)
+    .ConfigureServices((_, services) => services
+        .AddFilin()
+        .AddTypeManifestAssembly(typeof(CreateCourse).Assembly, typeof(ReadModelsExtensions).Assembly)
+        .AddEventStoreAdoNet()
+        .AddProjectionStoreAdoNet())
+    .Build();
 
 host.Start();
 
@@ -287,6 +279,5 @@ if (!apptLifeTime.ApplicationStopping.IsCancellationRequested)
     catch (OperationCanceledException) { }
 }
 
-#pragma warning restore CA1873 // Avoid potentially expensive logging
 #pragma warning restore CA1848 // Use the LoggerMessage delegates
 #pragma warning restore CA1303 // Do not pass literals as localized parameters

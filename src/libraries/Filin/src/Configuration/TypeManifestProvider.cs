@@ -1,8 +1,6 @@
-using Filin.Configuration;
-
 using Microsoft.Extensions.Options;
 
-namespace Filin.Hosting;
+namespace Filin.Configuration;
 
 /// <summary>
 /// Configure options by inner manifest providers.

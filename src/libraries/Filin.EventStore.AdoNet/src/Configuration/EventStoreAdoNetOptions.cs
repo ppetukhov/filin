@@ -9,7 +9,7 @@ namespace Filin.Configuration;
 /// <summary>
 /// Options for Postgres EventStore storage.
 /// </summary>
-public sealed class EventStoreAdoNetOptions : IValidatableObject, IStorageProviderSerializerOptions
+public sealed class EventStoreAdoNetOptions : IValidatableObject
 {
     /// <summary>
     /// Gets config section name.

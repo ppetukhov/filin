@@ -1,40 +1,39 @@
 using System.Threading.Channels;
 
+using Filin.Configuration;
 using Filin.EventStore.AdoNet.DataFlow;
 using Filin.EventStore.AdoNet.Internal;
 using Filin.EventStore.AdoNet.Postgres;
-using Filin.Hosting;
 using Filin.Storage;
+using Filin.Storage.DataFlow;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
-namespace Filin.Configuration;
+namespace Filin.DependencyInjection;
 
 /// <summary>
-/// <see cref="IFilinBuilder"/> extensions.
+/// <see cref="IServiceCollection"/> extensions.
 /// </summary>
-public static class EventStorePostgresFilinBuilderExtensions
+public static class FilinServiceCollectionExtensions
 {
-    extension(IFilinBuilder builder)
+    extension(IServiceCollection collection)
     {
         /// <summary>
         /// Configure Postgres event storage for <see cref="IEventStore"/>.
         /// </summary>
-        public IFilinBuilder AddEventStoreAdoNet() =>
-            builder.AddEventStoreAdoNet(_ => { });
+        public IServiceCollection AddEventStoreAdoNet() =>
+            collection.AddEventStoreAdoNet(_ => { });
 
         /// <summary>
         /// Configure Postgres event storage for <see cref="IEventStore"/>.
         /// </summary>
-        public IFilinBuilder AddEventStoreAdoNet(
+        public IServiceCollection AddEventStoreAdoNet(
             Action<EventStoreAdoNetOptions> configure)
         {
             ArgumentNullException.ThrowIfNull(configure);
-
-            var collection = builder.Services;
 
             _ = collection
                 .AddOptions<EventStoreAdoNetOptions>()
@@ -56,7 +55,6 @@ public static class EventStorePostgresFilinBuilderExtensions
                 .Configure(configure);
 
             collection.TryAddEnumerable(ServiceDescriptor.Transient<IPostConfigureOptions<EventStoreAdoNetOptions>, EventStoreAdoNetOptionsProvider>());
-            collection.TryAddEnumerable(ServiceDescriptor.Transient<IPostConfigureOptions<EventStoreAdoNetOptions>, DefaultStorageProviderSerializerOptionsConfigurator<EventStoreAdoNetOptions>>());
             collection.TryAddEnumerable(ServiceDescriptor.Transient<IValidateOptions<EventStoreAdoNetOptions>, EventStorePostgresOptionsConnectionNameValidator>());
             collection.TryAddEnumerable(ServiceDescriptor.Transient<IValidateOptions<EventStoreAdoNetOptions>, EventStorePostgresOptionsValidator>());
 
@@ -72,12 +70,12 @@ public static class EventStorePostgresFilinBuilderExtensions
                 return ActivatorUtilities.CreateInstance<PgDbCommandFactory>(sp, opt.Value.DataSource, opt.Value.StorageSerializer);
             });
 
-            _ = collection
-                .AddAppendEventsBlock<AppendEventsBlock>()
-                .AddEventStore<EventStore.AdoNet.EventStore>()
-                .AddHostedService<EventStore.AdoNet.EventStreamingService>();
+            _ = collection.AddHostedService<EventStore.AdoNet.EventStreamingService>();
 
-            return builder;
+            collection.TryAddSingleton<IEventStore, EventStore.AdoNet.EventStore>();
+            collection.TryAddSingleton<IAppendEventsBlock, AppendEventsBlock>();
+
+            return collection;
         }
     }
 }

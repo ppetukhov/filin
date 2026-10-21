@@ -9,7 +9,7 @@ namespace Filin.Configuration;
 /// <summary>
 /// Options for ADO.NET ProjectionStore storage.
 /// </summary>
-public sealed class ProjectionStoreAdoNetOptions : IValidatableObject, IStorageProviderSerializerOptions
+public sealed class ProjectionStoreAdoNetOptions : IValidatableObject
 {
     /// <summary>
     /// Gets config section name.

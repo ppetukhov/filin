@@ -10,5 +10,20 @@
     <PackageId Condition="'$(IsSourceProject)' == 'true' and '$(IsPackable)' != 'true'">$(MSBuildProjectName)-project</PackageId>
   </PropertyGroup>
 
-  <Import Project="$(RepositoryEngineeringDir)Versioning.targets" />
+  <PropertyGroup>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateNeutralResourcesLanguageAttribute>false</GenerateNeutralResourcesLanguageAttribute>
+
+    <!-- Libraries have always added a description set to assembly name so include that here. -->
+    <Description Condition="'$(Description)' == ''">$(AssemblyName)</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyDefaultAliasAttribute">
+      <_Parameter1>$(AssemblyName)</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Resources.NeutralResourcesLanguage" Condition="'@(EmbeddedResource)' != '' and '$(IsSourceProject)' == 'true'">
+      <_Parameter1>en-US</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
 </Project>

@@ -89,7 +89,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <CustomBeforeNoTargets>$(RepositoryEngineeringDir)NoTargetsSdk.BeforeTargets.targets</CustomBeforeNoTargets>
     <AnalysisMode>All</AnalysisMode>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>4487cd1f-9634-4052-b57c-0ad3b43f7bab</UserSecretsId>

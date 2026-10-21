@@ -28,7 +28,7 @@ sealed class ProjectionStore(IOptions<ProjectionStoreAdoNetOptions> options, ILo
     /// <summary>
     /// The queries currently used. When this is updated, the new queries will take effect immediately.
     /// </summary>
-    RelationalStorageProviderQueries? _currentOperationalQueries;
+    StorageQueries? _currentOperationalQueries;
 
     Ordinals? _ordinals;
 
@@ -251,12 +251,12 @@ sealed class ProjectionStore(IOptions<ProjectionStoreAdoNetOptions> options, ILo
         }
     }
 
-    async Task<RelationalStorageProviderQueries> InitQueriesAsync(CancellationToken cancellationToken)
+    async Task<StorageQueries> InitQueriesAsync(CancellationToken cancellationToken)
     {
-        const string readStorageKey = nameof(RelationalStorageProviderQueries.ReadStorageKey);
-        const string upsertStorageKey = nameof(RelationalStorageProviderQueries.UpsertStorageKey);
-        const string upsertBatchStorageKey = nameof(RelationalStorageProviderQueries.UpsertBatchStorageKey);
-        const string clearStorageKey = nameof(RelationalStorageProviderQueries.ClearStorageKey);
+        const string readStorageKey = nameof(StorageQueries.ReadStorageKey);
+        const string upsertStorageKey = nameof(StorageQueries.UpsertStorageKey);
+        const string upsertBatchStorageKey = nameof(StorageQueries.UpsertBatchStorageKey);
+        const string clearStorageKey = nameof(StorageQueries.ClearStorageKey);
 
         const string initializationQuery = $"SELECT query_key, query_text FROM Filin_query WHERE query_key IN ('{readStorageKey}','{upsertStorageKey}','{upsertBatchStorageKey}','{clearStorageKey}')";
 
@@ -275,7 +275,7 @@ sealed class ProjectionStore(IOptions<ProjectionStoreAdoNetOptions> options, ILo
             queries.Add((reader.GetValue<string>("query_key"), reader.GetValue<string>("query_text")));
         }
 
-        var opQueries = new RelationalStorageProviderQueries
+        var opQueries = new StorageQueries
         {
             ReadStorageKey = queries.Single(i => i.Item1 == readStorageKey).Item2,
             UpsertStorageKey = queries.Single(i => i.Item1 == upsertStorageKey).Item2,

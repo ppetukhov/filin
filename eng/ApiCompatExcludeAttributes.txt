@@ -1,6 +1,0 @@
-T:System.Diagnostics.DebuggerGuidedStepThroughAttribute
-T:System.Runtime.CompilerServices.CompilerGeneratedAttribute
-T:System.Runtime.CompilerServices.EagerStaticClassConstructionAttribute
-T:System.Runtime.CompilerServices.NativeIntegerAttribute
-T:System.Runtime.CompilerServices.NullableAttribute
-T:System.Runtime.CompilerServices.SkipLocalsInitAttribute
