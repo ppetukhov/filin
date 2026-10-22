@@ -1,0 +1,26 @@
+#nullable enable
+const Filin.Configuration.ProjectionStoreAdoNetOptions.DefaultAdoNetInvariant = "Npgsql" -> string!
+const Filin.Configuration.ProjectionStoreAdoNetOptions.SectionName = "Filin:ProjectionStore" -> string!
+Filin.Configuration.ProjectionStoreAdoNetOptions
+Filin.Configuration.ProjectionStoreAdoNetOptions.ConnectionName.get -> string?
+Filin.Configuration.ProjectionStoreAdoNetOptions.ConnectionName.set -> void
+Filin.Configuration.ProjectionStoreAdoNetOptions.ConnectionString.get -> string?
+Filin.Configuration.ProjectionStoreAdoNetOptions.ConnectionString.set -> void
+Filin.Configuration.ProjectionStoreAdoNetOptions.DataSource.get -> System.Data.Common.DbDataSource!
+Filin.Configuration.ProjectionStoreAdoNetOptions.DataSource.set -> void
+Filin.Configuration.ProjectionStoreAdoNetOptions.Invariant.get -> string!
+Filin.Configuration.ProjectionStoreAdoNetOptions.Invariant.set -> void
+Filin.Configuration.ProjectionStoreAdoNetOptions.ProjectionStoreAdoNetOptions() -> void
+Filin.Configuration.ProjectionStoreAdoNetOptions.ProjectionTypes.get -> System.Collections.Generic.Dictionary<Filin.ProjectorId, System.Type!>!
+Filin.Configuration.ProjectionStoreAdoNetOptions.SerializerKey.get -> string?
+Filin.Configuration.ProjectionStoreAdoNetOptions.SerializerKey.set -> void
+Filin.Configuration.ProjectionStoreAdoNetOptions.StorageSerializer.get -> Filin.Storage.IStorageSerializer!
+Filin.Configuration.ProjectionStoreAdoNetOptions.StorageSerializer.set -> void
+Filin.Configuration.ProjectionStoreAdoNetOptions.Validate(System.ComponentModel.DataAnnotations.ValidationContext! validationContext) -> System.Collections.Generic.IEnumerable<System.ComponentModel.DataAnnotations.ValidationResult!>!
+Filin.DependencyInjection.FilinServiceCollectionExtensions
+Filin.DependencyInjection.FilinServiceCollectionExtensions.extension(Microsoft.Extensions.DependencyInjection.IServiceCollection!)
+Filin.DependencyInjection.FilinServiceCollectionExtensions.extension(Microsoft.Extensions.DependencyInjection.IServiceCollection!).AddProjectionStoreAdoNet() -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+Filin.DependencyInjection.FilinServiceCollectionExtensions.extension(Microsoft.Extensions.DependencyInjection.IServiceCollection!).AddProjectionStoreAdoNet(System.Action<Filin.Configuration.ProjectionStoreAdoNetOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Filin.Configuration.ProjectionStoreAdoNetOptions.IsValidInvariant(object! value) -> System.ComponentModel.DataAnnotations.ValidationResult?
+static Filin.DependencyInjection.FilinServiceCollectionExtensions.AddProjectionStoreAdoNet(this Microsoft.Extensions.DependencyInjection.IServiceCollection! collection) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Filin.DependencyInjection.FilinServiceCollectionExtensions.AddProjectionStoreAdoNet(this Microsoft.Extensions.DependencyInjection.IServiceCollection! collection, System.Action<Filin.Configuration.ProjectionStoreAdoNetOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

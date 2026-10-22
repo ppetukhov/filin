@@ -1,0 +1,10 @@
+#nullable enable
+Filin.Configuration.JsonStorageSerializerOptions
+Filin.Configuration.JsonStorageSerializerOptions.JsonStorageSerializerOptions() -> void
+Filin.Configuration.JsonStorageSerializerOptions.SerializerOptions.get -> System.Text.Json.JsonSerializerOptions!
+Filin.DependencyInjection.FilinServiceCollectionExtensions
+Filin.DependencyInjection.FilinServiceCollectionExtensions.extension(Microsoft.Extensions.DependencyInjection.IServiceCollection!)
+Filin.DependencyInjection.FilinServiceCollectionExtensions.extension(Microsoft.Extensions.DependencyInjection.IServiceCollection!).AddFilin() -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+Filin.DependencyInjection.FilinServiceCollectionExtensions.extension(Microsoft.Extensions.DependencyInjection.IServiceCollection!).AddTypeManifestAssembly(params System.ReadOnlySpan<System.Reflection.Assembly!> assemblies) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Filin.DependencyInjection.FilinServiceCollectionExtensions.AddFilin(this Microsoft.Extensions.DependencyInjection.IServiceCollection! collection) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Filin.DependencyInjection.FilinServiceCollectionExtensions.AddTypeManifestAssembly(this Microsoft.Extensions.DependencyInjection.IServiceCollection! collection, params System.ReadOnlySpan<System.Reflection.Assembly!> assemblies) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

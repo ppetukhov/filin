@@ -14,8 +14,20 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(IsSourceProject)' == 'true' or '$(IsGeneratorProject)' == 'true'">
+    <AdditionalFiles Include="PublicAPI.Shipped.txt" />
+    <AdditionalFiles Include="PublicAPI.Unshipped.txt" />
+ 
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
       <_Parameter1>$(MSBuildProjectName).Tests</_Parameter1>
     </AssemblyAttribute>
+
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
+
+  <PropertyGroup Condition="'$(IsSourceProject)' == 'true' or '$(IsGeneratorProject)' == 'true'">
+    <WarningsAsErrors>$(WarningsAsErrors);RS0016;RS0017;RS0022;RS0024;RS0025;RS0026;RS0027</WarningsAsErrors>
+  </PropertyGroup>
 </Project>

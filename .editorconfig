@@ -406,6 +406,15 @@ dotnet_naming_style.s_camelcase.capitalization = camel_case
 dotnet_style_operator_placement_when_wrapping = beginning_of_line
 tab_width = 4
 
+# PublicApiAnalyzers
+dotnet_diagnostic.RS0016.severity = error
+dotnet_diagnostic.RS0017.severity = error
+dotnet_diagnostic.RS0022.severity = error
+dotnet_diagnostic.RS0024.severity = error
+dotnet_diagnostic.RS0025.severity = error
+dotnet_diagnostic.RS0026.severity = error
+dotnet_diagnostic.RS0027.severity = error
+
 [**/{Annotations,Configuration,DependencyInjection,Exceptions}/*.cs]
 #Namespace does not match folder structure (IDE0130)
 dotnet_diagnostic.IDE0130.severity = none

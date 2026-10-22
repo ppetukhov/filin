@@ -1,0 +1,577 @@
+#nullable enable
+abstract Filin.Configuration.TypeManifestProviderBase.ConfigureInner(Filin.Configuration.TypeManifestOptions! options) -> void
+Filin.Configuration.ITypeManifestProvider
+Filin.Configuration.ITypeManifestProvider.Configure(Filin.Configuration.TypeManifestOptions! options) -> void
+Filin.Configuration.TypeManifestOptions
+Filin.Configuration.TypeManifestOptions.DeciderTypes.get -> System.Collections.Generic.Dictionary<(System.Type! Command, System.Type! State), System.Type!>!
+Filin.Configuration.TypeManifestOptions.EventTypes.get -> System.Collections.Generic.Dictionary<Filin.EventType, System.Type!>!
+Filin.Configuration.TypeManifestOptions.ProjectionTypes.get -> System.Collections.Generic.Dictionary<Filin.ProjectorId, System.Type!>!
+Filin.Configuration.TypeManifestOptions.ProjectorTypes.get -> System.Collections.Generic.Dictionary<System.Type!, System.Type!>!
+Filin.Configuration.TypeManifestOptions.TypeManifestOptions() -> void
+Filin.Configuration.TypeManifestOptions.TypeManifestProviders.get -> System.Collections.Generic.HashSet<object!>!
+Filin.Configuration.TypeManifestProviderBase
+Filin.Configuration.TypeManifestProviderBase.Configure(Filin.Configuration.TypeManifestOptions! options) -> void
+Filin.Configuration.TypeManifestProviderBase.TypeManifestProviderBase() -> void
+Filin.ConfigurationException
+Filin.ConfigurationException.ConfigurationException() -> void
+Filin.ConfigurationException.ConfigurationException(string? message) -> void
+Filin.ConfigurationException.ConfigurationException(string? message, System.Exception? innerException) -> void
+Filin.DcbEvent
+Filin.DcbEvent.<Clone>$() -> Filin.DcbEvent!
+Filin.DcbEvent.DcbEvent() -> void
+Filin.DcbEvent.Equals(Filin.DcbEvent? other) -> bool
+Filin.DcbEvent.EventType.get -> Filin.EventType
+Filin.DcbEvent.EventType.init -> void
+Filin.DcbEvent.Payload.get -> object!
+Filin.DcbEvent.Payload.init -> void
+Filin.DcbEvent.Tags.get -> Filin.Tags
+Filin.DcbEvent.Tags.init -> void
+Filin.DcbEventSequenced
+Filin.DcbEventSequenced.DcbEventSequenced() -> void
+Filin.DcbEventSequenced.DcbEventSequenced(Filin.EventPosition Position, System.DateTimeOffset Timestamp, Filin.DcbEvent! Event) -> void
+Filin.DcbEventSequenced.Deconstruct(out Filin.EventPosition Position, out System.DateTimeOffset Timestamp, out Filin.DcbEvent! Event) -> void
+Filin.DcbEventSequenced.Equals(Filin.DcbEventSequenced other) -> bool
+Filin.DcbEventSequenced.Event.get -> Filin.DcbEvent!
+Filin.DcbEventSequenced.Event.init -> void
+Filin.DcbEventSequenced.Position.get -> Filin.EventPosition
+Filin.DcbEventSequenced.Position.init -> void
+Filin.DcbEventSequenced.Timestamp.get -> System.DateTimeOffset
+Filin.DcbEventSequenced.Timestamp.init -> void
+Filin.DcbQuery
+Filin.DcbQuery.AsSpan() -> System.ReadOnlySpan<Filin.DcbQueryItem>
+Filin.DcbQuery.CompareTo(Filin.DcbQuery other) -> int
+Filin.DcbQuery.Contains(Filin.DcbQueryItem item) -> bool
+Filin.DcbQuery.Count.get -> int
+Filin.DcbQuery.DcbQuery() -> void
+Filin.DcbQuery.DcbQuery(params System.ReadOnlySpan<Filin.DcbQueryItem> items) -> void
+Filin.DcbQuery.Equals(Filin.DcbQuery other) -> bool
+Filin.DcbQuery.GetEnumerator() -> Filin.DcbQueryEnumerator
+Filin.DcbQuery.IsEmpty.get -> bool
+Filin.DcbQuery.MatchesEvent(Filin.DcbEvent! event) -> bool
+Filin.DcbQuery.Or(Filin.DcbQuery query) -> Filin.DcbQuery
+Filin.DcbQuery.Or(Filin.DcbQueryItem queryItem) -> Filin.DcbQuery
+Filin.DcbQuery.this[int index].get -> Filin.DcbQueryItem
+Filin.DcbQueryEnumerator
+Filin.DcbQueryEnumerator.Current.get -> Filin.DcbQueryItem
+Filin.DcbQueryEnumerator.DcbQueryEnumerator() -> void
+Filin.DcbQueryEnumerator.MoveNext() -> bool
+Filin.DcbQueryItem
+Filin.DcbQueryItem.Add(Filin.DcbQueryItem other) -> Filin.DcbQueryItem
+Filin.DcbQueryItem.And(params System.ReadOnlySpan<Filin.Tag> tags) -> Filin.DcbQueryItem
+Filin.DcbQueryItem.CompareTo(Filin.DcbQueryItem other) -> int
+Filin.DcbQueryItem.DcbQueryItem() -> void
+Filin.DcbQueryItem.DcbQueryItem(Filin.EventTypes EventTypes, Filin.Tags Tags) -> void
+Filin.DcbQueryItem.DcbQueryItem(params System.ReadOnlySpan<Filin.EventType> eventTypes) -> void
+Filin.DcbQueryItem.DcbQueryItem(params System.ReadOnlySpan<Filin.Tag> tags) -> void
+Filin.DcbQueryItem.Deconstruct(out Filin.EventTypes EventTypes, out Filin.Tags Tags) -> void
+Filin.DcbQueryItem.Equals(Filin.DcbQueryItem other) -> bool
+Filin.DcbQueryItem.EventTypes.get -> Filin.EventTypes
+Filin.DcbQueryItem.EventTypes.init -> void
+Filin.DcbQueryItem.IsEmpty.get -> bool
+Filin.DcbQueryItem.MatchesEvent(Filin.DcbEvent! event) -> bool
+Filin.DcbQueryItem.Or(params System.ReadOnlySpan<Filin.EventType> eventTypes) -> Filin.DcbQueryItem
+Filin.DcbQueryItem.Tags.get -> Filin.Tags
+Filin.DcbQueryItem.Tags.init -> void
+Filin.DeciderAttribute
+Filin.DeciderAttribute.DeciderAttribute() -> void
+Filin.DecideResult
+Filin.DecideResult.Count.get -> int
+Filin.DecideResult.DecideResult() -> void
+Filin.DecideResult.DecideResult(Filin.DcbEvent! event) -> void
+Filin.DecideResult.DecideResult(Filin.DcbEvent! event, params System.ReadOnlySpan<Filin.DcbEvent!> events) -> void
+Filin.DecideResult.DecideResult(string! errorCode, string! errorMessage) -> void
+Filin.DecideResult.Equals(Filin.DecideResult other) -> bool
+Filin.DecideResult.Error.get -> Filin.DomainRuleError
+Filin.DecideResult.GetEnumerator() -> Filin.DecideResultEnumerator
+Filin.DecideResult.IsFailure.get -> bool
+Filin.DecideResult.IsSuccess.get -> bool
+Filin.DecideResult.this[int index].get -> Filin.DcbEvent!
+Filin.DecideResultEnumerator
+Filin.DecideResultEnumerator.Current.get -> Filin.DcbEvent!
+Filin.DecideResultEnumerator.DecideResultEnumerator() -> void
+Filin.DecideResultEnumerator.MoveNext() -> bool
+Filin.DomainRuleError
+Filin.DomainRuleError.Code.get -> string!
+Filin.DomainRuleError.Code.init -> void
+Filin.DomainRuleError.Deconstruct(out string! Code, out string! Message) -> void
+Filin.DomainRuleError.DomainRuleError() -> void
+Filin.DomainRuleError.DomainRuleError(string! Code, string! Message) -> void
+Filin.DomainRuleError.Equals(Filin.DomainRuleError other) -> bool
+Filin.DomainRuleError.Message.get -> string!
+Filin.DomainRuleError.Message.init -> void
+Filin.EventPosition
+Filin.EventPosition.CompareTo(Filin.EventPosition other) -> int
+Filin.EventPosition.Deconstruct(out ulong Value) -> void
+Filin.EventPosition.Equals(Filin.EventPosition other) -> bool
+Filin.EventPosition.EventPosition() -> void
+Filin.EventPosition.EventPosition(ulong Value) -> void
+Filin.EventPosition.IsDefault.get -> bool
+Filin.EventPosition.ToString(string? format, System.IFormatProvider? formatProvider) -> string!
+Filin.EventPosition.TryFormat(System.Span<byte> utf8Destination, out int bytesWritten) -> bool
+Filin.EventPosition.TryFormat(System.Span<byte> utf8Destination, out int bytesWritten, System.ReadOnlySpan<char> format, System.IFormatProvider? provider) -> bool
+Filin.EventPosition.TryFormat(System.Span<char> destination, out int charsWritten) -> bool
+Filin.EventPosition.TryFormat(System.Span<char> destination, out int charsWritten, System.ReadOnlySpan<char> format, System.IFormatProvider? provider) -> bool
+Filin.EventPosition.Value.get -> ulong
+Filin.EventPosition.Value.init -> void
+Filin.EventStoreException
+Filin.EventStoreException.EventStoreException() -> void
+Filin.EventStoreException.EventStoreException(string? message) -> void
+Filin.EventStoreException.EventStoreException(string? message, System.Exception? innerException) -> void
+Filin.EventTagAttribute
+Filin.EventTagAttribute.EventTagAttribute(string! tag) -> void
+Filin.EventTagAttribute.Tag.get -> string!
+Filin.EventType
+Filin.EventType.AsSpan() -> System.ReadOnlySpan<char>
+Filin.EventType.CompareTo(Filin.EventType other) -> int
+Filin.EventType.Equals(Filin.EventType obj) -> bool
+Filin.EventType.EventType() -> void
+Filin.EventType.EventType(string! name) -> void
+Filin.EventType.Hash.get -> uint
+Filin.EventType.IsDefault.get -> bool
+Filin.EventType.ToString(string? format, System.IFormatProvider? formatProvider) -> string!
+Filin.EventType.TryFormat(System.Span<byte> utf8Destination, out int bytesWritten) -> bool
+Filin.EventType.TryFormat(System.Span<byte> utf8Destination, out int bytesWritten, System.ReadOnlySpan<char> format, System.IFormatProvider? provider) -> bool
+Filin.EventType.TryFormat(System.Span<char> destination, out int charsWritten) -> bool
+Filin.EventType.TryFormat(System.Span<char> destination, out int charsWritten, System.ReadOnlySpan<char> format, System.IFormatProvider? provider) -> bool
+Filin.EventType.Value.get -> string!
+Filin.EventTypeAttribute
+Filin.EventTypeAttribute.EventType.get -> string!
+Filin.EventTypeAttribute.EventTypeAttribute(string! eventType) -> void
+Filin.EventTypeAttribute.EventTypeAttribute(string! eventType, uint version) -> void
+Filin.EventTypeAttribute.Version.get -> uint
+Filin.EventTypeEnumerator
+Filin.EventTypeEnumerator.Current.get -> Filin.EventType
+Filin.EventTypeEnumerator.EventTypeEnumerator() -> void
+Filin.EventTypeEnumerator.MoveNext() -> bool
+Filin.EventTypes
+Filin.EventTypes.AsSpan() -> System.ReadOnlySpan<Filin.EventType>
+Filin.EventTypes.CompareTo(Filin.EventTypes other) -> int
+Filin.EventTypes.Contains(Filin.EventType eventType) -> bool
+Filin.EventTypes.Count.get -> int
+Filin.EventTypes.Equals(Filin.EventTypes other) -> bool
+Filin.EventTypes.EventTypes() -> void
+Filin.EventTypes.EventTypes(params System.ReadOnlySpan<Filin.EventType> eventTypes) -> void
+Filin.EventTypes.GetEnumerator() -> Filin.EventTypeEnumerator
+Filin.EventTypes.IsEmpty.get -> bool
+Filin.EventTypes.this[int index].get -> Filin.EventType
+Filin.EventTypes.ToString(string? format, System.IFormatProvider? formatProvider) -> string!
+Filin.EventTypes.TryFormat(System.Span<char> destination, out int charsWritten, System.ReadOnlySpan<char> format, System.IFormatProvider? provider) -> bool
+Filin.ExecuteResult
+Filin.ExecuteResult<TState>
+Filin.ExecuteResult<TState>.Equals(Filin.ExecuteResult<TState> other) -> bool
+Filin.ExecuteResult<TState>.Error.get -> Filin.DomainRuleError
+Filin.ExecuteResult<TState>.ExecuteResult() -> void
+Filin.ExecuteResult<TState>.IsFailure.get -> bool
+Filin.ExecuteResult<TState>.IsSuccess.get -> bool
+Filin.ExecuteResult<TState>.Match<TOut>(System.Func<TState, TOut>! onSuccess, System.Func<Filin.DomainRuleError, TOut>! onFailure) -> TOut
+Filin.ExecuteResult<TState>.State.get -> TState
+Filin.FilinException
+Filin.FilinException.FilinException() -> void
+Filin.FilinException.FilinException(string? message) -> void
+Filin.FilinException.FilinException(string? message, System.Exception? innerException) -> void
+Filin.ICommand<TState>
+Filin.IDecider<TCommand, TState>
+Filin.IDecider<TCommand, TState>.Decide(TCommand command) -> Filin.DecideResult
+Filin.IDecider<TCommand, TState>.Decide(TCommand command, TState state) -> Filin.DecideResult
+Filin.IdSpan
+Filin.IdSpan.AsSpan() -> System.ReadOnlySpan<char>
+Filin.IdSpan.CompareTo(Filin.IdSpan other) -> int
+Filin.IdSpan.Equals(Filin.IdSpan obj) -> bool
+Filin.IdSpan.Hash.get -> ulong
+Filin.IdSpan.IdSpan() -> void
+Filin.IdSpan.IdSpan(string! id) -> void
+Filin.IdSpan.IsDefault.get -> bool
+Filin.IdSpan.ToString(string? format, System.IFormatProvider? formatProvider) -> string!
+Filin.IdSpan.TryFormat(System.Span<byte> utf8Destination, out int bytesWritten) -> bool
+Filin.IdSpan.TryFormat(System.Span<byte> utf8Destination, out int bytesWritten, System.ReadOnlySpan<char> format, System.IFormatProvider? provider) -> bool
+Filin.IdSpan.TryFormat(System.Span<char> destination, out int charsWritten) -> bool
+Filin.IdSpan.TryFormat(System.Span<char> destination, out int charsWritten, System.ReadOnlySpan<char> format, System.IFormatProvider? provider) -> bool
+Filin.IdSpan.Value.get -> string!
+Filin.IMediator
+Filin.IMediator.ExecuteAsync<TCommand, TState>(TCommand command, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Filin.ExecuteResult<TState>>!
+Filin.IMediator.QueryAsync<TQuery, TProjection>(TQuery query, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TProjection?>!
+Filin.IProjector<TState>
+Filin.IProjector<TState>.GetProjectionId(Filin.Tags tags) -> Filin.ProjectionId
+Filin.IProjector<TState>.GetQuery(Filin.Tags tags) -> Filin.DcbQuery
+Filin.IProjector<TState>.Project(Filin.DcbEventSequenced domainEvent) -> TState
+Filin.IProjector<TState>.Project(TState state, Filin.DcbEventSequenced domainEvent) -> TState
+Filin.IProjector<TState>.ProjectorId.get -> Filin.ProjectorId
+Filin.IQuery<TProjection>
+Filin.IWithQueryTags
+Filin.IWithQueryTags.GetTags() -> Filin.Tags
+Filin.MediatorException
+Filin.MediatorException.MediatorException() -> void
+Filin.MediatorException.MediatorException(string? message) -> void
+Filin.MediatorException.MediatorException(string? message, System.Exception? innerException) -> void
+Filin.ProjectionId
+Filin.ProjectionId.CompareTo(Filin.ProjectionId other) -> int
+Filin.ProjectionId.Deconstruct(out Filin.ProjectorId projectorId, out Filin.IdSpan key) -> void
+Filin.ProjectionId.Equals(Filin.ProjectionId obj) -> bool
+Filin.ProjectionId.IsDefault.get -> bool
+Filin.ProjectionId.Key.get -> Filin.IdSpan
+Filin.ProjectionId.ProjectionId() -> void
+Filin.ProjectionId.ProjectionId(Filin.ProjectorId projectorId, Filin.IdSpan key) -> void
+Filin.ProjectionId.ProjectorId.get -> Filin.ProjectorId
+Filin.ProjectionId.ToString(string? format, System.IFormatProvider? formatProvider) -> string!
+Filin.ProjectionId.TryFormat(System.Span<byte> utf8Destination, out int bytesWritten) -> bool
+Filin.ProjectionId.TryFormat(System.Span<byte> utf8Destination, out int bytesWritten, System.ReadOnlySpan<char> format, System.IFormatProvider? provider) -> bool
+Filin.ProjectionId.TryFormat(System.Span<char> destination, out int charsWritten) -> bool
+Filin.ProjectionId.TryFormat(System.Span<char> destination, out int charsWritten, System.ReadOnlySpan<char> format, System.IFormatProvider? provider) -> bool
+Filin.ProjectionStoreException
+Filin.ProjectionStoreException.ProjectionStoreException() -> void
+Filin.ProjectionStoreException.ProjectionStoreException(string? message) -> void
+Filin.ProjectionStoreException.ProjectionStoreException(string? message, System.Exception? innerException) -> void
+Filin.ProjectorException
+Filin.ProjectorException.ProjectorException() -> void
+Filin.ProjectorException.ProjectorException(string? message) -> void
+Filin.ProjectorException.ProjectorException(string? message, System.Exception? innerException) -> void
+Filin.ProjectorId
+Filin.ProjectorId.AsSpan() -> System.ReadOnlySpan<char>
+Filin.ProjectorId.CompareTo(Filin.ProjectorId other) -> int
+Filin.ProjectorId.Equals(Filin.ProjectorId obj) -> bool
+Filin.ProjectorId.Hash.get -> ulong
+Filin.ProjectorId.IsDefault.get -> bool
+Filin.ProjectorId.ProjectorId() -> void
+Filin.ProjectorId.ProjectorId(string! id) -> void
+Filin.ProjectorId.ProjectorId(string! id, uint version) -> void
+Filin.ProjectorId.ToString(string? format, System.IFormatProvider? formatProvider) -> string!
+Filin.ProjectorId.TryFormat(System.Span<byte> utf8Destination, out int bytesWritten) -> bool
+Filin.ProjectorId.TryFormat(System.Span<byte> utf8Destination, out int bytesWritten, System.ReadOnlySpan<char> format, System.IFormatProvider? provider) -> bool
+Filin.ProjectorId.TryFormat(System.Span<char> destination, out int charsWritten) -> bool
+Filin.ProjectorId.TryFormat(System.Span<char> destination, out int charsWritten, System.ReadOnlySpan<char> format, System.IFormatProvider? provider) -> bool
+Filin.ProjectorId.Value.get -> string!
+Filin.ProjectorIdAttribute
+Filin.ProjectorIdAttribute.Name.get -> string!
+Filin.ProjectorIdAttribute.ProjectorIdAttribute(string! name) -> void
+Filin.ProjectorIdAttribute.ProjectorIdAttribute(string! name, uint version) -> void
+Filin.ProjectorIdAttribute.Version.get -> uint
+Filin.QueryEventTypesAttribute
+Filin.QueryEventTypesAttribute.EventTypes.get -> System.Collections.Generic.IEnumerable<string!>!
+Filin.QueryEventTypesAttribute.QueryEventTypesAttribute(int queryId, params string![]! eventTypes) -> void
+Filin.QueryEventTypesAttribute.QueryEventTypesAttribute(params string![]! eventTypes) -> void
+Filin.QueryEventTypesAttribute.QueryId.get -> int
+Filin.QueryTagParametersAttribute
+Filin.QueryTagParametersAttribute.QueryId.get -> int
+Filin.QueryTagParametersAttribute.QueryTagParametersAttribute(int queryId, params string![]! tagParameters) -> void
+Filin.QueryTagParametersAttribute.QueryTagParametersAttribute(params string![]! tagParameters) -> void
+Filin.QueryTagParametersAttribute.TagParameters.get -> System.Collections.Generic.IEnumerable<string!>!
+Filin.QueryTagsAttribute
+Filin.QueryTagsAttribute.EventTags.get -> System.Collections.Generic.IEnumerable<string!>!
+Filin.QueryTagsAttribute.QueryId.get -> int
+Filin.QueryTagsAttribute.QueryTagsAttribute(int queryId, params string![]! eventTags) -> void
+Filin.QueryTagsAttribute.QueryTagsAttribute(params string![]! eventTags) -> void
+Filin.RegisterProviderAttribute
+Filin.RegisterProviderAttribute.Kind.get -> string!
+Filin.RegisterProviderAttribute.Name.get -> string!
+Filin.RegisterProviderAttribute.RegisterProviderAttribute(string! name, string! kind, System.Type! type) -> void
+Filin.RegisterProviderAttribute.Type.get -> System.Type!
+Filin.Storage.AppendCondition
+Filin.Storage.AppendCondition.After.get -> Filin.EventPosition
+Filin.Storage.AppendCondition.After.init -> void
+Filin.Storage.AppendCondition.AppendCondition() -> void
+Filin.Storage.AppendCondition.AppendCondition(Filin.DcbQuery FailIfEventsMatch, Filin.EventPosition After) -> void
+Filin.Storage.AppendCondition.Deconstruct(out Filin.DcbQuery FailIfEventsMatch, out Filin.EventPosition After) -> void
+Filin.Storage.AppendCondition.Equals(Filin.Storage.AppendCondition other) -> bool
+Filin.Storage.AppendCondition.FailIfEventsMatch.get -> Filin.DcbQuery
+Filin.Storage.AppendCondition.FailIfEventsMatch.init -> void
+Filin.Storage.AppendResult
+Filin.Storage.AppendResult.AppendResult() -> void
+Filin.Storage.AppendResult.AppendResult(Filin.DcbEventSequenced event) -> void
+Filin.Storage.AppendResult.AppendResult(System.Collections.Generic.IReadOnlyList<Filin.DcbEventSequenced>! events) -> void
+Filin.Storage.AppendResult.Count.get -> int
+Filin.Storage.AppendResult.Equals(Filin.Storage.AppendResult other) -> bool
+Filin.Storage.AppendResult.GetEnumerator() -> Filin.Storage.AppendResultEnumerator
+Filin.Storage.AppendResult.IsConflict.get -> bool
+Filin.Storage.AppendResult.IsSuccess.get -> bool
+Filin.Storage.AppendResult.this[int index].get -> Filin.DcbEventSequenced
+Filin.Storage.AppendResultEnumerator
+Filin.Storage.AppendResultEnumerator.AppendResultEnumerator() -> void
+Filin.Storage.AppendResultEnumerator.Current.get -> Filin.DcbEventSequenced
+Filin.Storage.AppendResultEnumerator.MoveNext() -> bool
+Filin.Storage.DataFlow.AppendEventRequest
+Filin.Storage.DataFlow.AppendEventRequest.AppendCondition.get -> Filin.Storage.AppendCondition
+Filin.Storage.DataFlow.AppendEventRequest.AppendCondition.set -> void
+Filin.Storage.DataFlow.AppendEventRequest.AppendEventRequest() -> void
+Filin.Storage.DataFlow.AppendEventRequest.AppendEventRequest(Filin.DcbEvent! Event, Filin.Storage.AppendCondition AppendCondition, Filin.Storage.DataFlow.IContext! Context) -> void
+Filin.Storage.DataFlow.AppendEventRequest.Context.get -> Filin.Storage.DataFlow.IContext!
+Filin.Storage.DataFlow.AppendEventRequest.Context.set -> void
+Filin.Storage.DataFlow.AppendEventRequest.Deconstruct(out Filin.DcbEvent! Event, out Filin.Storage.AppendCondition AppendCondition, out Filin.Storage.DataFlow.IContext! Context) -> void
+Filin.Storage.DataFlow.AppendEventRequest.Equals(Filin.Storage.DataFlow.AppendEventRequest other) -> bool
+Filin.Storage.DataFlow.AppendEventRequest.Event.get -> Filin.DcbEvent!
+Filin.Storage.DataFlow.AppendEventRequest.Event.set -> void
+Filin.Storage.DataFlow.AppendEventsRequest
+Filin.Storage.DataFlow.AppendEventsRequest.AppendCondition.get -> Filin.Storage.AppendCondition
+Filin.Storage.DataFlow.AppendEventsRequest.AppendCondition.init -> void
+Filin.Storage.DataFlow.AppendEventsRequest.AppendEventsRequest() -> void
+Filin.Storage.DataFlow.AppendEventsRequest.AppendEventsRequest(System.Collections.Generic.IReadOnlyCollection<Filin.DcbEvent!>! Events, Filin.Storage.AppendCondition AppendCondition, Filin.Storage.DataFlow.IContext! Context) -> void
+Filin.Storage.DataFlow.AppendEventsRequest.Context.get -> Filin.Storage.DataFlow.IContext!
+Filin.Storage.DataFlow.AppendEventsRequest.Context.init -> void
+Filin.Storage.DataFlow.AppendEventsRequest.Deconstruct(out System.Collections.Generic.IReadOnlyCollection<Filin.DcbEvent!>! Events, out Filin.Storage.AppendCondition AppendCondition, out Filin.Storage.DataFlow.IContext! Context) -> void
+Filin.Storage.DataFlow.AppendEventsRequest.Equals(Filin.Storage.DataFlow.AppendEventsRequest other) -> bool
+Filin.Storage.DataFlow.AppendEventsRequest.Events.get -> System.Collections.Generic.IReadOnlyCollection<Filin.DcbEvent!>!
+Filin.Storage.DataFlow.AppendEventsRequest.Events.init -> void
+Filin.Storage.DataFlow.AppendEventsResponse
+Filin.Storage.DataFlow.AppendEventsResponse.AppendEventsResponse() -> void
+Filin.Storage.DataFlow.AppendEventsResponse.AppendEventsResponse(Filin.Storage.AppendResult Result, Filin.Storage.DataFlow.IContext! Context) -> void
+Filin.Storage.DataFlow.AppendEventsResponse.Context.get -> Filin.Storage.DataFlow.IContext!
+Filin.Storage.DataFlow.AppendEventsResponse.Context.set -> void
+Filin.Storage.DataFlow.AppendEventsResponse.Deconstruct(out Filin.Storage.AppendResult Result, out Filin.Storage.DataFlow.IContext! Context) -> void
+Filin.Storage.DataFlow.AppendEventsResponse.Equals(Filin.Storage.DataFlow.AppendEventsResponse other) -> bool
+Filin.Storage.DataFlow.AppendEventsResponse.Result.get -> Filin.Storage.AppendResult
+Filin.Storage.DataFlow.AppendEventsResponse.Result.set -> void
+Filin.Storage.DataFlow.IAppendEventsBlock
+Filin.Storage.DataFlow.IContext
+Filin.Storage.DataFlow.IContext.CancellationToken.get -> System.Threading.CancellationToken
+Filin.Storage.DataFlow.IContext.TrySetCanceled(System.Threading.CancellationToken cancellationToken) -> bool
+Filin.Storage.DataFlow.IContext.TrySetException(System.Exception! exception) -> bool
+Filin.Storage.IEventStore
+Filin.Storage.IEventStore.AppendAsync(Filin.DcbEvent! dcbEvent, Filin.Storage.AppendCondition appendCondition, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Filin.Storage.AppendResult>!
+Filin.Storage.IEventStore.AppendAsync(System.Collections.Generic.IEnumerable<Filin.DcbEvent!>! dcbEvents, Filin.Storage.AppendCondition appendCondition, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Filin.Storage.AppendResult>!
+Filin.Storage.IEventStore.ReadAsync(Filin.DcbQuery query, Filin.EventPosition after) -> System.Collections.Generic.IAsyncEnumerable<Filin.DcbEventSequenced>!
+Filin.Storage.IEventStore.Subscribe(Filin.DcbQuery query, Filin.EventPosition after) -> System.Collections.Generic.IAsyncEnumerable<Filin.DcbEventSequenced>!
+Filin.Storage.IProjectionStore
+Filin.Storage.IProjectionStore.ClearAsync(Filin.ProjectionId projectionId, Filin.EventPosition position, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+Filin.Storage.IProjectionStore.LoadAsync(Filin.ProjectionId projectionId, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Filin.Storage.Projection?>!
+Filin.Storage.IProjectionStore.SaveAsync(Filin.Storage.Projection! projection, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+Filin.Storage.IProjectionStore.SaveAsync(System.Collections.Generic.IEnumerable<Filin.Storage.Projection!>! projections, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+Filin.Storage.IStorageSerializer
+Filin.Storage.IStorageSerializer.Deserialize(System.Type! returnType, System.Span<byte> input) -> object!
+Filin.Storage.IStorageSerializer.Serialize(object! input) -> System.Span<byte>
+Filin.Storage.Projection
+Filin.Storage.Projection.<Clone>$() -> Filin.Storage.Projection!
+Filin.Storage.Projection.Equals(Filin.Storage.Projection? other) -> bool
+Filin.Storage.Projection.Id.get -> Filin.ProjectionId
+Filin.Storage.Projection.Id.init -> void
+Filin.Storage.Projection.Payload.get -> object!
+Filin.Storage.Projection.Payload.init -> void
+Filin.Storage.Projection.Position.get -> Filin.EventPosition
+Filin.Storage.Projection.Position.init -> void
+Filin.Storage.Projection.Projection() -> void
+Filin.Storage.Projection.Timestamp.get -> System.DateTimeOffset
+Filin.Storage.Projection.Timestamp.init -> void
+Filin.Tag
+Filin.Tag.AsSpan() -> System.ReadOnlySpan<char>
+Filin.Tag.CompareTo(Filin.Tag other) -> int
+Filin.Tag.Equals(Filin.Tag obj) -> bool
+Filin.Tag.Hash.get -> ulong
+Filin.Tag.IsDefault.get -> bool
+Filin.Tag.Tag() -> void
+Filin.Tag.Tag(string! name) -> void
+Filin.Tag.ToString(string? format, System.IFormatProvider? formatProvider) -> string!
+Filin.Tag.TryFormat(System.Span<byte> utf8Destination, out int bytesWritten) -> bool
+Filin.Tag.TryFormat(System.Span<byte> utf8Destination, out int bytesWritten, System.ReadOnlySpan<char> format, System.IFormatProvider? provider) -> bool
+Filin.Tag.TryFormat(System.Span<char> destination, out int charsWritten) -> bool
+Filin.Tag.TryFormat(System.Span<char> destination, out int charsWritten, System.ReadOnlySpan<char> format, System.IFormatProvider? provider) -> bool
+Filin.Tag.Value.get -> string!
+Filin.Tags
+Filin.Tags.AsSpan() -> System.ReadOnlySpan<Filin.Tag>
+Filin.Tags.CompareTo(Filin.Tags other) -> int
+Filin.Tags.Contains(Filin.Tag tag) -> bool
+Filin.Tags.Count.get -> int
+Filin.Tags.Equals(Filin.Tags other) -> bool
+Filin.Tags.GetEnumerator() -> Filin.TagsEnumerator
+Filin.Tags.IsEmpty.get -> bool
+Filin.Tags.Tags() -> void
+Filin.Tags.Tags(params System.ReadOnlySpan<Filin.Tag> tags) -> void
+Filin.Tags.this[int index].get -> Filin.Tag
+Filin.Tags.ToString(string? format, System.IFormatProvider? formatProvider) -> string!
+Filin.Tags.TryFormat(System.Span<char> destination, out int charsWritten, System.ReadOnlySpan<char> format, System.IFormatProvider? provider) -> bool
+Filin.TagsEnumerator
+Filin.TagsEnumerator.Current.get -> Filin.Tag
+Filin.TagsEnumerator.MoveNext() -> bool
+Filin.TagsEnumerator.TagsEnumerator() -> void
+Filin.TypeManifestProviderAttribute
+Filin.TypeManifestProviderAttribute.ProviderType.get -> System.Type!
+Filin.TypeManifestProviderAttribute.TypeManifestProviderAttribute(System.Type! providerType) -> void
+override Filin.DcbEvent.Equals(object? obj) -> bool
+override Filin.DcbEvent.GetHashCode() -> int
+override Filin.DcbEvent.ToString() -> string!
+override Filin.DcbEventSequenced.GetHashCode() -> int
+override Filin.DcbQuery.Equals(object? obj) -> bool
+override Filin.DcbQuery.GetHashCode() -> int
+override Filin.DcbQueryItem.GetHashCode() -> int
+override Filin.DecideResult.Equals(object? obj) -> bool
+override Filin.DecideResult.GetHashCode() -> int
+override Filin.DomainRuleError.GetHashCode() -> int
+override Filin.EventPosition.GetHashCode() -> int
+override Filin.EventPosition.ToString() -> string!
+override Filin.EventType.Equals(object? obj) -> bool
+override Filin.EventType.GetHashCode() -> int
+override Filin.EventType.ToString() -> string?
+override Filin.EventTypes.Equals(object? obj) -> bool
+override Filin.EventTypes.GetHashCode() -> int
+override Filin.EventTypes.ToString() -> string!
+override Filin.ExecuteResult<TState>.GetHashCode() -> int
+override Filin.IdSpan.Equals(object? obj) -> bool
+override Filin.IdSpan.GetHashCode() -> int
+override Filin.IdSpan.ToString() -> string?
+override Filin.ProjectionId.Equals(object? obj) -> bool
+override Filin.ProjectionId.GetHashCode() -> int
+override Filin.ProjectionId.ToString() -> string?
+override Filin.ProjectorId.Equals(object? obj) -> bool
+override Filin.ProjectorId.GetHashCode() -> int
+override Filin.ProjectorId.ToString() -> string?
+override Filin.Storage.AppendCondition.GetHashCode() -> int
+override Filin.Storage.AppendResult.Equals(object? obj) -> bool
+override Filin.Storage.AppendResult.GetHashCode() -> int
+override Filin.Storage.DataFlow.AppendEventRequest.GetHashCode() -> int
+override Filin.Storage.DataFlow.AppendEventsRequest.GetHashCode() -> int
+override Filin.Storage.DataFlow.AppendEventsResponse.GetHashCode() -> int
+override Filin.Storage.Projection.Equals(object? obj) -> bool
+override Filin.Storage.Projection.GetHashCode() -> int
+override Filin.Storage.Projection.ToString() -> string!
+override Filin.Tag.Equals(object? obj) -> bool
+override Filin.Tag.GetHashCode() -> int
+override Filin.Tag.ToString() -> string?
+override Filin.Tags.Equals(object? obj) -> bool
+override Filin.Tags.GetHashCode() -> int
+override Filin.Tags.ToString() -> string!
+static Filin.DcbEvent.operator !=(Filin.DcbEvent? left, Filin.DcbEvent? right) -> bool
+static Filin.DcbEvent.operator ==(Filin.DcbEvent? left, Filin.DcbEvent? right) -> bool
+static Filin.DcbEventSequenced.operator !=(Filin.DcbEventSequenced left, Filin.DcbEventSequenced right) -> bool
+static Filin.DcbEventSequenced.operator ==(Filin.DcbEventSequenced left, Filin.DcbEventSequenced right) -> bool
+static Filin.DcbQuery.Create(System.ReadOnlySpan<Filin.DcbQueryItem> items) -> Filin.DcbQuery
+static Filin.DcbQuery.operator !=(Filin.DcbQuery left, Filin.DcbQuery right) -> bool
+static Filin.DcbQuery.operator <(Filin.DcbQuery left, Filin.DcbQuery right) -> bool
+static Filin.DcbQuery.operator <=(Filin.DcbQuery left, Filin.DcbQuery right) -> bool
+static Filin.DcbQuery.operator ==(Filin.DcbQuery left, Filin.DcbQuery right) -> bool
+static Filin.DcbQuery.operator >(Filin.DcbQuery left, Filin.DcbQuery right) -> bool
+static Filin.DcbQuery.operator >=(Filin.DcbQuery left, Filin.DcbQuery right) -> bool
+static Filin.DcbQueryItem.operator !=(Filin.DcbQueryItem left, Filin.DcbQueryItem right) -> bool
+static Filin.DcbQueryItem.operator <(Filin.DcbQueryItem left, Filin.DcbQueryItem right) -> bool
+static Filin.DcbQueryItem.operator <=(Filin.DcbQueryItem left, Filin.DcbQueryItem right) -> bool
+static Filin.DcbQueryItem.operator ==(Filin.DcbQueryItem left, Filin.DcbQueryItem right) -> bool
+static Filin.DcbQueryItem.operator >(Filin.DcbQueryItem left, Filin.DcbQueryItem right) -> bool
+static Filin.DcbQueryItem.operator >=(Filin.DcbQueryItem left, Filin.DcbQueryItem right) -> bool
+static Filin.DecideResult.Failure(string! code, string! message) -> Filin.DecideResult
+static Filin.DecideResult.FromDcbEvent(Filin.DcbEvent! event) -> Filin.DecideResult
+static Filin.DecideResult.FromDomainRuleError(Filin.DomainRuleError error) -> Filin.DecideResult
+static Filin.DecideResult.FromValueTuple((Filin.DcbEvent!, Filin.DcbEvent!) events) -> Filin.DecideResult
+static Filin.DecideResult.FromValueTuple((Filin.DcbEvent!, Filin.DcbEvent!, Filin.DcbEvent!) events) -> Filin.DecideResult
+static Filin.DecideResult.FromValueTuple((Filin.DcbEvent!, Filin.DcbEvent!, Filin.DcbEvent!, Filin.DcbEvent!) events) -> Filin.DecideResult
+static Filin.DecideResult.FromValueTuple((Filin.DcbEvent!, Filin.DcbEvent!, Filin.DcbEvent!, Filin.DcbEvent!, Filin.DcbEvent!) events) -> Filin.DecideResult
+static Filin.DecideResult.FromValueTuple((string! Code, string! Message) error) -> Filin.DecideResult
+static Filin.DecideResult.implicit operator Filin.DecideResult((Filin.DcbEvent!, Filin.DcbEvent!) events) -> Filin.DecideResult
+static Filin.DecideResult.implicit operator Filin.DecideResult((Filin.DcbEvent!, Filin.DcbEvent!, Filin.DcbEvent!) events) -> Filin.DecideResult
+static Filin.DecideResult.implicit operator Filin.DecideResult((Filin.DcbEvent!, Filin.DcbEvent!, Filin.DcbEvent!, Filin.DcbEvent!) events) -> Filin.DecideResult
+static Filin.DecideResult.implicit operator Filin.DecideResult((Filin.DcbEvent!, Filin.DcbEvent!, Filin.DcbEvent!, Filin.DcbEvent!, Filin.DcbEvent!) events) -> Filin.DecideResult
+static Filin.DecideResult.implicit operator Filin.DecideResult((string! Code, string! Message) error) -> Filin.DecideResult
+static Filin.DecideResult.implicit operator Filin.DecideResult(Filin.DcbEvent! event) -> Filin.DecideResult
+static Filin.DecideResult.implicit operator Filin.DecideResult(Filin.DomainRuleError error) -> Filin.DecideResult
+static Filin.DecideResult.operator !=(Filin.DecideResult left, Filin.DecideResult right) -> bool
+static Filin.DecideResult.operator ==(Filin.DecideResult left, Filin.DecideResult right) -> bool
+static Filin.DecideResult.Success(Filin.DcbEvent! event, params System.ReadOnlySpan<Filin.DcbEvent!> events) -> Filin.DecideResult
+static Filin.DomainRuleError.operator !=(Filin.DomainRuleError left, Filin.DomainRuleError right) -> bool
+static Filin.DomainRuleError.operator ==(Filin.DomainRuleError left, Filin.DomainRuleError right) -> bool
+static Filin.EventPosition.operator !=(Filin.EventPosition left, Filin.EventPosition right) -> bool
+static Filin.EventPosition.operator <(Filin.EventPosition left, Filin.EventPosition right) -> bool
+static Filin.EventPosition.operator <=(Filin.EventPosition left, Filin.EventPosition right) -> bool
+static Filin.EventPosition.operator ==(Filin.EventPosition left, Filin.EventPosition right) -> bool
+static Filin.EventPosition.operator >(Filin.EventPosition left, Filin.EventPosition right) -> bool
+static Filin.EventPosition.operator >=(Filin.EventPosition left, Filin.EventPosition right) -> bool
+static Filin.EventType.FromString(string! name) -> Filin.EventType
+static Filin.EventType.implicit operator Filin.EventType(string! name) -> Filin.EventType
+static Filin.EventType.implicit operator string!(Filin.EventType eventType) -> string!
+static Filin.EventType.operator !=(Filin.EventType left, Filin.EventType right) -> bool
+static Filin.EventType.operator <(Filin.EventType left, Filin.EventType right) -> bool
+static Filin.EventType.operator <=(Filin.EventType left, Filin.EventType right) -> bool
+static Filin.EventType.operator ==(Filin.EventType left, Filin.EventType right) -> bool
+static Filin.EventType.operator >(Filin.EventType left, Filin.EventType right) -> bool
+static Filin.EventType.operator >=(Filin.EventType left, Filin.EventType right) -> bool
+static Filin.EventType.UnsafeCreate(string! name, uint hash) -> Filin.EventType
+static Filin.EventTypes.Create(System.ReadOnlySpan<Filin.EventType> eventTypes) -> Filin.EventTypes
+static Filin.EventTypes.operator !=(Filin.EventTypes left, Filin.EventTypes right) -> bool
+static Filin.EventTypes.operator <(Filin.EventTypes left, Filin.EventTypes right) -> bool
+static Filin.EventTypes.operator <=(Filin.EventTypes left, Filin.EventTypes right) -> bool
+static Filin.EventTypes.operator ==(Filin.EventTypes left, Filin.EventTypes right) -> bool
+static Filin.EventTypes.operator >(Filin.EventTypes left, Filin.EventTypes right) -> bool
+static Filin.EventTypes.operator >=(Filin.EventTypes left, Filin.EventTypes right) -> bool
+static Filin.ExecuteResult.Failure<TState>(Filin.DomainRuleError error) -> Filin.ExecuteResult<TState>
+static Filin.ExecuteResult.Success<TState>(TState state) -> Filin.ExecuteResult<TState>
+static Filin.ExecuteResult<TState>.implicit operator Filin.ExecuteResult<TState>(Filin.DomainRuleError error) -> Filin.ExecuteResult<TState>
+static Filin.ExecuteResult<TState>.implicit operator Filin.ExecuteResult<TState>(TState state) -> Filin.ExecuteResult<TState>
+static Filin.ExecuteResult<TState>.operator !=(Filin.ExecuteResult<TState> left, Filin.ExecuteResult<TState> right) -> bool
+static Filin.ExecuteResult<TState>.operator ==(Filin.ExecuteResult<TState> left, Filin.ExecuteResult<TState> right) -> bool
+static Filin.IdSpan.FromString(string! id) -> Filin.IdSpan
+static Filin.IdSpan.implicit operator Filin.IdSpan(string! id) -> Filin.IdSpan
+static Filin.IdSpan.implicit operator string!(Filin.IdSpan idSpan) -> string!
+static Filin.IdSpan.operator !=(Filin.IdSpan left, Filin.IdSpan right) -> bool
+static Filin.IdSpan.operator <(Filin.IdSpan left, Filin.IdSpan right) -> bool
+static Filin.IdSpan.operator <=(Filin.IdSpan left, Filin.IdSpan right) -> bool
+static Filin.IdSpan.operator ==(Filin.IdSpan left, Filin.IdSpan right) -> bool
+static Filin.IdSpan.operator >(Filin.IdSpan left, Filin.IdSpan right) -> bool
+static Filin.IdSpan.operator >=(Filin.IdSpan left, Filin.IdSpan right) -> bool
+static Filin.IdSpan.UnsafeCreate(string! id, ulong hash) -> Filin.IdSpan
+static Filin.ProjectionId.explicit operator Filin.ProjectionId((Filin.ProjectorId Projector, Filin.IdSpan Key) tuple) -> Filin.ProjectionId
+static Filin.ProjectionId.FromValueTuple((Filin.ProjectorId Projector, Filin.IdSpan Key) tuple) -> Filin.ProjectionId
+static Filin.ProjectionId.implicit operator string?(Filin.ProjectionId value) -> string?
+static Filin.ProjectionId.operator !=(Filin.ProjectionId left, Filin.ProjectionId right) -> bool
+static Filin.ProjectionId.operator <(Filin.ProjectionId left, Filin.ProjectionId right) -> bool
+static Filin.ProjectionId.operator <=(Filin.ProjectionId left, Filin.ProjectionId right) -> bool
+static Filin.ProjectionId.operator ==(Filin.ProjectionId left, Filin.ProjectionId right) -> bool
+static Filin.ProjectionId.operator >(Filin.ProjectionId left, Filin.ProjectionId right) -> bool
+static Filin.ProjectionId.operator >=(Filin.ProjectionId left, Filin.ProjectionId right) -> bool
+static Filin.ProjectorId.explicit operator Filin.IdSpan(Filin.ProjectorId projectorId) -> Filin.IdSpan
+static Filin.ProjectorId.explicit operator Filin.ProjectorId(Filin.IdSpan id) -> Filin.ProjectorId
+static Filin.ProjectorId.FromIdSpan(Filin.IdSpan rawIdSpan) -> Filin.ProjectorId
+static Filin.ProjectorId.FromString(string! id) -> Filin.ProjectorId
+static Filin.ProjectorId.implicit operator Filin.ProjectorId(string! id) -> Filin.ProjectorId
+static Filin.ProjectorId.implicit operator string?(Filin.ProjectorId projectorId) -> string?
+static Filin.ProjectorId.operator !=(Filin.ProjectorId left, Filin.ProjectorId right) -> bool
+static Filin.ProjectorId.operator <(Filin.ProjectorId left, Filin.ProjectorId right) -> bool
+static Filin.ProjectorId.operator <=(Filin.ProjectorId left, Filin.ProjectorId right) -> bool
+static Filin.ProjectorId.operator ==(Filin.ProjectorId left, Filin.ProjectorId right) -> bool
+static Filin.ProjectorId.operator >(Filin.ProjectorId left, Filin.ProjectorId right) -> bool
+static Filin.ProjectorId.operator >=(Filin.ProjectorId left, Filin.ProjectorId right) -> bool
+static Filin.ProjectorId.ToIdSpan(Filin.ProjectorId projectorId) -> Filin.IdSpan
+static Filin.Storage.AppendCondition.operator !=(Filin.Storage.AppendCondition left, Filin.Storage.AppendCondition right) -> bool
+static Filin.Storage.AppendCondition.operator ==(Filin.Storage.AppendCondition left, Filin.Storage.AppendCondition right) -> bool
+static Filin.Storage.AppendResult.operator !=(Filin.Storage.AppendResult left, Filin.Storage.AppendResult right) -> bool
+static Filin.Storage.AppendResult.operator ==(Filin.Storage.AppendResult left, Filin.Storage.AppendResult right) -> bool
+static Filin.Storage.DataFlow.AppendEventRequest.operator !=(Filin.Storage.DataFlow.AppendEventRequest left, Filin.Storage.DataFlow.AppendEventRequest right) -> bool
+static Filin.Storage.DataFlow.AppendEventRequest.operator ==(Filin.Storage.DataFlow.AppendEventRequest left, Filin.Storage.DataFlow.AppendEventRequest right) -> bool
+static Filin.Storage.DataFlow.AppendEventsRequest.operator !=(Filin.Storage.DataFlow.AppendEventsRequest left, Filin.Storage.DataFlow.AppendEventsRequest right) -> bool
+static Filin.Storage.DataFlow.AppendEventsRequest.operator ==(Filin.Storage.DataFlow.AppendEventsRequest left, Filin.Storage.DataFlow.AppendEventsRequest right) -> bool
+static Filin.Storage.DataFlow.AppendEventsResponse.operator !=(Filin.Storage.DataFlow.AppendEventsResponse left, Filin.Storage.DataFlow.AppendEventsResponse right) -> bool
+static Filin.Storage.DataFlow.AppendEventsResponse.operator ==(Filin.Storage.DataFlow.AppendEventsResponse left, Filin.Storage.DataFlow.AppendEventsResponse right) -> bool
+static Filin.Storage.Projection.operator !=(Filin.Storage.Projection? left, Filin.Storage.Projection? right) -> bool
+static Filin.Storage.Projection.operator ==(Filin.Storage.Projection? left, Filin.Storage.Projection? right) -> bool
+static Filin.Tag.explicit operator Filin.IdSpan(Filin.Tag tag) -> Filin.IdSpan
+static Filin.Tag.explicit operator Filin.Tag(Filin.IdSpan id) -> Filin.Tag
+static Filin.Tag.FromIdSpan(Filin.IdSpan rawIdSpan) -> Filin.Tag
+static Filin.Tag.FromString(string! name) -> Filin.Tag
+static Filin.Tag.implicit operator Filin.Tag(string! name) -> Filin.Tag
+static Filin.Tag.implicit operator string?(Filin.Tag tag) -> string?
+static Filin.Tag.operator !=(Filin.Tag left, Filin.Tag right) -> bool
+static Filin.Tag.operator <(Filin.Tag left, Filin.Tag right) -> bool
+static Filin.Tag.operator <=(Filin.Tag left, Filin.Tag right) -> bool
+static Filin.Tag.operator ==(Filin.Tag left, Filin.Tag right) -> bool
+static Filin.Tag.operator >(Filin.Tag left, Filin.Tag right) -> bool
+static Filin.Tag.operator >=(Filin.Tag left, Filin.Tag right) -> bool
+static Filin.Tag.ToIdSpan(Filin.Tag tag) -> Filin.IdSpan
+static Filin.Tags.Create(System.ReadOnlySpan<Filin.Tag> tags) -> Filin.Tags
+static Filin.Tags.operator !=(Filin.Tags left, Filin.Tags right) -> bool
+static Filin.Tags.operator <(Filin.Tags left, Filin.Tags right) -> bool
+static Filin.Tags.operator <=(Filin.Tags left, Filin.Tags right) -> bool
+static Filin.Tags.operator ==(Filin.Tags left, Filin.Tags right) -> bool
+static Filin.Tags.operator >(Filin.Tags left, Filin.Tags right) -> bool
+static Filin.Tags.operator >=(Filin.Tags left, Filin.Tags right) -> bool
+static readonly Filin.Storage.AppendResult.Conflict -> Filin.Storage.AppendResult
+static readonly Filin.Storage.AppendResult.Empty -> Filin.Storage.AppendResult
+~override Filin.DcbEventSequenced.Equals(object obj) -> bool
+~override Filin.DcbEventSequenced.ToString() -> string
+~override Filin.DcbQueryItem.Equals(object obj) -> bool
+~override Filin.DcbQueryItem.ToString() -> string
+~override Filin.DomainRuleError.Equals(object obj) -> bool
+~override Filin.DomainRuleError.ToString() -> string
+~override Filin.EventPosition.Equals(object obj) -> bool
+~override Filin.ExecuteResult<TState>.Equals(object obj) -> bool
+~override Filin.ExecuteResult<TState>.ToString() -> string
+~override Filin.Storage.AppendCondition.Equals(object obj) -> bool
+~override Filin.Storage.AppendCondition.ToString() -> string
+~override Filin.Storage.DataFlow.AppendEventRequest.Equals(object obj) -> bool
+~override Filin.Storage.DataFlow.AppendEventRequest.ToString() -> string
+~override Filin.Storage.DataFlow.AppendEventsRequest.Equals(object obj) -> bool
+~override Filin.Storage.DataFlow.AppendEventsRequest.ToString() -> string
+~override Filin.Storage.DataFlow.AppendEventsResponse.Equals(object obj) -> bool
+~override Filin.Storage.DataFlow.AppendEventsResponse.ToString() -> string

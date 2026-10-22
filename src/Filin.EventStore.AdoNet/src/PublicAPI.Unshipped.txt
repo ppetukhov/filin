@@ -1,0 +1,44 @@
+#nullable enable
+const Filin.Configuration.EventStoreAdoNetOptions.DefaultAdoNetInvariant = "Npgsql" -> string!
+const Filin.Configuration.EventStoreAdoNetOptions.SectionName = "Filin:EventStore" -> string!
+Filin.Configuration.EventStoreAdoNetBackoff
+Filin.Configuration.EventStoreAdoNetBackoff.EventStoreAdoNetBackoff() -> void
+Filin.Configuration.EventStoreAdoNetBackoff.InitalDelay.get -> System.TimeSpan
+Filin.Configuration.EventStoreAdoNetBackoff.InitalDelay.set -> void
+Filin.Configuration.EventStoreAdoNetBackoff.MaxDelay.get -> System.TimeSpan
+Filin.Configuration.EventStoreAdoNetBackoff.MaxDelay.set -> void
+Filin.Configuration.EventStoreAdoNetBackoff.UseJitter.get -> bool
+Filin.Configuration.EventStoreAdoNetBackoff.UseJitter.set -> void
+Filin.Configuration.EventStoreAdoNetOptions
+Filin.Configuration.EventStoreAdoNetOptions.AppendBoundedCapacity.get -> int
+Filin.Configuration.EventStoreAdoNetOptions.AppendBoundedCapacity.set -> void
+Filin.Configuration.EventStoreAdoNetOptions.Backoff.get -> Filin.Configuration.EventStoreAdoNetBackoff!
+Filin.Configuration.EventStoreAdoNetOptions.Backoff.set -> void
+Filin.Configuration.EventStoreAdoNetOptions.BatchSize.get -> int
+Filin.Configuration.EventStoreAdoNetOptions.BatchSize.set -> void
+Filin.Configuration.EventStoreAdoNetOptions.ConnectionName.get -> string?
+Filin.Configuration.EventStoreAdoNetOptions.ConnectionName.set -> void
+Filin.Configuration.EventStoreAdoNetOptions.ConnectionString.get -> string?
+Filin.Configuration.EventStoreAdoNetOptions.ConnectionString.set -> void
+Filin.Configuration.EventStoreAdoNetOptions.DataSource.get -> System.Data.Common.DbDataSource!
+Filin.Configuration.EventStoreAdoNetOptions.DataSource.set -> void
+Filin.Configuration.EventStoreAdoNetOptions.EventStoreAdoNetOptions() -> void
+Filin.Configuration.EventStoreAdoNetOptions.EventTypes.get -> System.Collections.Generic.Dictionary<Filin.EventType, System.Type!>!
+Filin.Configuration.EventStoreAdoNetOptions.Invariant.get -> string!
+Filin.Configuration.EventStoreAdoNetOptions.Invariant.set -> void
+Filin.Configuration.EventStoreAdoNetOptions.MaxConcurrentAppendRequests.get -> int
+Filin.Configuration.EventStoreAdoNetOptions.MaxConcurrentAppendRequests.set -> void
+Filin.Configuration.EventStoreAdoNetOptions.SerializerKey.get -> string?
+Filin.Configuration.EventStoreAdoNetOptions.SerializerKey.set -> void
+Filin.Configuration.EventStoreAdoNetOptions.StorageSerializer.get -> Filin.Storage.IStorageSerializer!
+Filin.Configuration.EventStoreAdoNetOptions.StorageSerializer.set -> void
+Filin.Configuration.EventStoreAdoNetOptions.SubscriptionEventBuffer.get -> int
+Filin.Configuration.EventStoreAdoNetOptions.SubscriptionEventBuffer.set -> void
+Filin.Configuration.EventStoreAdoNetOptions.Validate(System.ComponentModel.DataAnnotations.ValidationContext! validationContext) -> System.Collections.Generic.IEnumerable<System.ComponentModel.DataAnnotations.ValidationResult!>!
+Filin.DependencyInjection.FilinServiceCollectionExtensions
+Filin.DependencyInjection.FilinServiceCollectionExtensions.extension(Microsoft.Extensions.DependencyInjection.IServiceCollection!)
+Filin.DependencyInjection.FilinServiceCollectionExtensions.extension(Microsoft.Extensions.DependencyInjection.IServiceCollection!).AddEventStoreAdoNet() -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+Filin.DependencyInjection.FilinServiceCollectionExtensions.extension(Microsoft.Extensions.DependencyInjection.IServiceCollection!).AddEventStoreAdoNet(System.Action<Filin.Configuration.EventStoreAdoNetOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Filin.Configuration.EventStoreAdoNetOptions.IsValidInvariant(object! value) -> System.ComponentModel.DataAnnotations.ValidationResult?
+static Filin.DependencyInjection.FilinServiceCollectionExtensions.AddEventStoreAdoNet(this Microsoft.Extensions.DependencyInjection.IServiceCollection! collection) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Filin.DependencyInjection.FilinServiceCollectionExtensions.AddEventStoreAdoNet(this Microsoft.Extensions.DependencyInjection.IServiceCollection! collection, System.Action<Filin.Configuration.EventStoreAdoNetOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
