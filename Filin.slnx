@@ -49,6 +49,9 @@
   <Folder Name="/src/Filin.EventStore.AdoNet/src/">
     <Project Path="src/Filin.EventStore.AdoNet/src/Filin.EventStore.AdoNet.csproj" Id="06d0752e-79be-472c-b5cb-1276e049cb17" />
   </Folder>
+  <Folder Name="/src/Filin.EventStore.AdoNet/tests/">
+    <Project Path="src/Filin.EventStore.AdoNet/tests/Filin.EventStore.AdoNet.Tests/Filin.EventStore.AdoNet.Tests.csproj" Id="8c541918-e7f3-4bba-919f-6dc47b397d7d" />
+  </Folder>
   <Folder Name="/src/Filin.Generators/" />
   <Folder Name="/src/Filin.Generators/src/">
     <Project Path="src/Filin.Abstractions/gen/Filin.Generators.csproj" Id="b5cb9853-24b6-4813-99f9-f38489eafb7c" />

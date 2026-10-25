@@ -52,10 +52,10 @@ sealed partial class EventStore
         /// <inheritdoc/>
         public async ValueTask<bool> MoveNextAsync()
         {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+
             try
             {
-                ObjectDisposedException.ThrowIf(_disposed, this);
-
                 if (storeEnumerator is IAsyncEnumerator<DcbEventSequenced> enumerator)
                 {
                     var success = await enumerator.MoveNextAsync().ConfigureAwait(false);

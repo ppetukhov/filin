@@ -16,15 +16,13 @@ public readonly struct EventType : IEquatable<EventType>, IComparable<EventType>
 {
     readonly string? _value;
 
-    readonly uint _hash;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="EventType"/> struct with a specified event type name.
     /// </summary>
     /// <param name="name">The name of the event type.</param>
     public EventType(string name) : this(name, StableHash.Hash32(name)) { }
 
-    internal EventType(string name, uint hash) => (_value, _hash) = (name, hash);
+    internal EventType(string name, uint hash) => (_value, Hash) = (name, hash);
 
     /// <inheritdoc cref="IdSpan.IsDefault"/>
     [MemberNotNullWhen(false, nameof(_value))]
@@ -46,7 +44,7 @@ public readonly struct EventType : IEquatable<EventType>, IComparable<EventType>
     /// <summary>
     /// Hash value.
     /// </summary>
-    public uint Hash => _hash;
+    public uint Hash { get; }
 
     /// <inheritdoc/>
     public override bool Equals(object? obj) => obj is EventType evetType && Equals(evetType);
@@ -55,7 +53,7 @@ public readonly struct EventType : IEquatable<EventType>, IComparable<EventType>
     public bool Equals(EventType obj) => string.Equals(_value, obj._value, StringComparison.Ordinal);
 
     /// <inheritdoc/>
-    public override int GetHashCode() => (int)_hash;
+    public override int GetHashCode() => (int)Hash;
 
     /// <inheritdoc/>
     public int CompareTo(EventType other) => string.CompareOrdinal(_value, other._value);
@@ -133,7 +131,7 @@ public readonly struct EventType : IEquatable<EventType>, IComparable<EventType>
     /// </warning>
     /// </remarks>
     [Obsolete("This method is intended for infrastructure and deserialization only. Use the standard constructor or FromString for domain logic.")]
-    public static EventType UnsafeCreate(string name, uint hash) => new EventType(name, hash);
+    public static EventType UnsafeCreate(string name, uint hash) => new(name, hash);
 
     /// <summary>
     /// Defines an implicit conversion of an <see cref="EventType"/> to a <see cref="string"/>.

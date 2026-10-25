@@ -135,7 +135,6 @@ sealed class PgDbCommandFactory(DbDataSource dataSource, IStorageSerializer seri
         var position = 0;
         AppendAfterPosition(ref sb, ref position, appendCondition.After, command); // -- p_cond_after
         AppendEvent(ref sb, @event, ref position, command, serializer); // -- dcb_event: hash -> name -> tag_hashes -> tagsCount -> payload
-        sb.Append(", ");
         AppendQuery(ref sb, ref position, appendCondition.FailIfEventsMatch, command); // -- VARIADIC p_cond_fail_if_match
         sb.Append(");");
 #pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
@@ -153,10 +152,11 @@ sealed class PgDbCommandFactory(DbDataSource dataSource, IStorageSerializer seri
         Span<char> buf = stackalloc char[512];
         var sb = new ValueStringBuilder(buf);
 #pragma warning restore CA2000 // Dispose objects before losing scope
-        sb.Append("SELECT * from dcb_append_events(array[");
+        sb.Append("SELECT * from dcb_append_events(");
 
         var position = 0;
         AppendAfterPosition(ref sb, ref position, appendCondition.After, command);
+        sb.Append("array[");
 
         foreach (var @event in events)
         {
@@ -166,7 +166,7 @@ sealed class PgDbCommandFactory(DbDataSource dataSource, IStorageSerializer seri
 
         sb.Length -= 1; // drop last symbol ','
 
-        sb.Append("]::dcb_event[], ");
+        sb.Append("]::dcb_event[],");
         AppendQuery(ref sb, ref position, appendCondition.FailIfEventsMatch, command);
         sb.Append(");");
 #pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
@@ -190,13 +190,12 @@ sealed class PgDbCommandFactory(DbDataSource dataSource, IStorageSerializer seri
             sb.Append("SELECT * from dcb_append_event(");
             AppendPlaceHolder(ref sb, ref position); // AppendAfterPosition
             AppendEvent(ref sb, ref position, eventTagsCountSpan[0]);
-            sb.Append(", ");
         }
         else
         {
             sb.Append("SELECT * from dcb_append_events(");
             AppendPlaceHolder(ref sb, ref position); // AppendAfterPosition
-            sb.Append(" array[");
+            sb.Append("array[");
 
             foreach (var eventTagsCount in eventTagsCountSpan)
             {
@@ -206,7 +205,7 @@ sealed class PgDbCommandFactory(DbDataSource dataSource, IStorageSerializer seri
 
             sb.Length -= 1; // drop last symbol ','
 
-            sb.Append("]::dcb_event[], ");
+            sb.Append("]::dcb_event[],");
         }
 
         AppendQuery(ref sb, ref position, ref querykey);
@@ -226,7 +225,7 @@ sealed class PgDbCommandFactory(DbDataSource dataSource, IStorageSerializer seri
         var sbNames = new ValueStringBuilder(buf);
 
         // tagsCount
-        sb.Append(" array[");
+        sb.Append("array[");
 
         if (eventTagsCount != 0)
         {
@@ -245,9 +244,9 @@ sealed class PgDbCommandFactory(DbDataSource dataSource, IStorageSerializer seri
             sbNames.Length -= 1; // drop last symbol ','
         }
 
-        sb.Append("], array[");
+        sb.Append("],array[");
         sb.Append(sbNames.AsSpan());
-        sb.Append("], ");
+        sb.Append("],");
 
         sb.Append(GetPlaceHolder(position++));
         sb.Append("::json)::dcb_event");
@@ -305,7 +304,7 @@ sealed class PgDbCommandFactory(DbDataSource dataSource, IStorageSerializer seri
         var sbNames = new ValueStringBuilder(buf);
 
         // tags
-        sb.Append(" array[");
+        sb.Append("array[");
 
         if (@event.Tags is { IsEmpty: false } tags)
         {
@@ -327,9 +326,9 @@ sealed class PgDbCommandFactory(DbDataSource dataSource, IStorageSerializer seri
         }
 
         var span = sbNames.AsSpan();
-        sb.Append("], array[");
+        sb.Append("],array[");
         sb.Append(span);
-        sb.Append("], ");
+        sb.Append("],");
 
         sb.Append(GetPlaceHolder(position++));
         sb.Append("::json)::dcb_event");
@@ -374,7 +373,7 @@ sealed class PgDbCommandFactory(DbDataSource dataSource, IStorageSerializer seri
             // eventTypes
             if (eventTypesCount == 0)
             {
-                sb.Append("(array[]::integer[], array[]::text[]");
+                sb.Append("(array[]::integer[],array[]::text[]");
             }
             else
             {
@@ -394,7 +393,7 @@ sealed class PgDbCommandFactory(DbDataSource dataSource, IStorageSerializer seri
                 }
                 sbNames.Length -= 1; // drop last symbol ','
 
-                sb.Append("], array[");
+                sb.Append("],array[");
                 sb.Append(sbNames.AsSpan());
                 sb.Append(']');
 
@@ -404,11 +403,11 @@ sealed class PgDbCommandFactory(DbDataSource dataSource, IStorageSerializer seri
             // tags
             if (tagsCount == 0)
             {
-                sb.Append(", array[]::bigint[], array[]::text[]),");
+                sb.Append(",array[]::bigint[],array[]::text[]),");
             }
             else
             {
-                sb.Append(", array[");
+                sb.Append(",array[");
 
                 // hashes
                 for (var idx = 1; idx <= tagsCount; idx++)
@@ -424,7 +423,7 @@ sealed class PgDbCommandFactory(DbDataSource dataSource, IStorageSerializer seri
                 }
                 sbNames.Length -= 1; // drop last symbol ','
 
-                sb.Append("], array[");
+                sb.Append("],array[");
                 sb.Append(sbNames.AsSpan());
                 sb.Append("]),");
 
@@ -497,7 +496,7 @@ sealed class PgDbCommandFactory(DbDataSource dataSource, IStorageSerializer seri
             // even types
             if (eventTypes.IsEmpty)
             {
-                sb.Append("(array[]::integer[], array[]::text[]");
+                sb.Append("(array[]::integer[],array[]::text[]");
             }
             else
             {
@@ -519,7 +518,7 @@ sealed class PgDbCommandFactory(DbDataSource dataSource, IStorageSerializer seri
                 }
                 sbNames.Length -= 1; // drop last symbol ','
 
-                sb.Append("], array[");
+                sb.Append("],array[");
                 sb.Append(sbNames.AsSpan());
                 sb.Append(']');
 
@@ -529,11 +528,11 @@ sealed class PgDbCommandFactory(DbDataSource dataSource, IStorageSerializer seri
             // tags
             if (tags.IsEmpty)
             {
-                sb.Append(", array[]::bigint[], array[]::text[]),");
+                sb.Append(",array[]::bigint[],array[]::text[]),");
             }
             else
             {
-                sb.Append(", array[");
+                sb.Append(",array[");
 
                 // hashes
                 foreach (var tag in tags)
@@ -551,7 +550,7 @@ sealed class PgDbCommandFactory(DbDataSource dataSource, IStorageSerializer seri
                 }
                 sbNames.Length -= 1; // drop last symbol ','
 
-                sb.Append("], array[");
+                sb.Append("],array[");
                 sb.Append(sbNames.AsSpan());
                 sb.Append("]),");
 
