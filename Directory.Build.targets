@@ -1,6 +1,22 @@
 <Project>
-  <Import Project="$(RepositoryEngineeringDir)Analyzers.targets" />
-  <Import Project="$(RepositoryEngineeringDir)GeneratorProjects.targets" Condition="'$(IsGeneratorProject)' == 'true'" />
+  <PropertyGroup>
+    <EnableNETAnalyzers Condition="'$(EnableNETAnalyzers)' == ''">$(RunAnalyzers)</EnableNETAnalyzers>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(RunAnalyzers)' != 'false'">
+    <EnableSingleFileAnalyzer Condition="
+      '$(EnableSingleFileAnalyzer)' == '' and
+      '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and
+      '$(IsSourceProject)' == 'true'">true</EnableSingleFileAnalyzer>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(RunAnalyzers)' != 'false'">
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="all" />
+  </ItemGroup>
+
+  <Import Project="$(SourceRoot)GeneratorProjects.targets" Condition="'$(IsGeneratorProject)' == 'true'" />
 
   <!-- Packaging -->
   <PropertyGroup>

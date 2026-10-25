@@ -11,8 +11,6 @@
   </PropertyGroup>
  
   <PropertyGroup>
-    <RepositoryEngineeringDir Condition="'$(RepositoryEngineeringDir)' == ''">$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', 'eng'))</RepositoryEngineeringDir>
-
     <!-- Set the repository root into a variable -->
     <SourceRoot>$(MSBuildThisFileDirectory)</SourceRoot>
     <CommonDir>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', 'src', 'Common'))</CommonDir>
@@ -31,7 +29,6 @@
     <Copyright>Copyright © $([System.DateTime]::Now.ToString('yyyy')) Pavel Petukhov</Copyright>
     <PackageReadmeFile></PackageReadmeFile>
     <PackageReleaseNotes></PackageReleaseNotes>
-    <PlaceholderFile>$(RepositoryEngineeringDir)_._</PlaceholderFile>
     <PackageIcon>icon.png</PackageIcon>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <!-- Set output folder for created NuGet packages -->
