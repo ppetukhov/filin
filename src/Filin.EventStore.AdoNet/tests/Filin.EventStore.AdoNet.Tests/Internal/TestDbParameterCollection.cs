@@ -3,9 +3,9 @@ using System.Data.Common;
 
 namespace Filin.EventStore.AdoNet.Tests.Internal;
 
-public class TestDbParameterCollection : DbParameterCollection
+sealed class TestDbParameterCollection : DbParameterCollection
 {
-    private readonly List<DbParameter> _parameters = new();
+    readonly List<DbParameter> _parameters = [];
 
     public override int Count => _parameters.Count;
     public override object SyncRoot => _parameters;
@@ -58,8 +58,11 @@ public class TestDbParameterCollection : DbParameterCollection
 
     protected override void SetParameter(string parameterName, DbParameter value)
     {
-        int idx = IndexOf(parameterName);
-        if (idx >= 0) _parameters[idx] = value;
+        var idx = IndexOf(parameterName);
+        if (idx >= 0)
+        {
+            _parameters[idx] = value;
+        }
     }
 
     public override System.Collections.IEnumerator GetEnumerator() => _parameters.GetEnumerator();

@@ -6,15 +6,10 @@ using Filin.EventStore.AdoNet.Internal;
 
 namespace Filin.EventStore.AdoNet.Tests.Internal;
 
-public class AppendBlockTestDbDataReader : DbDataReader
+sealed class AppendBlockTestDbDataReader(List<(long Position, DateTime CreatedAt)> rows = null) : DbDataReader
 {
-    private readonly List<(long Position, DateTime CreatedAt)> _rows;
-    private int _currentIndex = -1;
-
-    public AppendBlockTestDbDataReader(List<(long Position, DateTime CreatedAt)> rows = null)
-    {
-        _rows = rows ?? new List<(long, DateTime)>();
-    }
+    readonly List<(long Position, DateTime CreatedAt)> _rows = rows ?? [];
+    int _currentIndex = -1;
 
     public override bool Read()
     {
@@ -22,10 +17,7 @@ public class AppendBlockTestDbDataReader : DbDataReader
         return _currentIndex < _rows.Count;
     }
 
-    public override Task<bool> ReadAsync(CancellationToken cancellationToken)
-    {
-        return Task.FromResult(Read());
-    }
+    public override Task<bool> ReadAsync(CancellationToken cancellationToken) => Task.FromResult(Read());
 
     public override bool NextResult() => false;
 
@@ -41,12 +33,9 @@ public class AppendBlockTestDbDataReader : DbDataReader
 
     public override int GetOrdinal(string name)
     {
-        if (string.Equals(name, ColumnNames.Position, StringComparison.OrdinalIgnoreCase))
-            return 0;
-        if (string.Equals(name, ColumnNames.CreatedAt, StringComparison.OrdinalIgnoreCase))
-            return 1;
-
-        return 0;
+        return string.Equals(name, ColumnNames.Position, StringComparison.OrdinalIgnoreCase)
+            ? 0
+            : string.Equals(name, ColumnNames.CreatedAt, StringComparison.OrdinalIgnoreCase) ? 1 : 0;
     }
 
     public override long GetInt64(int ordinal) => _rows[_currentIndex].Position;

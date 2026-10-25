@@ -4,7 +4,7 @@ using System.Data.Common;
 
 namespace Filin.EventStore.AdoNet.Tests.Internal;
 
-public class TestDbParameter : DbParameter
+sealed class TestDbParameter : DbParameter
 {
     public override DbType DbType { get; set; }
     public override ParameterDirection Direction { get; set; }

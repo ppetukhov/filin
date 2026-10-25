@@ -3,9 +3,6 @@
  
   <!-- Language configuration -->
   <PropertyGroup>
-    <!-- Disable analyzers for tests and unsupported projects -->
-    <RunAnalyzers Condition="'$(IsTestProject)' == 'true' or ('$(IsSourceProject)' != 'true' and '$(IsGeneratorProject)' != 'true')">false</RunAnalyzers>
-
     <!-- Nullability is enabled by default except for test projects, which instead default to annotations. -->
     <Nullable Condition="'$(Nullable)' == '' and '$(IsTestProject)' != 'true'">enable</Nullable>
     <Nullable Condition="'$(Nullable)' == '' and '$(IsTestProject)' == 'true'">annotations</Nullable>

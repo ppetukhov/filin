@@ -4,19 +4,16 @@ using System.Data.Common;
 
 namespace Filin.EventStore.AdoNet.Tests.Internal;
 
-public class AppendBlockTestDbCommand : DbCommand
+sealed class AppendBlockTestDbCommand : DbCommand
 {
     public DbDataReader ReaderToReturn { get; set; }
     public Exception ExceptionToThrow { get; set; }
 
     protected override Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
     {
-        if (ExceptionToThrow != null)
-        {
-            throw ExceptionToThrow;
-        }
-
-        return Task.FromResult<DbDataReader>(ReaderToReturn ?? new AppendBlockTestDbDataReader());
+        return ExceptionToThrow != null
+            ? throw ExceptionToThrow
+            : Task.FromResult<DbDataReader>(ReaderToReturn ?? new AppendBlockTestDbDataReader());
     }
 
     public override string CommandText { get; set; } = string.Empty;

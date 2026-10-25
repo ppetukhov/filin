@@ -4,7 +4,7 @@ using Filin.Storage;
 
 namespace Filin.EventStore.AdoNet.Tests.Internal;
 
-public class TestStorageSerializer : IStorageSerializer
+sealed class TestStorageSerializer : IStorageSerializer
 {
     public byte[] ResponseData { get; set; } = Encoding.UTF8.GetBytes("{}");
     public int SerializeCallCount { get; private set; }
@@ -15,8 +15,5 @@ public class TestStorageSerializer : IStorageSerializer
         return ResponseData;
     }
 
-    public object Deserialize(Type returnType, Span<byte> input)
-    {
-        return new object();
-    }
+    public object Deserialize(Type returnType, Span<byte> input) => new();
 }

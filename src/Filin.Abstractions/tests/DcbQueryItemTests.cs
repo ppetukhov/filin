@@ -47,7 +47,7 @@ public class DcbQueryItemTests
         var extraType2 = new EventType("Updated");
 
         // Act
-        DcbQueryItem result = queryItem.Or(extraType1, extraType2);
+        var result = queryItem.Or(extraType1, extraType2);
 
         // Assert
         result.Tags.Should().Be(queryItem.Tags);
@@ -69,7 +69,7 @@ public class DcbQueryItemTests
         var extraTag2 = new Tag("student:123");
 
         // Act
-        DcbQueryItem result = queryItem.And(extraTag1, extraTag2);
+        var result = queryItem.And(extraTag1, extraTag2);
 
         // Assert
         result.EventTypes.Should().Be(queryItem.EventTypes);

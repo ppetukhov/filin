@@ -96,7 +96,7 @@ public class TagsTests
         var targetTag = new Tag("course:777");
 
         // Act
-        bool result = collection.Contains(targetTag);
+        var result = collection.Contains(targetTag);
 
         // Assert
         result.Should().BeFalse();
@@ -295,7 +295,7 @@ public class TagsTests
         Span<char> destination = stackalloc char[50];
 
         // Act
-        bool success = collection.TryFormat(destination, out int charsWritten, default, CultureInfo.InvariantCulture);
+        var success = collection.TryFormat(destination, out var charsWritten, default, CultureInfo.InvariantCulture);
 
         // Assert
         success.Should().BeTrue();
@@ -311,7 +311,7 @@ public class TagsTests
         Span<char> tinyDestination = stackalloc char[15]; // Not enough space for full collection
 
         // Act
-        bool success = collection.TryFormat(tinyDestination, out int charsWritten, default, CultureInfo.InvariantCulture);
+        var success = collection.TryFormat(tinyDestination, out var charsWritten, default, CultureInfo.InvariantCulture);
 
         // Assert
         success.Should().BeFalse("the formatting layout must abort cleanly if the target block span is too small");
@@ -325,7 +325,7 @@ public class TagsTests
         Tags collection = [new Tag("a"), new Tag("b")];
 
         // Act
-        string message = $"Boundaries: {collection}";
+        var message = $"Boundaries: {collection}";
 
         // Assert
         message.Should().Be("Boundaries: a, b", "the string interpolation engine must cleanly parse the custom formattable structure");
@@ -343,7 +343,7 @@ public class TagsTests
         Tags collection = [new Tag("course:777"), new Tag("faculty:it")];
 
         // Act
-        string result = string.Format(mockFormatter, "{0}", collection);
+        var result = string.Format(mockFormatter, "{0}", collection);
 
         // Assert
         result.Should().Be("COURSE:777, FACULTY:IT", "the structure must respect explicit third-party ICustomFormatter implementations");
@@ -353,14 +353,7 @@ public class TagsTests
     {
         public object? GetFormat(Type? formatType) => formatType == typeof(ICustomFormatter) ? this : null;
 
-        public string Format(string? format, object? arg, IFormatProvider? formatProvider)
-        {
-            if (arg is Tags tags)
-            {
-                return tags.ToString().ToUpperInvariant();
-            }
-            return arg?.ToString() ?? string.Empty;
-        }
+        public string Format(string? format, object? arg, IFormatProvider? formatProvider) => arg is Tags tags ? tags.ToString().ToUpperInvariant() : arg?.ToString() ?? string.Empty;
     }
 
     #endregion
@@ -384,7 +377,7 @@ public class TagsTests
         Tags collection = [new Tag("faculty:it"), new Tag("course:777")];
 
         // Act
-        string result = collection.ToString();
+        var result = collection.ToString();
 
         // Assert
         result.Should().Be("course:777, faculty:it", "tags must be explicitly separated by a single raw comma character");
@@ -400,12 +393,12 @@ public class TagsTests
         Tags collection = [longTag3, longTag1, longTag2];
 
         // Act
-        string result = collection.ToString();
+        var result = collection.ToString();
 
         // Assert
         result.Length.Should().Be(304); // 300 elements chars + 4 separator chars (2 intersections * 2 chars)
-        result.StartsWith(new string('x', 100)).Should().BeTrue();
-        result.EndsWith(new string('z', 100)).Should().BeTrue();
+        result.StartsWith(new string('x', 100), StringComparison.Ordinal).Should().BeTrue();
+        result.EndsWith(new string('z', 100), StringComparison.Ordinal).Should().BeTrue();
     }
 
     #endregion

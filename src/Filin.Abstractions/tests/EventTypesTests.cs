@@ -205,7 +205,7 @@ public class EventTypesTests
         EventTypes collection = [new EventType("Updated"), new EventType("Created")]; // Auto-sorted
 
         // Act
-        string result = collection.ToString();
+        var result = collection.ToString();
 
         // Assert
         result.Should().Be("Created, Updated", "event types must follow proper sorting and default spacing layout rules");
@@ -219,7 +219,7 @@ public class EventTypesTests
         Span<char> destination = stackalloc char[32];
 
         // Act
-        bool success = collection.TryFormat(destination, out int charsWritten, default, System.Globalization.CultureInfo.InvariantCulture);
+        var success = collection.TryFormat(destination, out var charsWritten, default, System.Globalization.CultureInfo.InvariantCulture);
 
         // Assert
         success.Should().BeTrue();
@@ -235,7 +235,7 @@ public class EventTypesTests
         Span<char> tinyDestination = stackalloc char[5]; // Insufficient buffer bounds
 
         // Act
-        bool success = collection.TryFormat(tinyDestination, out int charsWritten, default, System.Globalization.CultureInfo.InvariantCulture);
+        var success = collection.TryFormat(tinyDestination, out var charsWritten, default, System.Globalization.CultureInfo.InvariantCulture);
 
         // Assert
         success.Should().BeFalse();
@@ -252,12 +252,12 @@ public class EventTypesTests
         EventTypes collection = [longType3, longType1, longType2];
 
         // Act
-        string result = collection.ToString();
+        var result = collection.ToString();
 
         // Assert
         result.Length.Should().Be(304); // 300 elements chars + 4 separator chars (", " * 2)
-        result.StartsWith(new string('A', 100)).Should().BeTrue();
-        result.EndsWith(new string('C', 100)).Should().BeTrue();
+        result.StartsWith(new string('A', 100), StringComparison.Ordinal).Should().BeTrue();
+        result.EndsWith(new string('C', 100), StringComparison.Ordinal).Should().BeTrue();
     }
 
     [Fact]
@@ -268,10 +268,10 @@ public class EventTypesTests
         EventTypes collection = [new EventType("Created"), new EventType("Updated")];
 
         // Act
-        string result = string.Format(mockFormatter, "{0}", collection);
+        var result = string.Format(mockFormatter, "{0}", collection);
 
         // Assert
-        result.Should().Be("created, updated", "the collection formatting must cede evaluation execution to custom providers if active");
+        result.Should().Be("CREATED, UPDATED", "the collection formatting must cede evaluation execution to custom providers if active");
     }
 
     // Custom helper formatter implementation for explicit boundary unit tests
@@ -279,14 +279,7 @@ public class EventTypesTests
     {
         public object? GetFormat(Type? formatType) => formatType == typeof(ICustomFormatter) ? this : null;
 
-        public string Format(string? format, object? arg, IFormatProvider? formatProvider)
-        {
-            if (arg is EventTypes types)
-            {
-                return types.ToString().ToLowerInvariant();
-            }
-            return arg?.ToString() ?? string.Empty;
-        }
+        public string Format(string? format, object? arg, IFormatProvider? formatProvider) => arg is EventTypes types ? types.ToString().ToUpperInvariant() : arg?.ToString() ?? string.Empty;
     }
 
     #endregion

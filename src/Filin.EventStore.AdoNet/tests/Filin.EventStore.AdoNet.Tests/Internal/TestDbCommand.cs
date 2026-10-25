@@ -4,9 +4,9 @@ using System.Data.Common;
 
 namespace Filin.EventStore.AdoNet.Tests.Internal;
 
-public class TestDbCommand : DbCommand
+sealed class TestDbCommand : DbCommand
 {
-    private readonly TestDbParameterCollection _parameters = new();
+    readonly TestDbParameterCollection _parameters = [];
 
     public override string CommandText { get; set; } = string.Empty;
     public override int CommandTimeout { get; set; }

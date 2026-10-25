@@ -1,7 +1,4 @@
-
-using Filin.Abstractions.Tests;
-
-namespace Filin.Abstractions.EventTagTests;
+namespace Filin.Abstractions.Tests;
 
 sealed record CourseCreated([EventTag("course")] Guid CourseId)
 {

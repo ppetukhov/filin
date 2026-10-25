@@ -35,10 +35,10 @@ public sealed class ProjectionIdTests
     [InlineData("test-value", null, "test-value", null)]
     public void Tag_Equals_Return_True(string? projectorIdX, string? keyX, string? projectorIdY, string? keyY)
     {
-        var IdSpanX = new ProjectionId(new ProjectorId(projectorIdX!), new IdSpan(keyX!));
-        var IdSpanY = new ProjectionId(new ProjectorId(projectorIdY!), new IdSpan(keyY!));
+        var idSpanX = new ProjectionId(new ProjectorId(projectorIdX!), new IdSpan(keyX!));
+        var idSpanY = new ProjectionId(new ProjectorId(projectorIdY!), new IdSpan(keyY!));
 
-        var result = IdSpanX.Equals(IdSpanY);
+        var result = idSpanX.Equals(idSpanY);
 
         result.Should().BeTrue();
     }
@@ -52,10 +52,10 @@ public sealed class ProjectionIdTests
     [InlineData("test-value", null, "any-value", null)]
     public void Tag_Equals_Return_False(string? projectorIdX, string? keyX, string? projectorIdY, string? keyY)
     {
-        var IdSpanX = new ProjectionId(new ProjectorId(projectorIdX!), new IdSpan(keyX!));
-        var IdSpanY = new ProjectionId(new ProjectorId(projectorIdY!), new IdSpan(keyY!));
+        var idSpanX = new ProjectionId(new ProjectorId(projectorIdX!), new IdSpan(keyX!));
+        var idSpanY = new ProjectionId(new ProjectorId(projectorIdY!), new IdSpan(keyY!));
 
-        var result = IdSpanX.Equals(IdSpanY);
+        var result = idSpanX.Equals(idSpanY);
 
         result.Should().BeFalse();
     }
@@ -74,10 +74,10 @@ public sealed class ProjectionIdTests
     [InlineData(7, "abc", "8", "abc", "1")]
     public void ProjectionId_CompareTo(int expectedValue, string? projectorIdX, string? keyX, string? projectorIdY, string? keyY)
     {
-        var IdSpanX = new ProjectionId(new ProjectorId(projectorIdX!), new IdSpan(keyX!));
-        var IdSpanY = new ProjectionId(new ProjectorId(projectorIdY!), new IdSpan(keyY!));
+        var idSpanX = new ProjectionId(new ProjectorId(projectorIdX!), new IdSpan(keyX!));
+        var idSpanY = new ProjectionId(new ProjectorId(projectorIdY!), new IdSpan(keyY!));
 
-        var result = IdSpanX.CompareTo(IdSpanY);
+        var result = idSpanX.CompareTo(idSpanY);
 
         result.Should().Be(expectedValue);
     }
@@ -85,9 +85,9 @@ public sealed class ProjectionIdTests
     [Fact]
     public void ProjectionId_ToString_Return_Null_When_IsDefault()
     {
-        ProjectionId IdSpan = default;
+        ProjectionId idSpan = default;
 
-        IdSpan.ToString().Should().BeNull(because: "ProjectionId is default");
+        idSpan.ToString().Should().BeNull(because: "ProjectionId is default");
     }
 
     [Fact]
@@ -95,9 +95,9 @@ public sealed class ProjectionIdTests
     {
         var expectedString = "some-proj@10/1562";
 
-        var IdSpan = new ProjectionId(new ProjectorId("some-proj@10"), new IdSpan("1562"));
+        var idSpan = new ProjectionId(new ProjectorId("some-proj@10"), new IdSpan("1562"));
 
-        IdSpan.ToString().Should().Be(expectedString);
+        idSpan.ToString().Should().Be(expectedString);
     }
 
     [Theory]
@@ -106,9 +106,9 @@ public sealed class ProjectionIdTests
 #pragma warning restore xUnit1045 // Avoid using TheoryData type arguments that might not be serializable
     public void ProjectionId_ToString_With_FormatProvider(string? format, IFormatProvider formatProvider, string expectedString)
     {
-        var IdSpan = new ProjectionId(new ProjectorId("some-proj@10"), new IdSpan("1562"));
+        var idSpan = new ProjectionId(new ProjectorId("some-proj@10"), new IdSpan("1562"));
 
-        IdSpan.ToString(format: format, formatProvider: formatProvider).Should().Be(expectedString);
+        idSpan.ToString(format: format, formatProvider: formatProvider).Should().Be(expectedString);
     }
 
     [Theory]
@@ -117,9 +117,9 @@ public sealed class ProjectionIdTests
     [InlineData("AnyFomat")]
     public void ProjectionId_ToString_With_Format_Return_EmptyString_When_EventType_IsDefault(string? format)
     {
-        ProjectionId IdSpan = default;
+        ProjectionId idSpan = default;
 
-        IdSpan.ToString(format: format, formatProvider: null).Should().BeEmpty();
+        idSpan.ToString(format: format, formatProvider: null).Should().BeEmpty();
     }
 
     [Theory]
@@ -129,9 +129,9 @@ public sealed class ProjectionIdTests
     {
         Span<char> destination = stackalloc char[destinationCharsCount];
 
-        ProjectionId IdSpan = default;
+        ProjectionId idSpan = default;
 
-        var result = IdSpan.TryFormat(destination, out var charsWritten);
+        var result = idSpan.TryFormat(destination, out var charsWritten);
 
         result.Should().BeTrue();
         charsWritten.Should().Be(0);
@@ -142,9 +142,9 @@ public sealed class ProjectionIdTests
     {
         Span<char> destination = stackalloc char[8];
 
-        var IdSpan = new ProjectionId(new ProjectorId("some-proj@10"), new IdSpan("1562"));
+        var idSpan = new ProjectionId(new ProjectorId("some-proj@10"), new IdSpan("1562"));
 
-        var result = IdSpan.TryFormat(destination, out var charsWritten);
+        var result = idSpan.TryFormat(destination, out var charsWritten);
 
         result.Should().BeFalse();
         charsWritten.Should().Be(0);
@@ -153,16 +153,16 @@ public sealed class ProjectionIdTests
     [Fact]
     public void ProjectionId_ISpanFormattable_TryFormat()
     {
-        const string IdSpanText = "some-proj@10/1562";
+        const string idSpanText = "some-proj@10/1562";
         Span<char> destination = stackalloc char[64];
 
-        var IdSpan = new ProjectionId(new ProjectorId("some-proj@10"), new IdSpan("1562"));
+        var idSpan = new ProjectionId(new ProjectorId("some-proj@10"), new IdSpan("1562"));
 
-        var result = IdSpan.TryFormat(destination, out var charsWritten);
+        var result = idSpan.TryFormat(destination, out var charsWritten);
 
         result.Should().BeTrue();
-        charsWritten.Should().Be(IdSpanText.Length);
-        destination[..charsWritten].SequenceEqual(IdSpanText).Should().BeTrue();
+        charsWritten.Should().Be(idSpanText.Length);
+        destination[..charsWritten].SequenceEqual(idSpanText).Should().BeTrue();
     }
 
     [Theory]
@@ -173,9 +173,9 @@ public sealed class ProjectionIdTests
     {
         Span<char> destination = stackalloc char[64];
 
-        var IdSpan = new ProjectionId(new ProjectorId("some-proj@10"), new IdSpan("1562"));
+        var idSpan = new ProjectionId(new ProjectorId("some-proj@10"), new IdSpan("1562"));
 
-        var result = IdSpan.TryFormat(destination, out var charsWritten, format, formatProvider);
+        var result = idSpan.TryFormat(destination, out var charsWritten, format, formatProvider);
 
         result.Should().BeTrue();
         charsWritten.Should().Be(expectedString.Length);
@@ -188,16 +188,16 @@ public sealed class ProjectionIdTests
     [InlineData("AnyFormat")]
     public void ProjectionId_ISpanFormattable_TryFormat_Return_True_With_Format_Return_True(string? format)
     {
-        const string IdSpanText = "some-proj@10/1562";
+        const string idSpanText = "some-proj@10/1562";
         Span<char> destination = stackalloc char[64];
 
-        var IdSpan = new ProjectionId(new ProjectorId("some-proj@10"), new IdSpan("1562"));
+        var idSpan = new ProjectionId(new ProjectorId("some-proj@10"), new IdSpan("1562"));
 
-        var result = IdSpan.TryFormat(destination, out var charsWritten, format: format, provider: null);
+        var result = idSpan.TryFormat(destination, out var charsWritten, format: format, provider: null);
 
         result.Should().BeTrue();
-        charsWritten.Should().Be(IdSpanText.Length);
-        destination[..charsWritten].SequenceEqual(IdSpanText).Should().BeTrue();
+        charsWritten.Should().Be(idSpanText.Length);
+        destination[..charsWritten].SequenceEqual(idSpanText).Should().BeTrue();
     }
 
     [Theory]
@@ -208,9 +208,9 @@ public sealed class ProjectionIdTests
     {
         Span<char> destination = stackalloc char[8];
 
-        var IdSpan = new ProjectionId(new ProjectorId("some-proj@10"), new IdSpan("1562"));
+        var idSpan = new ProjectionId(new ProjectorId("some-proj@10"), new IdSpan("1562"));
 
-        var result = IdSpan.TryFormat(destination, out var charsWritten, format: format, provider: formatProvider);
+        var result = idSpan.TryFormat(destination, out var charsWritten, format: format, provider: formatProvider);
 
         result.Should().BeFalse();
         charsWritten.Should().Be(0);
@@ -225,9 +225,9 @@ public sealed class ProjectionIdTests
         Span<byte> utf8Destination = stackalloc byte[128];
         var expectedBytes = Encoding.UTF8.GetBytes(expectedString);
 
-        var IdSpan = new ProjectionId(new ProjectorId("some-proj@10"), new IdSpan("1562"));
+        var idSpan = new ProjectionId(new ProjectorId("some-proj@10"), new IdSpan("1562"));
 
-        var result = IdSpan.TryFormat(utf8Destination, out var bytesWritten, format, formatProvider);
+        var result = idSpan.TryFormat(utf8Destination, out var bytesWritten, format, formatProvider);
 
         result.Should().BeTrue();
         bytesWritten.Should().Be(expectedBytes.Length);
@@ -241,9 +241,9 @@ public sealed class ProjectionIdTests
     {
         Span<byte> utf8Destination = stackalloc byte[destinationCharsCount];
 
-        ProjectionId IdSpan = default;
+        ProjectionId idSpan = default;
 
-        var result = IdSpan.TryFormat(utf8Destination, out var bytesWritten);
+        var result = idSpan.TryFormat(utf8Destination, out var bytesWritten);
 
         result.Should().BeTrue();
         bytesWritten.Should().Be(0);
@@ -254,9 +254,9 @@ public sealed class ProjectionIdTests
     {
         Span<byte> utf8Destination = stackalloc byte[8];
 
-        var IdSpan = new ProjectionId(new ProjectorId("some-proj@10"), new IdSpan("1562"));
+        var idSpan = new ProjectionId(new ProjectorId("some-proj@10"), new IdSpan("1562"));
 
-        var result = IdSpan.TryFormat(utf8Destination, out var bytesWritten);
+        var result = idSpan.TryFormat(utf8Destination, out var bytesWritten);
 
         result.Should().BeFalse();
         bytesWritten.Should().Be(0);
@@ -265,16 +265,16 @@ public sealed class ProjectionIdTests
     [Fact]
     public void ProjectionId_IUtf8SpanFormattable_TryFormat()
     {
-        var IdSpanBytes = Encoding.UTF8.GetBytes("some-proj@10/1562");
+        var idSpanBytes = Encoding.UTF8.GetBytes("some-proj@10/1562");
         Span<byte> utf8Destination = stackalloc byte[64];
 
-        var IdSpan = new ProjectionId(new ProjectorId("some-proj@10"), new IdSpan("1562"));
+        var idSpan = new ProjectionId(new ProjectorId("some-proj@10"), new IdSpan("1562"));
 
-        var result = IdSpan.TryFormat(utf8Destination, out var bytesWritten);
+        var result = idSpan.TryFormat(utf8Destination, out var bytesWritten);
 
         result.Should().BeTrue();
-        bytesWritten.Should().Be(IdSpanBytes.AsSpan().Length);
-        utf8Destination[..bytesWritten].SequenceEqual(IdSpanBytes.AsSpan()).Should().BeTrue();
+        bytesWritten.Should().Be(idSpanBytes.AsSpan().Length);
+        utf8Destination[..bytesWritten].SequenceEqual(idSpanBytes.AsSpan()).Should().BeTrue();
     }
 
     [Fact]

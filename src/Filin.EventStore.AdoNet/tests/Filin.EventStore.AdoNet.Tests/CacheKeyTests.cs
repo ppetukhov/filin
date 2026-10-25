@@ -104,14 +104,14 @@ public class CacheKeyTests
         var dcbEvent = new DcbEvent { EventType = "Ev", Tags = Tags.Create([new Tag("T")]), Payload = new object() };
 
         var queryItems = new List<DcbQueryItem>();
-        for (int i = 0; i < 7; i++)
+        for (var i = 0; i < 7; i++)
         {
             queryItems.Add(new DcbQueryItem(
                 new EventTypes(["E"]),
                 Tags.Create([new Tag($"UniqueTag{i}")])
             ));
         }
-        DcbQuery oversizedQuery = DcbQuery.Create(queryItems.ToArray());
+        var oversizedQuery = DcbQuery.Create(queryItems.ToArray());
 
         // Act
         var success = CacheKey.TryCreate(dcbEvent, oversizedQuery, out var key);
@@ -129,8 +129,8 @@ public class CacheKeyTests
         var queryItem = new DcbQueryItem(new EventTypes(["E"]), Tags.Create([new Tag("A")]));
         DcbQuery query = [queryItem];
 
-        CacheKey.TryCreate(dcbEvent, query, out var key1);
-        CacheKey.TryCreate(dcbEvent, query, out var key2);
+        _ = CacheKey.TryCreate(dcbEvent, query, out var key1);
+        _ = CacheKey.TryCreate(dcbEvent, query, out var key2);
 
         // Act & Assert
         Assert.True(key1.Equals(key2));
@@ -149,8 +149,8 @@ public class CacheKeyTests
         var queryItem = new DcbQueryItem(new EventTypes(["E"]), Tags.Create([new Tag("A")]));
         DcbQuery query = [queryItem];
 
-        CacheKey.TryCreate(dcbEvent1, query, out var key1);
-        CacheKey.TryCreate(dcbEvent2, query, out var key2);
+        _ = CacheKey.TryCreate(dcbEvent1, query, out var key1);
+        _ = CacheKey.TryCreate(dcbEvent2, query, out var key2);
 
         // Act & Assert
         Assert.False(key1.Equals(key2));
@@ -165,7 +165,7 @@ public class CacheKeyTests
         // Arrange
         var queryItem = new DcbQueryItem(new EventTypes(["E"]), Tags.Create([new Tag("A")]));
         DcbQuery query = [queryItem];
-        CacheKey.TryCreate(query, out var key);
+        _ = CacheKey.TryCreate(query, out var key);
 
         object identicalBoxed = key;
         object differentBoxed = default(CacheKey);

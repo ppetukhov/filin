@@ -10,7 +10,7 @@ namespace Filin.EventStore.AdoNet.Tests;
 
 public class StreamAsyncEnumeratorTests
 {
-    private static DcbEventSequenced CreateEvent(ulong position, string eventType = "TestEvent")
+    static DcbEventSequenced CreateEvent(ulong position, string eventType = "TestEvent")
     {
         return new DcbEventSequenced(
             new EventPosition(position),
@@ -32,7 +32,7 @@ public class StreamAsyncEnumeratorTests
         var evt1 = CreateEvent(11);
         var evt2 = CreateEvent(12);
 
-        var storeEnumerator = new TestAsyncEnumerator([evt1, evt2]);
+        await using var storeEnumerator = new TestAsyncEnumerator([evt1, evt2]);
         var query = default(DcbQuery);
 
         await using var enumerator = new EventStore.StreamAsyncEnumerator(
@@ -163,14 +163,14 @@ public class StreamAsyncEnumeratorTests
         // Arrange
         var channel = Channel.CreateUnbounded<DcbEventSequenced>();
         var initialEvent = CreateEvent(10);
-        var storeEnumerator = new TestAsyncEnumerator([]);
+        await using var storeEnumerator = new TestAsyncEnumerator([]);
 
-        var onDisposeCalledCount = 0;
-        Func<EventStore.StreamAsyncEnumerator, ValueTask> onDispose = _ =>
+        var onDisposeCalledCount = 0L;
+        ValueTask OnDispose(EventStore.StreamAsyncEnumerator e)
         {
-            Interlocked.Increment(ref onDisposeCalledCount);
+            _ = Interlocked.Increment(ref onDisposeCalledCount);
             return ValueTask.CompletedTask;
-        };
+        }
 
         var enumerator = new EventStore.StreamAsyncEnumerator(
             channel,
@@ -178,7 +178,7 @@ public class StreamAsyncEnumeratorTests
             initialEvent,
             NullLogger.Instance,
             storeEnumerator,
-            onDispose,
+OnDispose,
             CancellationToken.None
         );
 
@@ -197,7 +197,7 @@ public class StreamAsyncEnumeratorTests
         Assert.Equal(1, onDisposeCalledCount);
 
         // Assert 3
-        await Assert.ThrowsAsync<ObjectDisposedException>(async () => await enumerator.MoveNextAsync());
+        _ = await Assert.ThrowsAsync<ObjectDisposedException>(async () => await enumerator.MoveNextAsync());
     }
 
     [Fact]
@@ -208,7 +208,7 @@ public class StreamAsyncEnumeratorTests
         var channel = Channel.CreateUnbounded<DcbEventSequenced>();
         var initialEvent = CreateEvent(10);
 
-        var enumerator = new EventStore.StreamAsyncEnumerator(
+        await using var enumerator = new EventStore.StreamAsyncEnumerator(
             channel,
             default,
             initialEvent,
@@ -218,7 +218,7 @@ public class StreamAsyncEnumeratorTests
             cts.Token
         );
 
-        cts.Cancel();
+        await cts.CancelAsync();
 
         // Act
         var result = await enumerator.MoveNextAsync();

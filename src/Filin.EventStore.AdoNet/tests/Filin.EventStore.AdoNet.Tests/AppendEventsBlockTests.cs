@@ -13,12 +13,12 @@ using Xunit;
 
 namespace Filin.EventStore.AdoNet.Tests;
 
-public class AppendEventsBlockTests : IDisposable
+public sealed class AppendEventsBlockTests : IDisposable
 {
-    private readonly AppendBlockTestDbCommandFactory _commandFactory;
-    private readonly IOptions<EventStoreAdoNetOptions> _options;
-    private readonly AppendEventsBlock _block;
-    private readonly BufferBlock<AppendEventsResponse> _outputBuffer;
+    readonly AppendBlockTestDbCommandFactory _commandFactory;
+    readonly IOptions<EventStoreAdoNetOptions> _options;
+    readonly AppendEventsBlock _block;
+    readonly BufferBlock<AppendEventsResponse> _outputBuffer;
 
     public AppendEventsBlockTests()
     {
@@ -36,7 +36,7 @@ public class AppendEventsBlockTests : IDisposable
         _block = new AppendEventsBlock(_commandFactory, _options, NullLoggerFactory.Instance);
 
         _outputBuffer = new BufferBlock<AppendEventsResponse>();
-        ((ISourceBlock<AppendEventsResponse>)_block).LinkTo(_outputBuffer, new DataflowLinkOptions { PropagateCompletion = true });
+        _ = ((ISourceBlock<AppendEventsResponse>)_block).LinkTo(_outputBuffer, new DataflowLinkOptions { PropagateCompletion = true });
     }
 
     [Fact]
@@ -56,7 +56,7 @@ public class AppendEventsBlockTests : IDisposable
         var request = new AppendEventRequest(@event, default, context);
 
         // Act
-        var posted = ((ITargetBlock<AppendEventRequest>)_block).Post(request);
+        var posted = _block.Post(request);
         Assert.True(posted);
 
         var response = await _outputBuffer.ReceiveAsync(TimeSpan.FromSeconds(5));
@@ -88,7 +88,7 @@ public class AppendEventsBlockTests : IDisposable
         var request = new AppendEventRequest(@event, default, context);
 
         // Act
-        ((ITargetBlock<AppendEventRequest>)_block).Post(request);
+        _ = _block.Post(request);
         var response = await _outputBuffer.ReceiveAsync(TimeSpan.FromSeconds(5));
 
         // Assert
@@ -111,15 +111,15 @@ public class AppendEventsBlockTests : IDisposable
 
         var events = new List<DcbEvent>
         {
-            new DcbEvent { EventType = new EventType("Item1"), Payload = "p1" },
-            new DcbEvent { EventType = new EventType("Item2"), Payload = "p2" }
+            new() { EventType = new EventType("Item1"), Payload = "p1" },
+            new() { EventType = new EventType("Item2"), Payload = "p2" }
         };
 
         var context = new AppendBlockTestContext();
         var request = new AppendEventsRequest(events, default, context);
 
         // Act
-        var posted = ((ITargetBlock<AppendEventsRequest>)_block).Post(request);
+        var posted = _block.Post(request);
         Assert.True(posted);
 
         var response = await _outputBuffer.ReceiveAsync(TimeSpan.FromSeconds(5));
@@ -142,20 +142,20 @@ public class AppendEventsBlockTests : IDisposable
 
         var events = new List<DcbEvent>
         {
-            new DcbEvent { EventType = new EventType("Evt1"), Payload = "p1" },
-            new DcbEvent { EventType = new EventType("Evt2"), Payload = "p2" }
+            new() { EventType = new EventType("Evt1"), Payload = "p1" },
+            new() { EventType = new EventType("Evt2"), Payload = "p2" }
         };
 
         var context = new AppendBlockTestContext();
         var request = new AppendEventsRequest(events, default, context);
 
         // Act
-        ((ITargetBlock<AppendEventsRequest>)_block).Post(request);
+        _ = _block.Post(request);
         var response = await _outputBuffer.ReceiveAsync(TimeSpan.FromSeconds(5));
 
         // Assert
         Assert.NotNull(context.Exception);
-        Assert.IsType<EventStoreException>(context.Exception);
+        _ = Assert.IsType<EventStoreException>(context.Exception);
         Assert.Equal("Unexpected rows count", context.Exception.Message);
         Assert.True(response.Result.IsConflict || response.Result.Count == 0);
     }
@@ -165,7 +165,7 @@ public class AppendEventsBlockTests : IDisposable
     {
         // Arrange
         using var cts = new CancellationTokenSource();
-        cts.Cancel();
+        await cts.CancelAsync();
 
         _commandFactory.CommandToReturn.ExceptionToThrow = new OperationCanceledException(cts.Token);
 
@@ -174,7 +174,7 @@ public class AppendEventsBlockTests : IDisposable
         var request = new AppendEventRequest(@event, default, context);
 
         // Act
-        ((ITargetBlock<AppendEventRequest>)_block).Post(request);
+        _ = _block.Post(request);
         var response = await _outputBuffer.ReceiveAsync(TimeSpan.FromSeconds(5));
 
         // Assert
@@ -194,7 +194,7 @@ public class AppendEventsBlockTests : IDisposable
         var request = new AppendEventRequest(@event, default, context);
 
         // Act
-        ((ITargetBlock<AppendEventRequest>)_block).Post(request);
+        _ = _block.Post(request);
         var response = await _outputBuffer.ReceiveAsync(TimeSpan.FromSeconds(5));
 
         // Assert
@@ -203,8 +203,5 @@ public class AppendEventsBlockTests : IDisposable
         Assert.Equal(AppendResult.Empty, response.Result);
     }
 
-    public void Dispose()
-    {
-        _block.Dispose();
-    }
+    public void Dispose() => _block.Dispose();
 }

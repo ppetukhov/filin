@@ -1,14 +1,9 @@
 namespace Filin.EventStore.AdoNet.Tests.Internal;
 
-public class TestAsyncEnumerator : IAsyncEnumerator<DcbEventSequenced>
+sealed class TestAsyncEnumerator(IEnumerable<DcbEventSequenced> items) : IAsyncEnumerator<DcbEventSequenced>
 {
-    private readonly Queue<DcbEventSequenced> _items;
+    readonly Queue<DcbEventSequenced> _items = new(items);
     public bool IsDisposed { get; private set; }
-
-    public TestAsyncEnumerator(IEnumerable<DcbEventSequenced> items)
-    {
-        _items = new Queue<DcbEventSequenced>(items);
-    }
 
     public DcbEventSequenced Current { get; private set; }
 

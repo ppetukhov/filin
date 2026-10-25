@@ -155,16 +155,16 @@ public sealed class EventTypeTests
     [Fact]
     public void EventType_ISpanFormattable_TryFormat()
     {
-        const string IdentityText = "Some text for event type";
+        const string identityText = "Some text for event type";
         Span<char> destination = stackalloc char[64];
 
-        var identity = new EventType(IdentityText);
+        var identity = new EventType(identityText);
 
         var result = identity.TryFormat(destination, out var charsWritten);
 
         result.Should().BeTrue();
-        charsWritten.Should().Be(IdentityText.Length);
-        destination[..charsWritten].SequenceEqual(IdentityText).Should().BeTrue();
+        charsWritten.Should().Be(identityText.Length);
+        destination[..charsWritten].SequenceEqual(identityText).Should().BeTrue();
     }
 
     [Theory]
@@ -190,16 +190,16 @@ public sealed class EventTypeTests
     [InlineData("AnyFormat")]
     public void EventType_ISpanFormattable_TryFormat_Return_True_With_Format_Return_True(string? format)
     {
-        const string IdentityText = "Some text for event type";
+        const string identityText = "Some text for event type";
         Span<char> destination = stackalloc char[64];
 
-        var identity = new EventType(IdentityText);
+        var identity = new EventType(identityText);
 
         var result = identity.TryFormat(destination, out var charsWritten, format: format, provider: null);
 
         result.Should().BeTrue();
-        charsWritten.Should().Be(IdentityText.Length);
-        destination[..charsWritten].SequenceEqual(IdentityText).Should().BeTrue();
+        charsWritten.Should().Be(identityText.Length);
+        destination[..charsWritten].SequenceEqual(identityText).Should().BeTrue();
     }
 
     [Theory]

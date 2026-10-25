@@ -4,6 +4,8 @@ using Xunit;
 
 namespace Filin.EventStore.AdoNet.Tests;
 
+#pragma warning disable CA2000 // Dispose objects before losing scope
+
 public class ValueStringBuilderTests
 {
     [Fact]
@@ -59,7 +61,7 @@ public class ValueStringBuilderTests
         var sb = new ValueStringBuilder(buffer);
 
         // Act
-        sb.Append((string?)null);
+        sb.Append(null);
 
         // Assert
         Assert.Equal(0, sb.Length);
@@ -101,7 +103,7 @@ public class ValueStringBuilderTests
         // Arrange
         Span<char> buffer = stackalloc char[2];
         var sb = new ValueStringBuilder(buffer);
-        ReadOnlySpan<char> text = "TestSpan".AsSpan();
+        var text = "TestSpan".AsSpan();
 
         // Act
         sb.Append(text);
@@ -120,7 +122,7 @@ public class ValueStringBuilderTests
         sb.Append("Data");
 
         // Act
-        ReadOnlySpan<char> span = sb.AsSpan();
+        var span = sb.AsSpan();
 
         // Assert
         Assert.Equal(4, span.Length);
@@ -184,7 +186,9 @@ public class ValueStringBuilderTests
 
         // Act
         sb.Append(string.Empty);
+#pragma warning disable IDE0301 // Simplify collection initialization
         sb.Append(ReadOnlySpan<char>.Empty);
+#pragma warning restore IDE0301 // Simplify collection initialization
 
         // Assert
         Assert.Equal(1, sb.Length);
@@ -197,7 +201,7 @@ public class ValueStringBuilderTests
         // Arrange
         Span<char> buffer = stackalloc char[1];
         var sb = new ValueStringBuilder(buffer);
-        string longStr = new string('X', 1000);
+        var longStr = new string('X', 1000);
 
         // Act
         sb.Append(longStr);
@@ -246,7 +250,7 @@ public class ValueStringBuilderTests
         Span<char> buffer = stackalloc char[4];
         var sb = new ValueStringBuilder(buffer);
 
-        bool asserted = false;
+        var asserted = false;
         try
         {
             sb.Length = -1;
@@ -265,7 +269,7 @@ public class ValueStringBuilderTests
         Span<char> buffer = stackalloc char[4];
         var sb = new ValueStringBuilder(buffer);
 
-        bool asserted = false;
+        var asserted = false;
         try
         {
             sb.Length = 5;
@@ -278,3 +282,5 @@ public class ValueStringBuilderTests
         Assert.True(asserted);
     }
 }
+
+#pragma warning restore CA2000 // Dispose objects before losing scope

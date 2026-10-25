@@ -4,7 +4,7 @@ using Filin.Storage.DataFlow;
 
 namespace Filin.EventStore.AdoNet.Tests.Internal;
 
-public class AppendBlockTestContext : IContext
+sealed class AppendBlockTestContext : IContext
 {
     public TaskCompletionSource<AppendResult> Tcs { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
     public CancellationToken CancellationToken { get; set; } = CancellationToken.None;

@@ -225,7 +225,7 @@ public class DcbQueryTests
         var extraItem = new DcbQueryItem(new EventTypes(new EventType("Updated")), sharedTags);
 
         // Act: Appending single item via Fluent Or method
-        DcbQuery result = query.Or(extraItem);
+        var result = query.Or(extraItem);
 
         // Assert: They must merge because tags are identical
         result.Count.Should().Be(1, "the extra item shared tags with the initial query structure and must be merged");
@@ -251,7 +251,7 @@ public class DcbQueryTests
         ];
 
         // Act: Merging two queries
-        DcbQuery result = query1.Or(query2);
+        var result = query1.Or(query2);
 
         // Assert: Inside result, 'tagsB' should collapse into 1 item, 'tagsA' stays independent -> Count 2
         result.Count.Should().Be(2, "overlapping tag sectors from both queries must collapse cleanly");

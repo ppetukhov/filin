@@ -1,7 +1,7 @@
-using Filin.Abstractions.Tests;
 using Filin.Abstractions.Tests.Configuration;
+using Filin.Configuration;
 
-namespace Filin.Abstractions.EventTypeTests;
+namespace Filin.Abstractions.Tests;
 
 [EventType("SomeEvent")]
 sealed record SomeEvent { }
@@ -69,7 +69,7 @@ public sealed class EventTypeAttributeTests
     [Fact]
     public void MetadataEventTypes_Configure_EventTypes()
     {
-        var options = new Configuration.TypeManifestOptions();
+        var options = new TypeManifestOptions();
         var provider = new FilinAbstractionsTestsEventTypesTypeManifestProvider();
 
         provider.Configure(options);

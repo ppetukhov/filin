@@ -8,11 +8,11 @@ using Xunit;
 
 namespace Filin.EventStore.AdoNet.Tests;
 
-public class PgDbCommandFactoryTests
+public sealed class PgDbCommandFactoryTests : IDisposable
 {
-    private readonly TestDbDataSource _dataSource;
-    private readonly TestStorageSerializer _serializer;
-    private readonly PgDbCommandFactory _factory;
+    readonly TestDbDataSource _dataSource;
+    readonly TestStorageSerializer _serializer;
+    readonly PgDbCommandFactory _factory;
 
     public PgDbCommandFactoryTests()
     {
@@ -46,11 +46,11 @@ public class PgDbCommandFactoryTests
         // Act
         var command = _factory.CreateAppendEventCommand(@event, condition);
 
-        // Assert: 1. Точная проверка всего текста SQL-запроса
+        // Assert: 1
         Assert.NotNull(command);
         Assert.Equal(expectedSql, command.CommandText);
 
-        // Assert: 2. Проверка всех параметров
+        // Assert: 2
         var parameters = command.Parameters.Cast<DbParameter>().ToList();
         Assert.Equal(6, parameters.Count);
         Assert.Equal(100L, parameters[0].Value);
@@ -107,8 +107,7 @@ public class PgDbCommandFactoryTests
         var eventType = new EventType("OrderPlaced");
         var events = new List<DcbEvent>
         {
-            new DcbEvent
-            {
+            new() {
                 EventType = eventType,
                 Tags = default,
                 Payload = new { OrderId = 1 }
@@ -142,8 +141,8 @@ public class PgDbCommandFactoryTests
         var ev2Type = new EventType("Event2");
         var events = new List<DcbEvent>
         {
-            new DcbEvent { EventType = ev1Type, Payload = "p1" },
-            new DcbEvent { EventType = ev2Type, Payload = "p2" }
+            new() { EventType = ev1Type, Payload = "p1" },
+            new() { EventType = ev2Type, Payload = "p2" }
         };
 
         var condition = new AppendCondition(default, new EventPosition(0));
@@ -187,7 +186,7 @@ public class PgDbCommandFactoryTests
         var afterPosition = new EventPosition(500);
         var eventType = new EventType("ItemAdded");
         var query = new DcbQuery(new DcbQueryItem(eventType));
-        int limit = 100;
+        var limit = 100;
 
         const string expectedSql = "SELECT * from dcb_read_events($1,VARIADIC array[(array[$2],array[$3],array[]::bigint[],array[]::text[])]::dcb_query_item[]) LIMIT $4;";
 
@@ -217,7 +216,7 @@ public class PgDbCommandFactoryTests
         var tag = new Tag("tenant:sales");
         var tags = new Tags(tag);
         var query = new DcbQuery(new DcbQueryItem([eventType], tags));
-        int limit = 25;
+        var limit = 25;
 
         const string expectedSql = "SELECT * from dcb_read_events($1,VARIADIC array[(array[$2],array[$3],array[$4],array[$5])]::dcb_query_item[]) LIMIT $6;";
 
@@ -246,7 +245,7 @@ public class PgDbCommandFactoryTests
         // Arrange
         var afterPosition = new EventPosition(0);
         var query = default(DcbQuery);
-        int limit = 50;
+        var limit = 50;
 
         const string expectedSql = "SELECT * from dcb_read_events($1,) LIMIT $2;";
 
@@ -269,15 +268,17 @@ public class PgDbCommandFactoryTests
 
     #region Helpers
 
-    private static Tags CreateLargeTagsCollection(int count)
+    static Tags CreateLargeTagsCollection(int count)
     {
         var tagList = new Tag[count];
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
             tagList[i] = new Tag($"tag_{i}");
         }
         return new Tags(tagList);
     }
+
+    public void Dispose() => _dataSource.Dispose();
 
     #endregion
 }

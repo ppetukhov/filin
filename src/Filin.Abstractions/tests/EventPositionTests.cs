@@ -134,7 +134,7 @@ public sealed class EventPositionTests
     [Fact]
     public void EventPosition_ISpanFormattable_TryFormat()
     {
-        const string IdentityText = "1000000";
+        const string identityText = "1000000";
         Span<char> destination = stackalloc char[64];
 
         var position = new EventPosition(1000000L);
@@ -142,8 +142,8 @@ public sealed class EventPositionTests
         var result = position.TryFormat(destination, out var charsWritten);
 
         result.Should().BeTrue();
-        charsWritten.Should().Be(IdentityText.Length);
-        destination[..charsWritten].SequenceEqual(IdentityText).Should().BeTrue();
+        charsWritten.Should().Be(identityText.Length);
+        destination[..charsWritten].SequenceEqual(identityText).Should().BeTrue();
     }
 
     [Theory]

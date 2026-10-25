@@ -424,8 +424,26 @@ dotnet_diagnostic.IDE0130.severity = none
 dotnet_diagnostic.CA1034.severity = suggestion
 
 [**/tests/**.cs]
+# CA1062: In externally visible method 'Member' is non-null before using it. If appropriate, throw an 'ArgumentNullException' when the argument is 'null'.
+dotnet_diagnostic.CA1062.severity = none
+# CA1812: X is an internal class that is apparently never instantiated
+dotnet_diagnostic.CA1812.severity = none
 # CS1591: Missing XML comment for publicly visible type or member
 dotnet_diagnostic.CS1591.severity = none
+# CA2007: Consider calling ConfigureAwait on the awaited task
+dotnet_diagnostic.CA2007.severity = none
+# CA1707: Remove the underscores from member name 
+dotnet_diagnostic.CA1707.severity = none
+# IDE0022: Use expression body for method
+dotnet_diagnostic.IDE0022.severity = suggestion
+# IDE0058: Expression value is never used
+dotnet_diagnostic.IDE0058.severity = none
+# CA1031: Modify 'Member' to catch a more specific allowed exception type, or rethrow the exception
+dotnet_diagnostic.CA1031.severity = none
+# FAA0001: Use .Should().StartWith()
+dotnet_diagnostic.FAA0001.severity = none
+# FAA0002: Use FluentAssertions equivalent
+dotnet_diagnostic.FAA0002.severity = none
 
 [playground/**.cs]
 # IDE0046: Convert to conditional expression

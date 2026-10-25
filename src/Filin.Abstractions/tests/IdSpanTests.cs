@@ -101,10 +101,10 @@ public sealed class IdSpanTests
     [InlineData("test-value", "test-value")]
     public void IdSpan_Equals_Return_True(string? valueX, string? valueY)
     {
-        var IdSpanX = new IdSpan(valueX!);
-        var IdSpanY = new IdSpan(valueY!);
+        var idSpanX = new IdSpan(valueX!);
+        var idSpanY = new IdSpan(valueY!);
 
-        var result = IdSpanX.Equals(IdSpanY);
+        var result = idSpanX.Equals(idSpanY);
 
         result.Should().BeTrue();
     }
@@ -118,10 +118,10 @@ public sealed class IdSpanTests
     [InlineData("test-value", "any-value")]
     public void IdSpan_Equals_Return_False(string? valueX, string? valueY)
     {
-        var IdSpanX = new IdSpan(valueX!);
-        var IdSpanY = new IdSpan(valueY!);
+        var idSpanX = new IdSpan(valueX!);
+        var idSpanY = new IdSpan(valueY!);
 
-        var result = IdSpanX.Equals(IdSpanY);
+        var result = idSpanX.Equals(idSpanY);
 
         result.Should().BeFalse();
     }
@@ -133,11 +133,11 @@ public sealed class IdSpanTests
     public void IdSpan_Equals_Ignore_Hash(string? id)
     {
 #pragma warning disable CS0618 // Type or member is obsolete
-        var IdSpanX = IdSpan.UnsafeCreate(id!, 111);
-        var IdSpanY = IdSpan.UnsafeCreate(id!, 333);
+        var idSpanX = IdSpan.UnsafeCreate(id!, 111);
+        var idSpanY = IdSpan.UnsafeCreate(id!, 333);
 #pragma warning restore CS0618 // Type or member is obsolete
 
-        var result = IdSpanX.Equals(IdSpanY);
+        var result = idSpanX.Equals(idSpanY);
 
         result.Should().BeTrue();
     }
@@ -152,10 +152,10 @@ public sealed class IdSpanTests
     [InlineData(97, "abca", "abc")]
     public void IdSpan_CompareTo(int expectedValue, string? valueX, string? valueY)
     {
-        var IdSpanX = new IdSpan(valueX!);
-        var IdSpanY = new IdSpan(valueY!);
+        var idSpanX = new IdSpan(valueX!);
+        var idSpanY = new IdSpan(valueY!);
 
-        var result = IdSpanX.CompareTo(IdSpanY);
+        var result = idSpanX.CompareTo(idSpanY);
 
         result.Should().Be(expectedValue);
     }
@@ -163,9 +163,9 @@ public sealed class IdSpanTests
     [Fact]
     public void IdSpan_ToString_Return_Null_When_IsDefault()
     {
-        var IdSpan = (IdSpan)default;
+        var idSpan = (IdSpan)default;
 
-        IdSpan.ToString().Should().BeNull(because: "IdSpan is default");
+        idSpan.ToString().Should().BeNull(because: "idSpan is default");
     }
 
     [Fact]
@@ -173,10 +173,10 @@ public sealed class IdSpanTests
     {
         var expectedString = "Some text";
 
-        var IdSpan = new IdSpan(expectedString);
+        var idSpan = new IdSpan(expectedString);
 
-        IdSpan.ToString().Should().Be(expectedString);
-        IdSpan.Value.Should().BeSameAs(expectedString);
+        idSpan.ToString().Should().Be(expectedString);
+        idSpan.Value.Should().BeSameAs(expectedString);
     }
 
     [Theory]
@@ -185,9 +185,9 @@ public sealed class IdSpanTests
 #pragma warning restore xUnit1045 // Avoid using TheoryData type arguments that might not be serializable
     public void IdSpan_ToString_With_FormatProvider(string? format, IFormatProvider formatProvider, string expectedString)
     {
-        var IdSpan = new IdSpan("Some text");
+        var idSpan = new IdSpan("Some text");
 
-        IdSpan.ToString(format: format, formatProvider: formatProvider).Should().Be(expectedString);
+        idSpan.ToString(format: format, formatProvider: formatProvider).Should().Be(expectedString);
     }
 
     [Theory]
@@ -196,9 +196,9 @@ public sealed class IdSpanTests
     [InlineData("AnyFomat")]
     public void IdSpan_ToString_With_Format_Return_EmptyString_When_IdSpan_IsDefault(string? format)
     {
-        IdSpan IdSpan = default;
+        IdSpan idSpan = default;
 
-        IdSpan.ToString(format: format, formatProvider: null).Should().BeEmpty();
+        idSpan.ToString(format: format, formatProvider: null).Should().BeEmpty();
     }
 
     [Theory]
@@ -208,9 +208,9 @@ public sealed class IdSpanTests
     {
         Span<char> destination = stackalloc char[destinationCharsCount];
 
-        IdSpan IdSpan = default;
+        IdSpan idSpan = default;
 
-        var result = IdSpan.TryFormat(destination, out var charsWritten);
+        var result = idSpan.TryFormat(destination, out var charsWritten);
 
         result.Should().BeTrue();
         charsWritten.Should().Be(0);
@@ -221,9 +221,9 @@ public sealed class IdSpanTests
     {
         Span<char> destination = stackalloc char[8];
 
-        var IdSpan = new IdSpan("Some text IdSpan");
+        var idSpan = new IdSpan("Some text IdSpan");
 
-        var result = IdSpan.TryFormat(destination, out var charsWritten);
+        var result = idSpan.TryFormat(destination, out var charsWritten);
 
         result.Should().BeFalse();
         charsWritten.Should().Be(0);
@@ -232,16 +232,16 @@ public sealed class IdSpanTests
     [Fact]
     public void IdSpan_ISpanFormattable_TryFormat()
     {
-        const string IdSpanText = "Some text IdSpan";
+        const string idSpanText = "Some text IdSpan";
         Span<char> destination = stackalloc char[64];
 
-        var IdSpan = new IdSpan(IdSpanText);
+        var idSpan = new IdSpan(idSpanText);
 
-        var result = IdSpan.TryFormat(destination, out var charsWritten);
+        var result = idSpan.TryFormat(destination, out var charsWritten);
 
         result.Should().BeTrue();
-        charsWritten.Should().Be(IdSpanText.Length);
-        destination[..charsWritten].SequenceEqual(IdSpanText).Should().BeTrue();
+        charsWritten.Should().Be(idSpanText.Length);
+        destination[..charsWritten].SequenceEqual(idSpanText).Should().BeTrue();
     }
 
     [Theory]
@@ -252,9 +252,9 @@ public sealed class IdSpanTests
     {
         Span<char> destination = stackalloc char[64];
 
-        var IdSpan = new IdSpan("Some text IdSpan");
+        var idSpan = new IdSpan("Some text IdSpan");
 
-        var result = IdSpan.TryFormat(destination, out var charsWritten, format, formatProvider);
+        var result = idSpan.TryFormat(destination, out var charsWritten, format, formatProvider);
 
         result.Should().BeTrue();
         charsWritten.Should().Be(expectedString.Length);
@@ -267,16 +267,16 @@ public sealed class IdSpanTests
     [InlineData("AnyFormat")]
     public void IdSpan_ISpanFormattable_TryFormat_Return_True_With_Format_Return_True(string? format)
     {
-        const string IdSpanText = "Some text IdSpan";
+        const string idSpanText = "Some text IdSpan";
         Span<char> destination = stackalloc char[64];
 
-        var IdSpan = new IdSpan(IdSpanText);
+        var idSpan = new IdSpan(idSpanText);
 
-        var result = IdSpan.TryFormat(destination, out var charsWritten, format: format, provider: null);
+        var result = idSpan.TryFormat(destination, out var charsWritten, format: format, provider: null);
 
         result.Should().BeTrue();
-        charsWritten.Should().Be(IdSpanText.Length);
-        destination[..charsWritten].SequenceEqual(IdSpanText).Should().BeTrue();
+        charsWritten.Should().Be(idSpanText.Length);
+        destination[..charsWritten].SequenceEqual(idSpanText).Should().BeTrue();
     }
 
     [Theory]
@@ -287,9 +287,9 @@ public sealed class IdSpanTests
     {
         Span<char> destination = stackalloc char[8];
 
-        var IdSpan = new IdSpan("Some text IdSpan");
+        var idSpan = new IdSpan("Some text IdSpan");
 
-        var result = IdSpan.TryFormat(destination, out var charsWritten, format: format, provider: formatProvider);
+        var result = idSpan.TryFormat(destination, out var charsWritten, format: format, provider: formatProvider);
 
         result.Should().BeFalse();
         charsWritten.Should().Be(0);
@@ -304,9 +304,9 @@ public sealed class IdSpanTests
         Span<byte> utf8Destination = stackalloc byte[128];
         var expectedBytes = Encoding.UTF8.GetBytes(expectedString);
 
-        var IdSpan = new IdSpan("Some text IdSpan");
+        var idSpan = new IdSpan("Some text IdSpan");
 
-        var result = IdSpan.TryFormat(utf8Destination, out var bytesWritten, format, formatProvider);
+        var result = idSpan.TryFormat(utf8Destination, out var bytesWritten, format, formatProvider);
 
         result.Should().BeTrue();
         bytesWritten.Should().Be(expectedBytes.Length);
@@ -320,9 +320,9 @@ public sealed class IdSpanTests
     {
         Span<byte> utf8Destination = stackalloc byte[destinationCharsCount];
 
-        IdSpan IdSpan = default;
+        IdSpan idSpan = default;
 
-        var result = IdSpan.TryFormat(utf8Destination, out var bytesWritten);
+        var result = idSpan.TryFormat(utf8Destination, out var bytesWritten);
 
         result.Should().BeTrue();
         bytesWritten.Should().Be(0);
@@ -333,9 +333,9 @@ public sealed class IdSpanTests
     {
         Span<byte> utf8Destination = stackalloc byte[8];
 
-        var IdSpan = new IdSpan("Some text IdSpan");
+        var idSpan = new IdSpan("Some text IdSpan");
 
-        var result = IdSpan.TryFormat(utf8Destination, out var bytesWritten);
+        var result = idSpan.TryFormat(utf8Destination, out var bytesWritten);
 
         result.Should().BeFalse();
         bytesWritten.Should().Be(0);
@@ -347,14 +347,14 @@ public sealed class IdSpanTests
         var expected = Encoding.UTF8.GetBytes("Some text IdSpan").AsSpan();
         Span<byte> utf8Destination = stackalloc byte[64];
 
-        var IdSpan = new IdSpan("Some text IdSpan");
+        var idSpan = new IdSpan("Some text IdSpan");
 
 
 
-        var result = IdSpan.TryFormat(utf8Destination, out var bytesWritten);
+        var result = idSpan.TryFormat(utf8Destination, out var bytesWritten);
 
         result.Should().BeTrue();
-        bytesWritten.Should().Be(IdSpan.AsSpan().Length);
+        bytesWritten.Should().Be(idSpan.AsSpan().Length);
         utf8Destination[..bytesWritten].SequenceEqual(expected).Should().BeTrue();
     }
 
@@ -371,7 +371,7 @@ public sealed class IdSpanTests
     /// <inheritdoc/>
     internal sealed class TestFormatProvider : IFormatProvider
     {
-        internal static readonly TestFormatProvider Instance = new TestFormatProvider();
+        internal static readonly TestFormatProvider Instance = new();
 
         /// <inheritdoc/>
         public object? GetFormat(Type? formatType) => formatType == typeof(ICustomFormatter) ? IdSpanCustomFormatter.Instance : null;
@@ -379,7 +379,7 @@ public sealed class IdSpanTests
         /// <inheritdoc/>
         sealed class IdSpanCustomFormatter : ICustomFormatter
         {
-            internal static readonly IdSpanCustomFormatter Instance = new IdSpanCustomFormatter();
+            internal static readonly IdSpanCustomFormatter Instance = new();
 
             /// <inheritdoc/>
             public string Format(string? format, object? arg, IFormatProvider? formatProvider) => TestFormat(format);

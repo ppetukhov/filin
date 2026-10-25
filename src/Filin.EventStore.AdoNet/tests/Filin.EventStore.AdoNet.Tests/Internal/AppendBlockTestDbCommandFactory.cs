@@ -5,22 +5,13 @@ using Filin.Storage;
 
 namespace Filin.EventStore.AdoNet.Tests.Internal;
 
-class AppendBlockTestDbCommandFactory : DbCommandFactory
+sealed class AppendBlockTestDbCommandFactory : DbCommandFactory
 {
     public AppendBlockTestDbCommand CommandToReturn { get; set; } = new();
 
-    internal override DbCommand CreateAppendEventCommand(DcbEvent @event, AppendCondition appendCondition)
-    {
-        return CommandToReturn;
-    }
+    internal override DbCommand CreateAppendEventCommand(DcbEvent @event, AppendCondition appendCondition) => CommandToReturn;
 
-    internal override DbCommand CreateAppendEventsCommand(IReadOnlyCollection<DcbEvent> events, AppendCondition appendCondition)
-    {
-        return CommandToReturn;
-    }
+    internal override DbCommand CreateAppendEventsCommand(IReadOnlyCollection<DcbEvent> events, AppendCondition appendCondition) => CommandToReturn;
 
-    internal override DbCommand CreateReadEventsCommand(EventPosition afterPosition, DcbQuery query, int limit)
-    {
-        return CommandToReturn;
-    }
+    internal override DbCommand CreateReadEventsCommand(EventPosition afterPosition, DcbQuery query, int limit) => CommandToReturn;
 }

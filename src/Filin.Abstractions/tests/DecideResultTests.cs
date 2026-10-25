@@ -32,7 +32,9 @@ public sealed class DecideResultTests
     [Fact]
     public void SubmissionEntry_Constructor_Throw_ArgumentNullExecption()
     {
-        Action action = () => new DecideResult(null!);
+#pragma warning disable CA1806 // Do not ignore method results
+        Action action = static () => new DecideResult(null!);
+#pragma warning restore CA1806 // Do not ignore method results
 
         action.Should().Throw<ArgumentNullException>().And.ParamName.Should().Be("@event");
     }

@@ -206,16 +206,16 @@ public sealed class ProjectorIdTests
     [Fact]
     public void ProjectorId_ISpanFormattable_TryFormat()
     {
-        const string IdentityText = "Some text identity";
+        const string identityText = "Some text identity";
         Span<char> destination = stackalloc char[64];
 
-        var identity = new ProjectorId(id: IdentityText);
+        var identity = new ProjectorId(id: identityText);
 
         var result = identity.TryFormat(destination, out var charsWritten);
 
         result.Should().BeTrue();
-        charsWritten.Should().Be(IdentityText.Length);
-        destination[..charsWritten].SequenceEqual(IdentityText).Should().BeTrue();
+        charsWritten.Should().Be(identityText.Length);
+        destination[..charsWritten].SequenceEqual(identityText).Should().BeTrue();
     }
 
     [Theory]
@@ -241,16 +241,16 @@ public sealed class ProjectorIdTests
     [InlineData("AnyFormat")]
     public void ProjectorId_ISpanFormattable_TryFormat_Return_True_With_Format_Return_True(string? format)
     {
-        const string IdentityText = "Some text identity";
+        const string identityText = "Some text identity";
         Span<char> destination = stackalloc char[64];
 
-        var identity = new ProjectorId(id: IdentityText);
+        var identity = new ProjectorId(id: identityText);
 
         var result = identity.TryFormat(destination, out var charsWritten, format: format, provider: null);
 
         result.Should().BeTrue();
-        charsWritten.Should().Be(IdentityText.Length);
-        destination[..charsWritten].SequenceEqual(IdentityText).Should().BeTrue();
+        charsWritten.Should().Be(identityText.Length);
+        destination[..charsWritten].SequenceEqual(identityText).Should().BeTrue();
     }
 
     [Theory]
