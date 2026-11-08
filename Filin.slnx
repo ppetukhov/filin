@@ -24,6 +24,7 @@
 	<File Path="global.json" />
     <File Path="LICENSE" />
     <File Path="nuget.config" />
+    <File Path="README.md" />
   </Folder>
   <Folder Name="/src/">
     <File Path="src/Directory.Build.props" />
