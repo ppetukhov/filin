@@ -260,7 +260,11 @@ public class ValueStringBuilderTests
             asserted = true;
         }
 
+#if DEBUG
         Assert.True(asserted);
+#else
+        Assert.False(asserted);
+#endif
     }
 
     [Fact]
@@ -279,7 +283,11 @@ public class ValueStringBuilderTests
             asserted = true;
         }
 
+#if DEBUG
         Assert.True(asserted);
+#else
+        Assert.False(asserted);
+#endif
     }
 }
 
