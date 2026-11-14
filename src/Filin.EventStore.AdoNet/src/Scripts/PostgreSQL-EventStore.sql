@@ -53,6 +53,12 @@ CREATE TABLE IF NOT EXISTS dcb_global_counter (
     current_position bigint NOT NULL                  -- Current absolute head sequence offset value
 );
 
+ALTER TABLE dcb_global_counter SET (
+    fillfactor = 50,
+    autovacuum_vacuum_scale_factor = 0.0,
+    autovacuum_vacuum_threshold = 50
+);
+
 -- Idempotent baseline seeding to prevent overwriting active production state on re-runs
 INSERT INTO dcb_global_counter (counter_name, current_position)
 VALUES ('main_sequence', 0)

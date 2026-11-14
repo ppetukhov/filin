@@ -5,6 +5,27 @@
     <IsPackable>true</IsPackable>
     <TargetFrameworks>$(NetCurrent);$(NetMinimum)</TargetFrameworks>
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);PackInternalAnalyzers</TargetsForTfmSpecificContentInPackage>
+    <PackageDescription>Сore interfaces and abstractions for the Filin Event Sourcing framework with native support for Dynamic Consistency Boundaries (DCB).
+
+Commonly Used Types:
+Filin.IMediator
+Filin.ICommand&lt;TState&gt;
+Filin.IQuery&lt;TProjection&gt;
+Filin.IProjector&lt;TState&gt;
+Filin.IDecider&lt;TCommand, TState&gt;
+Filin.Storage.IEventStore
+Filin.Storage.IProjectionStore
+Filin.EventTypeAttribute
+Filin.EventTagAttribute
+Filin.QueryEventTypesAttribute
+Filin.QueryTagParametersAttribute
+Filin.QueryTagsAttribute
+Filin.ProjectorIdAttribute
+Filin.DeciderAttribute
+Filin.DcbQuery
+Filin.EventType
+Filin.Tag
+Filin.EventPosition</PackageDescription>
   </PropertyGroup>
 
   <ItemGroup>

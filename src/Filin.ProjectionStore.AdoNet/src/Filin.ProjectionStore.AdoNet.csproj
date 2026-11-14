@@ -4,12 +4,16 @@
     <TargetFrameworks>$(NetCurrent);$(NetMinimum)</TargetFrameworks>
     <IsPackable>true</IsPackable>
     <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
+    <PackageTags>$(PackageTags);projection-store;projectionstore</PackageTags>
+    <PackageDescription>ADO.NET-based IProjectionStore implementation for the Filin Event Sourcing framework.</PackageDescription>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="$(CommonDir)\AdoNet\AdoNetInvariants.cs" LinkBase="Storage" />
     <Compile Include="$(CommonDir)\AdoNet\DbConnectionFactory.cs" LinkBase="Storage" />
     <Compile Include="$(CommonDir)\AdoNet\DbExtensions.cs" LinkBase="Storage" />
+
+    <None Include="Scripts/PostgreSQL-ProjectionStore.sql" Pack="true" Visible="false" PackagePath="/scripts/" />
   </ItemGroup>
 
   <ItemGroup>

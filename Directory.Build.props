@@ -21,12 +21,13 @@
   <PropertyGroup>
     <Authors>Pavel Petukhov</Authors>
     <GitHubRepositoryName>filin</GitHubRepositoryName>
-    <PackageProjectUrl>https://github.com/ppetukhov</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/ppetukhov/filin</PackageProjectUrl>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <Copyright>Copyright © $([System.DateTime]::Now.ToString('yyyy')) Pavel Petukhov</Copyright>
+    <PackageTags>filin;dcb;event-sourcing;cqrs;ddd;dynamic-consistency-boundary</PackageTags>
     <PackageReadmeFile></PackageReadmeFile>
     <PackageReleaseNotes></PackageReleaseNotes>
     <PackageIcon>icon.png</PackageIcon>

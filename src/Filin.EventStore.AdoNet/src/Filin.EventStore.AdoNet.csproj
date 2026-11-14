@@ -4,6 +4,9 @@
     <TargetFrameworks>$(NetCurrent);$(NetMinimum)</TargetFrameworks>
     <IsPackable>true</IsPackable>
     <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
+    <PackageTags>$(PackageTags);event-store;eventstore</PackageTags>
+    <PackageDescription>ADO.NET-based IEventStore implementation with Dynamic Consistency Boundary (DCB) support for the Filin Event Sourcing framework.
+Currently supports PostgreSQL (Npgsql), with additional database providers planned for future releases.</PackageDescription>
   </PropertyGroup>
  
   <ItemGroup>
@@ -18,6 +21,8 @@
     <Compile Include="$(CommonDir)\AdoNet\DbConnectionFactory.cs" LinkBase="Storage" />
     <Compile Include="$(CommonDir)\AdoNet\DbExtensions.cs" LinkBase="Storage" />
     <Compile Include="$(CommonDir)\Text\ValueStringBuilder.cs" LinkBase="Internal" />
+
+    <None Include="Scripts/PostgreSQL-EventStore.sql" Pack="true" Visible="false" PackagePath="/scripts/" />
   </ItemGroup>
 
   <ItemGroup>

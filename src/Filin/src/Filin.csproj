@@ -5,6 +5,8 @@
     <TargetFrameworks>$(NetCurrent);$(NetMinimum)</TargetFrameworks>
     <IsPackable>true</IsPackable>
     <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
+    <PackageTags>$(PackageTags);mediator;commands;queries</PackageTags>
+    <PackageDescription>A Mediator implementation for the Filin Event Sourcing framework. Coordinates execution across commands and queries.</PackageDescription>
   </PropertyGroup>
 
   <ItemGroup>
