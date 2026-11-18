@@ -30,6 +30,7 @@ env:
   NUKE_TELEMETRY_OPTOUT: 1
 
 permissions:
+  id-token: write
   contents: write
 
 jobs:
