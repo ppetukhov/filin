@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project>
   <PropertyGroup>
-    <FilinAbstractionsVersion>0.1.0-beta.2</FilinAbstractionsVersion>
-    <FilinProjectionStoreAdoNetVersion>0.1.0-beta.2</FilinProjectionStoreAdoNetVersion>
-    <FilinVersion>0.1.0-beta.2</FilinVersion>
-    <FilinEventStoreAdoNetVersion>0.1.0-beta.2</FilinEventStoreAdoNetVersion>
+    <FilinAbstractionsVersion>0.1.0-beta.3</FilinAbstractionsVersion>
+    <FilinProjectionStoreAdoNetVersion>0.1.0-beta.3</FilinProjectionStoreAdoNetVersion>
+    <FilinVersion>0.1.0-beta.3</FilinVersion>
+    <FilinEventStoreAdoNetVersion>0.1.0-beta.3</FilinEventStoreAdoNetVersion>
   </PropertyGroup>
 </Project>
