@@ -67,17 +67,22 @@ jobs:
       - name: Commit and Push Release Metadata (Beta, Rc, Stable)
         if: ${{ github.event_name == 'workflow_dispatch' && steps.build.outputs.has_packages == 'true' }}
         run: |
+          TARGET_CHANNEL="${{ github.event_name == 'workflow_dispatch' && github.event.inputs.channel || 'Alpha' }}"
+          
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@://github.com"
           git add Versions.props "**/PublicAPI.Shipped.txt" "**/PublicAPI.Unshipped.txt"
-          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: release ${{ github.event.inputs.channel }} packages [skip ci]" && git push)
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: release $TARGET_CHANNEL packages [skip ci]" && git push)
 
       - name: Create and Push Git Tags (Beta, Rc, Stable)
         if: ${{ github.event_name == 'workflow_dispatch' && steps.build.outputs.has_packages == 'true' }}
         run: |
+          RELEASE_TAGS: ${{ steps.build.outputs.release_tags }}
+          TARGET_CHANNEL="${{ github.event_name == 'workflow_dispatch' && github.event.inputs.channel || 'Alpha' }}"
+          
           # shellcheck disable=SC2206
-          TAGS_ARRAY=(${{ steps.build.outputs.release_tags }})
-          ./build.sh --target CreateGitTags --skip --channel "${{ github.event.inputs.channel }} --release-tags "${TAGS_ARRAY[@]}"
+          TAGS_ARRAY=($RELEASE_TAGS)
+          ./build.sh --target CreateGitTags --skip --channel "$TARGET_CHANNEL" --release-tags "${TAGS_ARRAY[@]}"
 
       - name: NuGet Login (OIDC)
         if: ${{ github.event_name == 'workflow_dispatch' && steps.build.outputs.has_packages == 'true' }}
