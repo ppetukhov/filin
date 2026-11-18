@@ -1,1 +1,3 @@
+#!/usr/bin/env bash
+
 dotnet run --project "eng/Release.Automation/src/Release.Automation.csproj" -c Release --no-launch-profile -- --root . --solution Filin.slnx "$@"
