@@ -96,13 +96,13 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' && steps.build.outputs.has_packages == 'true' }}
         run: |
           dotnet nuget push "./artifacts/Release/*.nupkg" \
-            --api-key ${{ secrets.NUGET_API_KEY }} \
+            --api-key ${{ steps.login.outputs.NUGET_API_KEY }} \
             --source https://nuget.org \
             --skip-duplicate
 
-          if compgen -G "./artifacts/*.snupkg" > /dev/null; then
-            dotnet nuget push "./artifacts/*.snupkg" \
-              --api-key ${{ secrets.NUGET_API_KEY }} \
+          if compgen -G "./artifacts/Release/*.snupkg" > /dev/null; then
+            dotnet nuget push "./artifacts/Release/*.snupkg" \
+              --api-key ${{ steps.login.outputs.NUGET_API_KEY }} \
               --source https://nuget.org \
               --skip-duplicate
           fi
