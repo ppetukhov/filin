@@ -4,6 +4,14 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
+  <Folder Name="/eng/" />
+  <Folder Name="/eng/Release.Automation/" />
+  <Folder Name="/eng/Release.Automation/src/">
+    <Project Path="eng/Release.Automation/src/Release.Automation.csproj" Id="f32f74c6-fb97-4eac-9ec9-d07f2fc989b8" />
+  </Folder>
+  <Folder Name="/eng/Release.Automation/tests/">
+    <Project Path="eng/Release.Automation/tests/Release.Automation.Tests.csproj" Id="39981aa0-46e6-4f9a-9941-51d40140448b" />
+  </Folder>
   <Folder Name="/playground/">
     <File Path="playground/Directory.Build.props" />
   </Folder>

@@ -1,0 +1,99 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: 'Select target release channel'
+        required: true
+        type: choice
+        options:
+          - Stable
+          - Rc
+          - Beta
+          - Alpha
+        default: Stable
+      promote_to_major:
+        description: 'Promote 0.x.y packages to 1.0.0?'
+        required: true
+        type: boolean
+        default: false
+      force_projects:
+        description: 'Space or comma-separated project names to force republish (if dependencies updated)'
+        required: false
+        type: string
+        default: ''
+
+env:
+  NUKE_TELEMETRY_OPTOUT: 1
+
+permissions:
+  contents: write
+
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Build and Pack
+        id: build
+        run: |
+          TARGET_CHANNEL="${{ github.event_name == 'workflow_dispatch' && github.event.inputs.channel || 'Alpha' }}"
+          PROMOTE_FLAG="${{ github.event_name == 'workflow_dispatch' && github.event.inputs.promote_to_major || 'false' }}"
+          RAW_FORCE="${{ github.event_name == 'workflow_dispatch' && github.event.inputs.force_projects || '' }}"
+
+          ARGS=(--target Pack --channel "$TARGET_CHANNEL" --promote-to-major "$PROMOTE_FLAG")
+
+          if [ -n "$RAW_FORCE" ]; then
+            NORMALIZED_FORCE=$(echo "$RAW_FORCE" | tr ',' ' ')
+            # shellcheck disable=SC2206
+            FORCE_ARRAY=($NORMALIZED_FORCE)
+            ARGS+=(--force-projects "${FORCE_ARRAY[@]}")
+          fi
+
+      - name: Commit and Push Release Metadata (Beta, Rc, Stable)
+        if: ${{ github.event_name == 'workflow_dispatch' && steps.build.outputs.has_packages == 'true' }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@://github.com"
+          git add Versions.props "**/PublicAPI.Shipped.txt" "**/PublicAPI.Unshipped.txt"
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: release ${{ github.event.inputs.channel }} packages [skip ci]" && git push)
+
+          ./build.sh "${ARGS[@]}"
+
+      - name: Create and Push Git Tags (Beta, Rc, Stable)
+        if: ${{ github.event_name == 'workflow_dispatch' && steps.build.outputs.has_packages == 'true' }}
+        run: |
+          # shellcheck disable=SC2206
+          TAGS_ARRAY=(${{ steps.build.outputs.release_tags }})
+          ./build.sh --target CreateGitTags --skip --channel "${{ github.event.inputs.channel }} --release-tags "${TAGS_ARRAY[@]}"
+
+      - name: Publish to NuGet
+        if: ${{ steps.build.outputs.has_packages == 'true' }}
+        run: |
+          dotnet nuget push "./artifacts/Release/*.nupkg" \
+            --api-key ${{ secrets.NUGET_API_KEY }} \
+            --source https://nuget.org \
+            --skip-duplicate
+
+          if compgen -G "./artifacts/*.snupkg" > /dev/null; then
+            dotnet nuget push "./artifacts/*.snupkg" \
+              --api-key ${{ secrets.NUGET_API_KEY }} \
+              --source https://nuget.org \
+              --skip-duplicate
+          fi
