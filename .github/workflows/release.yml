@@ -17,7 +17,6 @@ on:
           - Stable
           - Rc
           - Beta
-          - Alpha
         default: Stable
       promote_to_major:
         description: 'Promote 0.x.y packages to 1.0.0?'
@@ -84,7 +83,7 @@ jobs:
           ./build.sh --target CreateGitTags --skip --channel "${{ github.event.inputs.channel }} --release-tags "${TAGS_ARRAY[@]}"
 
       - name: Publish to NuGet
-        if: ${{ steps.build.outputs.has_packages == 'true' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && steps.build.outputs.has_packages == 'true' }}
         run: |
           dotnet nuget push "./artifacts/Release/*.nupkg" \
             --api-key ${{ secrets.NUGET_API_KEY }} \
