@@ -77,7 +77,7 @@ jobs:
       - name: Create and Push Git Tags (Beta, Rc, Stable)
         if: ${{ github.event_name == 'workflow_dispatch' && steps.build.outputs.has_packages == 'true' }}
         run: |
-          RELEASE_TAGS: ${{ steps.build.outputs.release_tags }}
+          RELEASE_TAGS="${{ steps.build.outputs.release_tags }}"
           TARGET_CHANNEL="${{ github.event_name == 'workflow_dispatch' && github.event.inputs.channel || 'Alpha' }}"
           
           # shellcheck disable=SC2206
