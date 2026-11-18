@@ -429,12 +429,16 @@ dotnet_diagnostic.CA1034.severity = suggestion
 [**/tests/**.cs]
 # CA1062: In externally visible method 'Member' is non-null before using it. If appropriate, throw an 'ArgumentNullException' when the argument is 'null'.
 dotnet_diagnostic.CA1062.severity = none
+# CA1515: Because an application's API isn't typically referenced from outside the assembly, types can be made internal
+dotnet_diagnostic.CA1515.severity = none
 # CA1812: X is an internal class that is apparently never instantiated
 dotnet_diagnostic.CA1812.severity = none
 # CS1591: Missing XML comment for publicly visible type or member
 dotnet_diagnostic.CS1591.severity = none
 # CA2007: Consider calling ConfigureAwait on the awaited task
 dotnet_diagnostic.CA2007.severity = none
+# CA2225: An operator overload was detected, and the expected named alternative method was not found. The named alternative member provides access to the same functionality as the operator and is provided for developers who program in languages that do not support overloaded operators.
+dotnet_diagnostic.CA2225.severity = none
 # CA1707: Remove the underscores from member name 
 dotnet_diagnostic.CA1707.severity = none
 # IDE0022: Use expression body for method
@@ -454,3 +458,11 @@ dotnet_diagnostic.IDE0005.severity = none
 [playground/**.cs]
 # IDE0046: Convert to conditional expression
 dotnet_diagnostic.IDE0046.severity = suggestion
+
+[eng/**.cs]
+#Do not nest type . Alternatively, change its accessibility so that it is not externally visible.
+dotnet_diagnostic.CA1034.severity = suggestion
+# CA1515: Because an application's API isn't typically referenced from outside the assembly, types can be made internal
+dotnet_diagnostic.CA1515.severity = suggestion
+# CA1812: X is an internal class that is apparently never instantiated
+dotnet_diagnostic.CA1812.severity = none

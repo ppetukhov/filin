@@ -48,6 +48,7 @@
     <!-- Warnings to always disable -->
     <NoWarn>$(NoWarn);CS8500;CS8969</NoWarn>
     <DebugType>portable</DebugType>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <!-- Used for launchSettings.json and runtime config files. -->
     <AppDesignerFolder>Properties</AppDesignerFolder>
