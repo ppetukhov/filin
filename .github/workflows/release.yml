@@ -79,6 +79,13 @@ jobs:
           TAGS_ARRAY=(${{ steps.build.outputs.release_tags }})
           ./build.sh --target CreateGitTags --skip --channel "${{ github.event.inputs.channel }} --release-tags "${TAGS_ARRAY[@]}"
 
+      - name: NuGet Login (OIDC)
+        if: ${{ github.event_name == 'workflow_dispatch' && steps.build.outputs.has_packages == 'true' }}
+        uses: NuGet/login@v1.2.0
+        id: login
+        with:
+          user: petukhov
+
       - name: Publish to NuGet
         if: ${{ github.event_name == 'workflow_dispatch' && steps.build.outputs.has_packages == 'true' }}
         run: |
