@@ -65,6 +65,8 @@ jobs:
             FORCE_ARRAY=($NORMALIZED_FORCE)
             ARGS+=(--force-projects "${FORCE_ARRAY[@]}")
           fi
+          
+          ./build.sh "${ARGS[@]}"
 
       - name: Commit and Push Release Metadata (Beta, Rc, Stable)
         if: ${{ github.event_name == 'workflow_dispatch' && steps.build.outputs.has_packages == 'true' }}
@@ -73,8 +75,6 @@ jobs:
           git config --global user.email "github-actions[bot]@://github.com"
           git add Versions.props "**/PublicAPI.Shipped.txt" "**/PublicAPI.Unshipped.txt"
           git diff --quiet && git diff --staged --quiet || (git commit -m "chore: release ${{ github.event.inputs.channel }} packages [skip ci]" && git push)
-
-          ./build.sh "${ARGS[@]}"
 
       - name: Create and Push Git Tags (Beta, Rc, Stable)
         if: ${{ github.event_name == 'workflow_dispatch' && steps.build.outputs.has_packages == 'true' }}
