@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <PropertyGroup>
+    <FilinAbstractionsVersion>0.1.0-beta.1</FilinAbstractionsVersion>
+    <FilinProjectionStoreAdoNetVersion>0.1.0-beta.1</FilinProjectionStoreAdoNetVersion>
+    <FilinVersion>0.1.0-beta.1</FilinVersion>
+    <FilinEventStoreAdoNetVersion>0.1.0-beta.1</FilinEventStoreAdoNetVersion>
+  </PropertyGroup>
+</Project>
