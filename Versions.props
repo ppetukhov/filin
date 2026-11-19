@@ -3,7 +3,7 @@
   <PropertyGroup>
     <FilinAbstractionsVersion>0.1.0-beta.4</FilinAbstractionsVersion>
     <FilinProjectionStoreAdoNetVersion>0.1.0-beta.4</FilinProjectionStoreAdoNetVersion>
-    <FilinVersion>0.1.0-beta.5</FilinVersion>
+    <FilinVersion>0.1.0-beta.6</FilinVersion>
     <FilinEventStoreAdoNetVersion>0.1.0-beta.4</FilinEventStoreAdoNetVersion>
   </PropertyGroup>
 </Project>
