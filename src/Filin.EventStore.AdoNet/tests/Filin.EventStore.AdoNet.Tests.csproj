@@ -27,7 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Filin.EventStore.AdoNet.csproj" />
+    <ProjectReference Include="..\src\Filin.EventStore.AdoNet.csproj" />
   </ItemGroup>
 
 </Project>
