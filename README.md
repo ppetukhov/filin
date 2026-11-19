@@ -5,9 +5,6 @@ It includes a native implementation of an **append-only event store** powered by
 with strict global message ordering, which enables the system to reliably evaluate
 these dynamic consistency boundaries on write operations.
 
-[![release](https://img.shields.io/github/v/release/ppetukhov/filin)](https://github.com/ppetukhov/filin/releases/latest)
-[![license](https://img.shields.io/github/license/ppetukhov/filin)](LICENSE)
-
 ## 🧩 Key Components
 
 - **Mediator**: Coordinates execution across the framework, exposing a unified interface to process
