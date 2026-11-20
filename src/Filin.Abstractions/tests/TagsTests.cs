@@ -13,9 +13,9 @@ public class TagsTests
         var collection = new Tags();
 
         // Assert
-        collection.IsEmpty.Should().BeTrue();
-        collection.Count.Should().Be(0);
-        collection.AsSpan().IsEmpty.Should().BeTrue();
+        Assert.True(collection.IsEmpty);
+        Assert.Equal(0, collection.Count);
+        Assert.True(collection.AsSpan().IsEmpty);
     }
 
     [Fact]
@@ -28,9 +28,9 @@ public class TagsTests
         var collection = new Tags(tag);
 
         // Assert
-        collection.IsEmpty.Should().BeFalse();
-        collection.Count.Should().Be(1);
-        collection[0].Should().Be(tag);
+        Assert.False(collection.IsEmpty);
+        Assert.Equal(1, collection.Count);
+        Assert.Equal(tag, collection[0]);
     }
 
     [Fact]
@@ -45,9 +45,9 @@ public class TagsTests
         var collection = new Tags(t1, t2, t3);
 
         // Assert
-        collection.Count.Should().Be(2);
-        collection[0].Should().Be(t2); // "a_tag" (sorted)
-        collection[1].Should().Be(t1); // "b_tag" (unique)
+        Assert.Equal(2, collection.Count);
+        Assert.Equal(t2, collection[0]); // "a_tag" (sorted)
+        Assert.Equal(t1, collection[1]); // "b_tag" (unique)
     }
 
     #endregion
@@ -62,11 +62,8 @@ public class TagsTests
         // Arrange
         var collection = new Tags();
 
-        // Act
-        Action act = () => _ = collection[index];
-
-        // Assert
-        act.Should().Throw<ArgumentOutOfRangeException>();
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() => _ = collection[index]);
     }
 
     [Theory]
@@ -77,11 +74,8 @@ public class TagsTests
         // Arrange
         var collection = new Tags(new Tag("t1"), new Tag("t2"));
 
-        // Act
-        Action act = () => _ = collection[index];
-
-        // Assert
-        act.Should().Throw<ArgumentOutOfRangeException>();
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() => _ = collection[index]);
     }
 
     #endregion
@@ -99,7 +93,7 @@ public class TagsTests
         var result = collection.Contains(targetTag);
 
         // Assert
-        result.Should().BeFalse();
+        Assert.False(result);
     }
 
     [Fact]
@@ -112,9 +106,9 @@ public class TagsTests
         var collection = new Tags(t2, t1, t3);
 
         // Act & Assert
-        collection.Contains(t1).Should().BeTrue();
-        collection.Contains(t2).Should().BeTrue();
-        collection.Contains(t3).Should().BeTrue();
+        Assert.True(collection.Contains(t1));
+        Assert.True(collection.Contains(t2));
+        Assert.True(collection.Contains(t3));
     }
 
     #endregion
@@ -132,10 +126,10 @@ public class TagsTests
         Tags result = [.. c1, .. c2];
 
         // Assert
-        result.Count.Should().Be(3);
-        result[0].Should().Be(new Tag("1_Created"));
-        result[1].Should().Be(new Tag("2_Deleted"));
-        result[2].Should().Be(new Tag("3_Updated"));
+        Assert.Equal(3, result.Count);
+        Assert.Equal(new Tag("1_Created"), result[0]);
+        Assert.Equal(new Tag("2_Deleted"), result[1]);
+        Assert.Equal(new Tag("3_Updated"), result[2]);
     }
 
     [Fact]
@@ -148,9 +142,9 @@ public class TagsTests
         Tags result = [.. collection, new Tag("b"), new Tag("a")];
 
         // Assert
-        result.Count.Should().Be(2);
-        result[0].Should().Be(new Tag("a"));
-        result[1].Should().Be(new Tag("b"));
+        Assert.Equal(2, result.Count);
+        Assert.Equal(new Tag("a"), result[0]);
+        Assert.Equal(new Tag("b"), result[1]);
     }
 
     #endregion
@@ -165,9 +159,9 @@ public class TagsTests
         var c2 = new Tags(new Tag("b"), new Tag("a"));
 
         // Act & Assert
-        c1.Equals(c2).Should().BeTrue();
-        (c1 == c2).Should().BeTrue();
-        c1.GetHashCode().Should().Be(c2.GetHashCode());
+        Assert.True(c1.Equals(c2));
+        Assert.True(c1 == c2);
+        Assert.Equal(c2.GetHashCode(), c1.GetHashCode());
     }
 
     [Fact]
@@ -178,8 +172,8 @@ public class TagsTests
         var c2 = new Tags(new Tag("a"), new Tag("c"));
 
         // Act & Assert
-        c1.CompareTo(c2).Should().BeLessThan(0);
-        c2.CompareTo(c1).Should().BeGreaterThan(0);
+        Assert.True(c1.CompareTo(c2) < 0);
+        Assert.True(c2.CompareTo(c1) > 0);
     }
 
     #endregion
@@ -200,8 +194,9 @@ public class TagsTests
         }
 
         // Assert
-        iterated.Should().HaveCount(2);
-        iterated.Should().ContainInOrder("y", "z");
+        Assert.Equal(2, iterated.Count);
+        Assert.Equal("y", iterated[0]);
+        Assert.Equal("z", iterated[1]);
     }
 
     [Fact]
@@ -209,24 +204,10 @@ public class TagsTests
     {
         // Arrange
         var collection = new Tags(new Tag("A"));
-        var enumerator = collection.GetEnumerator();
-        Exception? ex = null;
 
-        // Act
-        try
-        {
-            _ = enumerator.Current;
-        }
-        catch (Exception e)
-        {
-            ex = e;
-        }
-        finally
-        {
-            ex.Should().NotBeNull();
-            ex.Should().BeOfType<InvalidOperationException>();
-            ex.Message.Should().Be("TagsEnumerator.Current value has not been set.");
-        }
+        // Act & Assert
+        var ex = Assert.Throws<InvalidOperationException>(() => _ = collection.GetEnumerator().Current);
+        Assert.Equal("TagsEnumerator.Current value has not been set.", ex.Message);
     }
 
     #endregion
@@ -240,13 +221,12 @@ public class TagsTests
         var t1 = new Tag("a_tag");
         var t2 = new Tag("c_tag");
         var collection = new Tags(t1, t2);
-
         var missingInBetween = new Tag("b_tag"); // Sits alphabetically between 'a' and 'c'
         var completelyNewTag = new Tag("z_tag"); // Sits outside the array bounds
 
         // Act & Assert
-        collection.Contains(missingInBetween).Should().BeFalse();
-        collection.Contains(completelyNewTag).Should().BeFalse();
+        Assert.False(collection.Contains(missingInBetween));
+        Assert.False(collection.Contains(completelyNewTag));
     }
 
     [Fact]
@@ -258,8 +238,8 @@ public class TagsTests
         var wrongTag = new Tag("course:888");
 
         // Act & Assert
-        collection.Contains(tag).Should().BeTrue();
-        collection.Contains(wrongTag).Should().BeFalse();
+        Assert.True(collection.Contains(tag));
+        Assert.False(collection.Contains(wrongTag));
     }
 
     #endregion
@@ -275,12 +255,12 @@ public class TagsTests
         Tags c3 = [new Tag("a"), new Tag("b")];
 
         // Act & Assert
-        (c1 == c3).Should().BeTrue();
-        (c1 != c2).Should().BeTrue();
-        (c1 < c2).Should().BeTrue("['a', 'b'] precedes ['a', 'c'] lexicographically");
-        (c1 <= c3).Should().BeTrue();
-        (c2 > c1).Should().BeTrue();
-        (c3 >= c1).Should().BeTrue();
+        Assert.True(c1 == c3);
+        Assert.True(c1 != c2);
+        Assert.True(c1 < c2, "['a', 'b'] precedes ['a', 'c'] lexicographically");
+        Assert.True(c1 <= c3);
+        Assert.True(c2 > c1);
+        Assert.True(c3 >= c1);
     }
 
     #endregion
@@ -298,9 +278,9 @@ public class TagsTests
         var success = collection.TryFormat(destination, out var charsWritten, default, CultureInfo.InvariantCulture);
 
         // Assert
-        success.Should().BeTrue();
-        charsWritten.Should().Be(23); // length of "course:777, student:123"
-        new string(destination[..charsWritten]).Should().Be("course:777, student:123");
+        Assert.True(success);
+        Assert.Equal(23, charsWritten); // length of "course:777, student:123"
+        Assert.Equal("course:777, student:123", new string(destination[..charsWritten]));
     }
 
     [Fact]
@@ -314,8 +294,8 @@ public class TagsTests
         var success = collection.TryFormat(tinyDestination, out var charsWritten, default, CultureInfo.InvariantCulture);
 
         // Assert
-        success.Should().BeFalse("the formatting layout must abort cleanly if the target block span is too small");
-        charsWritten.Should().Be(0);
+        Assert.False(success, "the formatting layout must abort cleanly if the target block span is too small");
+        Assert.Equal(0, charsWritten);
     }
 
     [Fact]
@@ -328,7 +308,7 @@ public class TagsTests
         var message = $"Boundaries: {collection}";
 
         // Assert
-        message.Should().Be("Boundaries: a, b", "the string interpolation engine must cleanly parse the custom formattable structure");
+        Assert.Equal("Boundaries: a, b", message);
     }
 
     #endregion
@@ -338,7 +318,7 @@ public class TagsTests
     [Fact]
     public void ToString_WithCustomFormatterProvider_ShouldDelegeteToCustomFormatter()
     {
-        // Arrange: Создаем кастомный форматтер, который преобразует вывод тегов в верхний регистр
+        // Arrange
         var mockFormatter = new UppercaseTagFormatter();
         Tags collection = [new Tag("course:777"), new Tag("faculty:it")];
 
@@ -346,7 +326,7 @@ public class TagsTests
         var result = string.Format(mockFormatter, "{0}", collection);
 
         // Assert
-        result.Should().Be("COURSE:777, FACULTY:IT", "the structure must respect explicit third-party ICustomFormatter implementations");
+        Assert.Equal("COURSE:777, FACULTY:IT", result);
     }
 
     sealed class UppercaseTagFormatter : IFormatProvider, ICustomFormatter
@@ -367,7 +347,7 @@ public class TagsTests
         var collection = new Tags();
 
         // Act & Assert
-        collection.ToString().Should().BeEmpty();
+        Assert.Empty(collection.ToString());
     }
 
     [Fact]
@@ -380,7 +360,7 @@ public class TagsTests
         var result = collection.ToString();
 
         // Assert
-        result.Should().Be("course:777, faculty:it", "tags must be explicitly separated by a single raw comma character");
+        Assert.Equal("course:777, faculty:it", result);
     }
 
     [Fact]
@@ -396,9 +376,9 @@ public class TagsTests
         var result = collection.ToString();
 
         // Assert
-        result.Length.Should().Be(304); // 300 elements chars + 4 separator chars (2 intersections * 2 chars)
-        result.StartsWith(new string('x', 100), StringComparison.Ordinal).Should().BeTrue();
-        result.EndsWith(new string('z', 100), StringComparison.Ordinal).Should().BeTrue();
+        Assert.Equal(304, result.Length); // 300 elements chars + 4 separator chars (2 intersections * 2 chars)
+        Assert.StartsWith(new string('x', 100), result, StringComparison.Ordinal);
+        Assert.EndsWith(new string('z', 100), result, StringComparison.Ordinal);
     }
 
     #endregion

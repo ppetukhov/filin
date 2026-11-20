@@ -15,9 +15,9 @@ public sealed class ProjectorIdTests
     {
         var result = new ProjectorId(id: id!);
 
-        result.IsDefault.Should().BeTrue();
-        result.AsSpan().Length.Should().Be(0);
-        result.Hash.Should().Be(StableHashTests.HASH64_OF_EMPTY);
+        Assert.True(result.IsDefault);
+        Assert.Equal(0, result.AsSpan().Length);
+        Assert.Equal(StableHashTests.HASH64_OF_EMPTY, result.Hash);
     }
 
     [Theory]
@@ -27,9 +27,9 @@ public sealed class ProjectorIdTests
     {
         var result = new ProjectorId(id: id!, version: 0);
 
-        result.IsDefault.Should().BeTrue();
-        result.AsSpan().Length.Should().Be(0);
-        result.Hash.Should().Be(StableHashTests.HASH64_OF_EMPTY);
+        Assert.True(result.IsDefault);
+        Assert.Equal(0, result.AsSpan().Length);
+        Assert.Equal(StableHashTests.HASH64_OF_EMPTY, result.Hash);
     }
 
     [Theory]
@@ -38,9 +38,9 @@ public sealed class ProjectorIdTests
     {
         var result = new ProjectorId(id: id);
 
-        result.IsDefault.Should().BeFalse();
-        result.Value.Should().Be(id);
-        result.Hash.Should().Be(expectedHash);
+        Assert.False(result.IsDefault);
+        Assert.Equal(id, result.Value);
+        Assert.Equal(expectedHash, result.Hash);
     }
 
     [Theory]
@@ -55,9 +55,9 @@ public sealed class ProjectorIdTests
 
         var result = new ProjectorId(id: id, version: version);
 
-        result.Value.Should().Be(txt);
-        result.Hash.Should().Be(expectedHashCode);
-        result.IsDefault.Should().Be(string.IsNullOrEmpty(txt));
+        Assert.Equal(txt, result.Value);
+        Assert.Equal(expectedHashCode, result.Hash);
+        Assert.Equal(string.IsNullOrEmpty(txt), result.IsDefault);
     }
 
     [Fact]
@@ -68,7 +68,7 @@ public sealed class ProjectorIdTests
 
         var result = identityX.Equals(identityY);
 
-        result.Should().BeTrue();
+        Assert.True(result);
     }
 
     [Theory]
@@ -83,7 +83,7 @@ public sealed class ProjectorIdTests
 
         var result = identityX.Equals(identityY);
 
-        result.Should().BeTrue();
+        Assert.True(result);
     }
 
     [Theory]
@@ -96,7 +96,7 @@ public sealed class ProjectorIdTests
 
         var result = identityX.Equals(identityY);
 
-        result.Should().BeFalse();
+        Assert.False(result);
     }
 
     [Theory]
@@ -111,7 +111,7 @@ public sealed class ProjectorIdTests
 
         var result = identityX.Equals(identityY);
 
-        result.Should().BeFalse();
+        Assert.False(result);
     }
 
     [Theory]
@@ -132,7 +132,7 @@ public sealed class ProjectorIdTests
 
         var result = identityX.CompareTo(identityY);
 
-        result.Should().Be(expectedValue);
+        Assert.Equal(expectedValue, result);
     }
 
     [Fact]
@@ -140,7 +140,7 @@ public sealed class ProjectorIdTests
     {
         ProjectorId identity = default;
 
-        identity.ToString().Should().BeNull(because: "projectorId is default");
+        Assert.Null(identity.ToString());
     }
 
     [Fact]
@@ -150,7 +150,7 @@ public sealed class ProjectorIdTests
 
         var identity = new ProjectorId(id: expectedString);
 
-        identity.ToString().Should().Be(expectedString);
+        Assert.Equal(expectedString, identity.ToString());
     }
 
     [Theory]
@@ -161,7 +161,7 @@ public sealed class ProjectorIdTests
     {
         var identity = new ProjectorId(id: "Some text");
 
-        identity.ToString(format: format, formatProvider: formatProvider).Should().Be(expectedString);
+        Assert.Equal(expectedString, identity.ToString(format: format, formatProvider: formatProvider));
     }
 
     [Theory]
@@ -172,7 +172,7 @@ public sealed class ProjectorIdTests
     {
         ProjectorId identity = default;
 
-        identity.ToString(format: format, formatProvider: null).Should().BeEmpty();
+        Assert.Empty(identity.ToString(format: format, formatProvider: null));
     }
 
     [Theory]
@@ -186,8 +186,8 @@ public sealed class ProjectorIdTests
 
         var result = identity.TryFormat(destination, out var charsWritten);
 
-        result.Should().BeTrue();
-        charsWritten.Should().Be(0);
+        Assert.True(result);
+        Assert.Equal(0, charsWritten);
     }
 
     [Fact]
@@ -199,8 +199,8 @@ public sealed class ProjectorIdTests
 
         var result = identity.TryFormat(destination, out var charsWritten);
 
-        result.Should().BeFalse();
-        charsWritten.Should().Be(0);
+        Assert.False(result);
+        Assert.Equal(0, charsWritten);
     }
 
     [Fact]
@@ -213,9 +213,9 @@ public sealed class ProjectorIdTests
 
         var result = identity.TryFormat(destination, out var charsWritten);
 
-        result.Should().BeTrue();
-        charsWritten.Should().Be(identityText.Length);
-        destination[..charsWritten].SequenceEqual(identityText).Should().BeTrue();
+        Assert.True(result);
+        Assert.Equal(identityText.Length, charsWritten);
+        Assert.True(destination[..charsWritten].SequenceEqual(identityText));
     }
 
     [Theory]
@@ -230,9 +230,9 @@ public sealed class ProjectorIdTests
 
         var result = identity.TryFormat(destination, out var charsWritten, format, formatProvider);
 
-        result.Should().BeTrue();
-        charsWritten.Should().Be(expectedString.Length);
-        destination[..charsWritten].SequenceEqual(expectedString).Should().BeTrue();
+        Assert.True(result);
+        Assert.Equal(expectedString.Length, charsWritten);
+        Assert.True(destination[..charsWritten].SequenceEqual(expectedString));
     }
 
     [Theory]
@@ -248,9 +248,9 @@ public sealed class ProjectorIdTests
 
         var result = identity.TryFormat(destination, out var charsWritten, format: format, provider: null);
 
-        result.Should().BeTrue();
-        charsWritten.Should().Be(identityText.Length);
-        destination[..charsWritten].SequenceEqual(identityText).Should().BeTrue();
+        Assert.True(result);
+        Assert.Equal(identityText.Length, charsWritten);
+        Assert.True(destination[..charsWritten].SequenceEqual(identityText));
     }
 
     [Theory]
@@ -265,8 +265,8 @@ public sealed class ProjectorIdTests
 
         var result = identity.TryFormat(destination, out var charsWritten, format: format, provider: formatProvider);
 
-        result.Should().BeFalse();
-        charsWritten.Should().Be(0);
+        Assert.False(result);
+        Assert.Equal(0, charsWritten);
     }
 
     [Theory]
@@ -282,9 +282,9 @@ public sealed class ProjectorIdTests
 
         var result = identity.TryFormat(utf8Destination, out var bytesWritten, format, formatProvider);
 
-        result.Should().BeTrue();
-        bytesWritten.Should().Be(expectedBytes.Length);
-        utf8Destination[..bytesWritten].SequenceEqual(expectedBytes).Should().BeTrue();
+        Assert.True(result);
+        Assert.Equal(expectedBytes.Length, bytesWritten);
+        Assert.True(utf8Destination[..bytesWritten].SequenceEqual(expectedBytes));
     }
 
     [Theory]
@@ -298,8 +298,8 @@ public sealed class ProjectorIdTests
 
         var result = identity.TryFormat(utf8Destination, out var bytesWritten);
 
-        result.Should().BeTrue();
-        bytesWritten.Should().Be(0);
+        Assert.True(result);
+        Assert.Equal(0, bytesWritten);
     }
 
     [Fact]
@@ -311,8 +311,8 @@ public sealed class ProjectorIdTests
 
         var result = identity.TryFormat(utf8Destination, out var bytesWritten);
 
-        result.Should().BeFalse();
-        bytesWritten.Should().Be(0);
+        Assert.False(result);
+        Assert.Equal(0, bytesWritten);
     }
 
     [Fact]
@@ -325,9 +325,9 @@ public sealed class ProjectorIdTests
 
         var result = identity.TryFormat(utf8Destination, out var bytesWritten);
 
-        result.Should().BeTrue();
-        bytesWritten.Should().Be(identity.AsSpan().Length);
-        utf8Destination[..bytesWritten].SequenceEqual(expected).Should().BeTrue();
+        Assert.True(result);
+        Assert.Equal(identity.AsSpan().Length, bytesWritten);
+        Assert.True(utf8Destination[..bytesWritten].SequenceEqual(expected));
     }
 
     [Fact]
@@ -337,7 +337,7 @@ public sealed class ProjectorIdTests
 
         var result = ProjectorId.FromString("Some text identity");
 
-        result.Should().BeEquivalentTo(expected);
+        Assert.Equal(expected, result);
     }
 
     [Fact]
@@ -347,7 +347,7 @@ public sealed class ProjectorIdTests
 
         var result = ProjectorId.FromIdSpan(new IdSpan("Some text identity"));
 
-        result.Should().BeEquivalentTo(expected);
+        Assert.Equal(expected, result);
     }
 
     [Fact]
@@ -357,6 +357,6 @@ public sealed class ProjectorIdTests
 
         var result = ProjectorId.ToIdSpan(new ProjectorId(id: "Some text identity"));
 
-        result.Should().BeEquivalentTo(expected);
+        Assert.Equal(expected, result);
     }
 }

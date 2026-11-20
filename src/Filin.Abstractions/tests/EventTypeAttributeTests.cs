@@ -31,7 +31,7 @@ public sealed class EventTypeAttributeTests
     {
         var evt = new SomeEvent();
 
-        evt.GetEventType().Should().Be(new EventType("SomeEvent"));
+        Assert.Equal(new EventType("SomeEvent"), evt.GetEventType());
     }
 
     [Fact]
@@ -39,7 +39,7 @@ public sealed class EventTypeAttributeTests
     {
         var evt = new TestDomainEvents.V0.SomeNestedEvent();
 
-        evt.GetEventType().Should().Be(new EventType("SomeNestedEvent"));
+        Assert.Equal(new EventType("SomeNestedEvent"), evt.GetEventType());
     }
 
     [Fact]
@@ -47,7 +47,7 @@ public sealed class EventTypeAttributeTests
     {
         var evt = new SomeEventWithDefaultVersion();
 
-        evt.GetEventType().Should().Be(new EventType("event-with-default-ver"));
+        Assert.Equal(new EventType("event-with-default-ver"), evt.GetEventType());
     }
 
     [Fact]
@@ -55,7 +55,7 @@ public sealed class EventTypeAttributeTests
     {
         var evt = new SomeEventV1();
 
-        evt.GetEventType().Should().Be(new EventType("SomeEvent@1"));
+        Assert.Equal(new EventType("SomeEvent@1"), evt.GetEventType());
     }
 
     [Fact]
@@ -63,7 +63,7 @@ public sealed class EventTypeAttributeTests
     {
         var evt = new SomeEventV2026_02();
 
-        evt.GetEventType().Should().Be(new EventType("SomeEvent@202602"));
+        Assert.Equal(new EventType("SomeEvent@202602"), evt.GetEventType());
     }
 
     [Fact]
@@ -74,12 +74,11 @@ public sealed class EventTypeAttributeTests
 
         provider.Configure(options);
 
-        options.EventTypes.Should().HaveCount(5);
-
-        options.EventTypes.Should().ContainEquivalentOf<KeyValuePair<EventType, Type>>(new(new EventType("SomeEvent"), typeof(SomeEvent)));
-        options.EventTypes.Should().ContainEquivalentOf<KeyValuePair<EventType, Type>>(new(new EventType("SomeNestedEvent"), typeof(TestDomainEvents.V0.SomeNestedEvent)));
-        options.EventTypes.Should().ContainEquivalentOf<KeyValuePair<EventType, Type>>(new(new EventType("event-with-default-ver"), typeof(SomeEventWithDefaultVersion)));
-        options.EventTypes.Should().ContainEquivalentOf<KeyValuePair<EventType, Type>>(new(new EventType("SomeEvent@1"), typeof(SomeEventV1)));
-        options.EventTypes.Should().ContainEquivalentOf<KeyValuePair<EventType, Type>>(new(new EventType("SomeEvent@202602"), typeof(SomeEventV2026_02)));
+        Assert.Equal(5, options.EventTypes.Count);
+        Assert.Contains(new KeyValuePair<EventType, Type>(new EventType("SomeEvent"), typeof(SomeEvent)), options.EventTypes);
+        Assert.Contains(new KeyValuePair<EventType, Type>(new EventType("SomeNestedEvent"), typeof(TestDomainEvents.V0.SomeNestedEvent)), options.EventTypes);
+        Assert.Contains(new KeyValuePair<EventType, Type>(new EventType("event-with-default-ver"), typeof(SomeEventWithDefaultVersion)), options.EventTypes);
+        Assert.Contains(new KeyValuePair<EventType, Type>(new EventType("SomeEvent@1"), typeof(SomeEventV1)), options.EventTypes);
+        Assert.Contains(new KeyValuePair<EventType, Type>(new EventType("SomeEvent@202602"), typeof(SomeEventV2026_02)), options.EventTypes);
     }
 }

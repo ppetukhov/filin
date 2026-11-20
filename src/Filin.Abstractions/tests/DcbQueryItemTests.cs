@@ -11,9 +11,9 @@ public class DcbQueryItemTests
         var queryItem = new DcbQueryItem();
 
         // Assert
-        queryItem.IsEmpty.Should().BeTrue();
-        queryItem.Tags.IsEmpty.Should().BeTrue();
-        queryItem.EventTypes.IsEmpty.Should().BeTrue();
+        Assert.True(queryItem.IsEmpty);
+        Assert.True(queryItem.Tags.IsEmpty);
+        Assert.True(queryItem.EventTypes.IsEmpty);
     }
 
     [Fact]
@@ -27,8 +27,8 @@ public class DcbQueryItemTests
         var queryItem = new DcbQueryItem(types, tags);
 
         // Assert
-        queryItem.EventTypes.Should().Be(types);
-        queryItem.Tags.Should().Be(tags);
+        Assert.Equal(types, queryItem.EventTypes);
+        Assert.Equal(tags, queryItem.Tags);
     }
 
     #endregion
@@ -50,11 +50,11 @@ public class DcbQueryItemTests
         var result = queryItem.Or(extraType1, extraType2);
 
         // Assert
-        result.Tags.Should().Be(queryItem.Tags);
-        result.EventTypes.Count.Should().Be(3);
-        result.EventTypes[0].Should().Be(new EventType("Created"));
-        result.EventTypes[1].Should().Be(new EventType("Deleted"));
-        result.EventTypes[2].Should().Be(new EventType("Updated"));
+        Assert.Equal(queryItem.Tags, result.Tags);
+        Assert.Equal(3, result.EventTypes.Count);
+        Assert.Equal(new EventType("Created"), result.EventTypes[0]);
+        Assert.Equal(new EventType("Deleted"), result.EventTypes[1]);
+        Assert.Equal(new EventType("Updated"), result.EventTypes[2]);
     }
 
     [Fact]
@@ -72,11 +72,11 @@ public class DcbQueryItemTests
         var result = queryItem.And(extraTag1, extraTag2);
 
         // Assert
-        result.EventTypes.Should().Be(queryItem.EventTypes);
-        result.Tags.Count.Should().Be(3);
-        result.Tags[0].Should().Be(new Tag("course:777"));
-        result.Tags[1].Should().Be(new Tag("faculty:it"));
-        result.Tags[2].Should().Be(new Tag("student:123"));
+        Assert.Equal(queryItem.EventTypes, result.EventTypes);
+        Assert.Equal(3, result.Tags.Count);
+        Assert.Equal(new Tag("course:777"), result.Tags[0]);
+        Assert.Equal(new Tag("faculty:it"), result.Tags[1]);
+        Assert.Equal(new Tag("student:123"), result.Tags[2]);
     }
 
     #endregion
@@ -101,7 +101,7 @@ public class DcbQueryItemTests
         };
 
         // Assert
-        queryItem.MatchesEvent(evt).Should().BeTrue();
+        Assert.True(queryItem.MatchesEvent(evt));
     }
 
     #endregion

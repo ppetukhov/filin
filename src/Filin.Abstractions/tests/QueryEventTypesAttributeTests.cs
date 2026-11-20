@@ -58,7 +58,7 @@ public sealed class QueryEventTypesAttributeTests
         var defaultKey = (IdSpan)default;
         var expected = new ProjectionId(new ProjectorId("projector-without-tags"), defaultKey);
 
-        result.Should().Be(expected);
+        Assert.Equal(expected, result);
     }
 
     [Fact]
@@ -69,7 +69,7 @@ public sealed class QueryEventTypesAttributeTests
         var defaultKey = (IdSpan)default;
         var expected = new ProjectionId(new ProjectorId("projector-without-tags@1"), defaultKey);
 
-        result.Should().Be(expected);
+        Assert.Equal(expected, result);
     }
 
     [Fact]
@@ -80,7 +80,7 @@ public sealed class QueryEventTypesAttributeTests
         var defaultKey = (IdSpan)default;
         var expected = new ProjectionId(new ProjectorId("nested-projector-without-tags"), defaultKey);
 
-        result.Should().Be(expected);
+        Assert.Equal(expected, result);
     }
 
     [Fact]
@@ -90,9 +90,8 @@ public sealed class QueryEventTypesAttributeTests
 
         var expected = new DcbQueryItem(["StudentSubscribed", "CourseCreated", "CourseRenamed", "CourseScheduled", "CourseCapacityChanged", "CourseStarted", "CourseFinished"], []);
 
-        result.Count.Should().Be(1);
-
-        result[0].Should().Be(expected);
+        Assert.Equal(1, result.Count);
+        Assert.Equal(expected, result[0]);
     }
 
     [Fact]
@@ -102,9 +101,8 @@ public sealed class QueryEventTypesAttributeTests
 
         var expected = new DcbQueryItem(["StudentSubscribed", "CourseCreated", "CourseRenamed", "CourseScheduled", "CourseCapacityChanged", "CourseStarted", "CourseFinished"], []);
 
-        result.Count.Should().Be(1);
-
-        result[0].Should().Be(expected);
+        Assert.Equal(1, result.Count);
+        Assert.Equal(expected, result[0]);
     }
 
     [Fact]
@@ -114,9 +112,8 @@ public sealed class QueryEventTypesAttributeTests
 
         var expected = new DcbQueryItem(["StudentSubscribed", "CourseCreated", "CourseRenamed", "CourseScheduled", "CourseCapacityChanged", "CourseStarted", "CourseFinished"], []);
 
-        result.Count.Should().Be(1);
-
-        result[0].Should().Be(expected);
+        Assert.Equal(1, result.Count);
+        Assert.Equal(expected, result[0]);
     }
 
     [Fact]
@@ -127,9 +124,9 @@ public sealed class QueryEventTypesAttributeTests
 
         provider.Configure(options);
 
-        options.ProjectorTypes.Should().ContainEquivalentOf<KeyValuePair<Type, Type>>(new(typeof(ProjState), typeof(ProjectorWithoutQueryTags)));
-        options.ProjectorTypes.Should().ContainEquivalentOf<KeyValuePair<Type, Type>>(new(typeof(ProjV1State), typeof(ProjectorWithoutQueryTagsV1)));
-        options.ProjectorTypes.Should().ContainEquivalentOf<KeyValuePair<Type, Type>>(new(typeof(ProjNestedState), typeof(TestDomainProjectors.V0.NestedProjectorWithoutQueryTags)));
+        Assert.Contains(new KeyValuePair<Type, Type>(typeof(ProjState), typeof(ProjectorWithoutQueryTags)), options.ProjectorTypes);
+        Assert.Contains(new KeyValuePair<Type, Type>(typeof(ProjV1State), typeof(ProjectorWithoutQueryTagsV1)), options.ProjectorTypes);
+        Assert.Contains(new KeyValuePair<Type, Type>(typeof(ProjNestedState), typeof(TestDomainProjectors.V0.NestedProjectorWithoutQueryTags)), options.ProjectorTypes);
     }
 
     [Fact]
@@ -140,8 +137,8 @@ public sealed class QueryEventTypesAttributeTests
 
         provider.Configure(options);
 
-        options.ProjectionTypes.Should().ContainEquivalentOf<KeyValuePair<ProjectorId, Type>>(new("projector-without-tags", typeof(ProjState)));
-        options.ProjectionTypes.Should().ContainEquivalentOf<KeyValuePair<ProjectorId, Type>>(new("projector-without-tags@1", typeof(ProjV1State)));
-        options.ProjectionTypes.Should().ContainEquivalentOf<KeyValuePair<ProjectorId, Type>>(new("nested-projector-without-tags", typeof(ProjNestedState)));
+        Assert.Contains(new KeyValuePair<ProjectorId, Type>(new ProjectorId("projector-without-tags"), typeof(ProjState)), options.ProjectionTypes);
+        Assert.Contains(new KeyValuePair<ProjectorId, Type>(new ProjectorId("projector-without-tags@1"), typeof(ProjV1State)), options.ProjectionTypes);
+        Assert.Contains(new KeyValuePair<ProjectorId, Type>(new ProjectorId("nested-projector-without-tags"), typeof(ProjNestedState)), options.ProjectionTypes);
     }
 }

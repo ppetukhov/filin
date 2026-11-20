@@ -9,9 +9,8 @@ public sealed class DecideResultTests
 
         var result = new DecideResult(evt);
 
-        result.Count.Should().Be(1);
-
-        result[0].Should().BeSameAs(evt);
+        Assert.Equal(1, result.Count);
+        Assert.Same(evt, result[0]);
     }
 
     [Fact]
@@ -23,19 +22,22 @@ public sealed class DecideResultTests
 
         var result = new DecideResult(evt1, evt2, evt3);
 
-        result.Count.Should().Be(3);
-        result[0].Should().BeSameAs(evt1);
-        result[1].Should().BeSameAs(evt2);
-        result[2].Should().BeSameAs(evt3);
+        Assert.Equal(3, result.Count);
+        Assert.Same(evt1, result[0]);
+        Assert.Same(evt2, result[1]);
+        Assert.Same(evt3, result[2]);
     }
 
     [Fact]
     public void SubmissionEntry_Constructor_Throw_ArgumentNullExecption()
     {
 #pragma warning disable CA1806 // Do not ignore method results
+#pragma warning disable IDE0039 // Use local function
         Action action = static () => new DecideResult(null!);
+#pragma warning restore IDE0039 // Use local function
 #pragma warning restore CA1806 // Do not ignore method results
 
-        action.Should().Throw<ArgumentNullException>().And.ParamName.Should().Be("@event");
+        var exception = Assert.Throws<ArgumentNullException>(action);
+        Assert.Equal("@event", exception.ParamName);
     }
 }

@@ -11,9 +11,9 @@ public class EventTypesTests
         var collection = new EventTypes();
 
         // Assert
-        collection.IsEmpty.Should().BeTrue();
-        collection.Count.Should().Be(0);
-        collection.AsSpan().IsEmpty.Should().BeTrue();
+        Assert.True(collection.IsEmpty);
+        Assert.Equal(0, collection.Count);
+        Assert.True(collection.AsSpan().IsEmpty);
     }
 
     [Fact]
@@ -26,9 +26,9 @@ public class EventTypesTests
         var collection = new EventTypes(et);
 
         // Assert
-        collection.IsEmpty.Should().BeFalse();
-        collection.Count.Should().Be(1);
-        collection[0].Should().Be(et);
+        Assert.False(collection.IsEmpty);
+        Assert.Equal(1, collection.Count);
+        Assert.Equal(et, collection[0]);
     }
 
     [Fact]
@@ -43,9 +43,9 @@ public class EventTypesTests
         var collection = new EventTypes(et1, et2, et3);
 
         // Assert
-        collection.Count.Should().Be(2);
-        collection[0].Should().Be(et2); // "A_Event" (sorted)
-        collection[1].Should().Be(et1); // "Z_Event" (unique)
+        Assert.Equal(2, collection.Count);
+        Assert.Equal(et2, collection[0]); // "A_Event" (sorted)
+        Assert.Equal(et1, collection[1]); // "Z_Event" (unique)
     }
 
     #endregion
@@ -60,11 +60,8 @@ public class EventTypesTests
         // Arrange
         var collection = new EventTypes();
 
-        // Act
-        Action act = () => _ = collection[index];
-
-        // Assert
-        act.Should().Throw<ArgumentOutOfRangeException>();
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() => _ = collection[index]);
     }
 
     #endregion
@@ -80,8 +77,8 @@ public class EventTypesTests
         var collection = new EventTypes(et2, et1);
 
         // Act & Assert
-        collection.Contains(et1).Should().BeTrue();
-        collection.Contains(et2).Should().BeTrue();
+        Assert.True(collection.Contains(et1));
+        Assert.True(collection.Contains(et2));
     }
 
     #endregion
@@ -99,10 +96,10 @@ public class EventTypesTests
         EventTypes result = [.. c1, .. c2];
 
         // Assert
-        result.Count.Should().Be(3);
-        result[0].Should().Be(new EventType("1_Created"));
-        result[1].Should().Be(new EventType("2_Deleted"));
-        result[2].Should().Be(new EventType("3_Updated"));
+        Assert.Equal(3, result.Count);
+        Assert.Equal(new EventType("1_Created"), result[0]);
+        Assert.Equal(new EventType("2_Deleted"), result[1]);
+        Assert.Equal(new EventType("3_Updated"), result[2]);
     }
 
     [Fact]
@@ -112,9 +109,9 @@ public class EventTypesTests
         EventTypes collection = [new EventType("Updated"), new EventType("Created")];
 
         // Assert
-        collection.Count.Should().Be(2);
-        collection[0].Should().Be(new EventType("Created"));
-        collection[1].Should().Be(new EventType("Updated"));
+        Assert.Equal(2, collection.Count);
+        Assert.Equal(new EventType("Created"), collection[0]);
+        Assert.Equal(new EventType("Updated"), collection[1]);
     }
 
     #endregion
@@ -129,9 +126,9 @@ public class EventTypesTests
         var c2 = new EventTypes(new EventType("B"), new EventType("A"));
 
         // Act & Assert
-        c1.Equals(c2).Should().BeTrue();
-        (c1 == c2).Should().BeTrue();
-        c1.GetHashCode().Should().Be(c2.GetHashCode());
+        Assert.True(c1.Equals(c2));
+        Assert.True(c1 == c2);
+        Assert.Equal(c2.GetHashCode(), c1.GetHashCode());
     }
 
     #endregion
@@ -143,24 +140,10 @@ public class EventTypesTests
     {
         // Arrange
         var collection = new EventTypes(new EventType("A"));
-        var enumerator = collection.GetEnumerator();
-        Exception? ex = null;
 
-        // Act
-        try
-        {
-            _ = enumerator.Current;
-        }
-        catch (Exception e)
-        {
-            ex = e;
-        }
-        finally
-        {
-            ex.Should().NotBeNull();
-            ex.Should().BeOfType<InvalidOperationException>();
-            ex.Message.Should().Be("EventTypeEnumerator.Current value has not been set.");
-        }
+        // Act & Assert
+        var ex = Assert.Throws<InvalidOperationException>(() => _ = collection.GetEnumerator().Current);
+        Assert.Equal("EventTypeEnumerator.Current value has not been set.", ex.Message);
     }
 
     #endregion
@@ -176,12 +159,12 @@ public class EventTypesTests
         EventTypes c3 = [new EventType("Created")];
 
         // Act & Assert
-        (c1 == c3).Should().BeTrue();
-        (c1 != c2).Should().BeTrue();
-        (c1 < c2).Should().BeTrue();
-        (c1 <= c3).Should().BeTrue();
-        (c2 > c1).Should().BeTrue();
-        (c3 >= c1).Should().BeTrue();
+        Assert.True(c1 == c3);
+        Assert.True(c1 != c2);
+        Assert.True(c1 < c2);
+        Assert.True(c1 <= c3);
+        Assert.True(c2 > c1);
+        Assert.True(c3 >= c1);
     }
 
     #endregion
@@ -195,7 +178,7 @@ public class EventTypesTests
         var collection = new EventTypes();
 
         // Act & Assert
-        collection.ToString().Should().BeEmpty();
+        Assert.Empty(collection.ToString());
     }
 
     [Fact]
@@ -208,7 +191,7 @@ public class EventTypesTests
         var result = collection.ToString();
 
         // Assert
-        result.Should().Be("Created, Updated", "event types must follow proper sorting and default spacing layout rules");
+        Assert.Equal("Created, Updated", result);
     }
 
     [Fact]
@@ -222,9 +205,9 @@ public class EventTypesTests
         var success = collection.TryFormat(destination, out var charsWritten, default, System.Globalization.CultureInfo.InvariantCulture);
 
         // Assert
-        success.Should().BeTrue();
-        charsWritten.Should().Be(16); // length of "Created, Updated"
-        new string(destination[..charsWritten]).Should().Be("Created, Updated");
+        Assert.True(success);
+        Assert.Equal(16, charsWritten); // length of "Created, Updated"
+        Assert.Equal("Created, Updated", new string(destination[..charsWritten]));
     }
 
     [Fact]
@@ -238,8 +221,8 @@ public class EventTypesTests
         var success = collection.TryFormat(tinyDestination, out var charsWritten, default, System.Globalization.CultureInfo.InvariantCulture);
 
         // Assert
-        success.Should().BeFalse();
-        charsWritten.Should().Be(0);
+        Assert.False(success);
+        Assert.Equal(0, charsWritten);
     }
 
     [Fact]
@@ -255,9 +238,9 @@ public class EventTypesTests
         var result = collection.ToString();
 
         // Assert
-        result.Length.Should().Be(304); // 300 elements chars + 4 separator chars (", " * 2)
-        result.StartsWith(new string('A', 100), StringComparison.Ordinal).Should().BeTrue();
-        result.EndsWith(new string('C', 100), StringComparison.Ordinal).Should().BeTrue();
+        Assert.Equal(304, result.Length);
+        Assert.StartsWith(new string('A', 100), result, StringComparison.Ordinal);
+        Assert.EndsWith(new string('C', 100), result, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -271,7 +254,7 @@ public class EventTypesTests
         var result = string.Format(mockFormatter, "{0}", collection);
 
         // Assert
-        result.Should().Be("CREATED, UPDATED", "the collection formatting must cede evaluation execution to custom providers if active");
+        Assert.Equal("CREATED, UPDATED", result);
     }
 
     // Custom helper formatter implementation for explicit boundary unit tests

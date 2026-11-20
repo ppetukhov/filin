@@ -15,10 +15,10 @@ public sealed class TagTests
     {
         var result = new Tag(name!);
 
-        result.IsDefault.Should().BeTrue();
-        result.Value.Should().BeSameAs(string.Empty);
-        result.AsSpan().Length.Should().Be(0);
-        result.Hash.Should().Be(StableHashTests.HASH64_OF_EMPTY);
+        Assert.True(result.IsDefault);
+        Assert.Same(string.Empty, result.Value);
+        Assert.Equal(0, result.AsSpan().Length);
+        Assert.Equal(StableHashTests.HASH64_OF_EMPTY, result.Hash);
     }
 
     [Theory]
@@ -27,10 +27,10 @@ public sealed class TagTests
     {
         var result = new Tag(name);
 
-        result.IsDefault.Should().BeFalse();
-        result.Value.Should().BeSameAs(name);
-        result.AsSpan().SequenceEqual(name.AsSpan()).Should().BeTrue();
-        result.Hash.Should().Be(expectedHash);
+        Assert.False(result.IsDefault);
+        Assert.Same(name, result.Value);
+        Assert.True(result.AsSpan().SequenceEqual(name.AsSpan()));
+        Assert.Equal(expectedHash, result.Hash);
     }
 
     [Theory]
@@ -44,7 +44,7 @@ public sealed class TagTests
 
         var result = idSpanX.Equals(idSpanY);
 
-        result.Should().BeTrue();
+        Assert.True(result);
     }
 
     [Theory]
@@ -59,7 +59,7 @@ public sealed class TagTests
 
         var result = idSpanX.Equals(idSpanY);
 
-        result.Should().BeFalse();
+        Assert.False(result);
     }
 
     [Theory]
@@ -77,7 +77,7 @@ public sealed class TagTests
 
         var result = idSpanX.CompareTo(idSpanY);
 
-        result.Should().Be(expectedValue);
+        Assert.Equal(expectedValue, result);
     }
 
     [Fact]
@@ -85,7 +85,7 @@ public sealed class TagTests
     {
         Tag idSpan = default;
 
-        idSpan.ToString().Should().BeNull(because: "Tag is default");
+        Assert.Null(idSpan.ToString());
     }
 
     [Fact]
@@ -95,7 +95,7 @@ public sealed class TagTests
 
         var idSpan = new Tag(expectedString);
 
-        idSpan.ToString().Should().Be(expectedString);
+        Assert.Equal(expectedString, idSpan.ToString());
     }
 
     [Theory]
@@ -106,7 +106,7 @@ public sealed class TagTests
     {
         var idSpan = new Tag("Some text");
 
-        idSpan.ToString(format: format, formatProvider: formatProvider).Should().Be(expectedString);
+        Assert.Equal(expectedString, idSpan.ToString(format: format, formatProvider: formatProvider));
     }
 
     [Theory]
@@ -117,7 +117,7 @@ public sealed class TagTests
     {
         Tag idSpan = default;
 
-        idSpan.ToString(format: format, formatProvider: null).Should().BeEmpty();
+        Assert.Empty(idSpan.ToString(format: format, formatProvider: null));
     }
 
     [Theory]
@@ -131,8 +131,8 @@ public sealed class TagTests
 
         var result = idSpan.TryFormat(destination, out var charsWritten);
 
-        result.Should().BeTrue();
-        charsWritten.Should().Be(0);
+        Assert.True(result);
+        Assert.Equal(0, charsWritten);
     }
 
     [Fact]
@@ -144,8 +144,8 @@ public sealed class TagTests
 
         var result = idSpan.TryFormat(destination, out var charsWritten);
 
-        result.Should().BeFalse();
-        charsWritten.Should().Be(0);
+        Assert.False(result);
+        Assert.Equal(0, charsWritten);
     }
 
     [Fact]
@@ -158,9 +158,9 @@ public sealed class TagTests
 
         var result = idSpan.TryFormat(destination, out var charsWritten);
 
-        result.Should().BeTrue();
-        charsWritten.Should().Be(idSpanText.Length);
-        destination[..charsWritten].SequenceEqual(idSpanText).Should().BeTrue();
+        Assert.True(result);
+        Assert.Equal(idSpanText.Length, charsWritten);
+        Assert.True(destination[..charsWritten].SequenceEqual(idSpanText));
     }
 
     [Theory]
@@ -175,9 +175,9 @@ public sealed class TagTests
 
         var result = idSpan.TryFormat(destination, out var charsWritten, format, formatProvider);
 
-        result.Should().BeTrue();
-        charsWritten.Should().Be(expectedString.Length);
-        destination[..charsWritten].SequenceEqual(expectedString).Should().BeTrue();
+        Assert.True(result);
+        Assert.Equal(expectedString.Length, charsWritten);
+        Assert.True(destination[..charsWritten].SequenceEqual(expectedString));
     }
 
     [Theory]
@@ -193,9 +193,9 @@ public sealed class TagTests
 
         var result = idSpan.TryFormat(destination, out var charsWritten, format: format, provider: null);
 
-        result.Should().BeTrue();
-        charsWritten.Should().Be(idSpanText.Length);
-        destination[..charsWritten].SequenceEqual(idSpanText).Should().BeTrue();
+        Assert.True(result);
+        Assert.Equal(idSpanText.Length, charsWritten);
+        Assert.True(destination[..charsWritten].SequenceEqual(idSpanText));
     }
 
     [Theory]
@@ -210,8 +210,8 @@ public sealed class TagTests
 
         var result = idSpan.TryFormat(destination, out var charsWritten, format: format, provider: formatProvider);
 
-        result.Should().BeFalse();
-        charsWritten.Should().Be(0);
+        Assert.False(result);
+        Assert.Equal(0, charsWritten);
     }
 
     [Theory]
@@ -227,9 +227,9 @@ public sealed class TagTests
 
         var result = idSpan.TryFormat(utf8Destination, out var bytesWritten, format, formatProvider);
 
-        result.Should().BeTrue();
-        bytesWritten.Should().Be(expectedBytes.Length);
-        utf8Destination[..bytesWritten].SequenceEqual(expectedBytes).Should().BeTrue();
+        Assert.True(result);
+        Assert.Equal(expectedBytes.Length, bytesWritten);
+        Assert.True(utf8Destination[..bytesWritten].SequenceEqual(expectedBytes));
     }
 
     [Theory]
@@ -243,8 +243,8 @@ public sealed class TagTests
 
         var result = idSpan.TryFormat(utf8Destination, out var bytesWritten);
 
-        result.Should().BeTrue();
-        bytesWritten.Should().Be(0);
+        Assert.True(result);
+        Assert.Equal(0, bytesWritten);
     }
 
     [Fact]
@@ -256,8 +256,8 @@ public sealed class TagTests
 
         var result = idSpan.TryFormat(utf8Destination, out var bytesWritten);
 
-        result.Should().BeFalse();
-        bytesWritten.Should().Be(0);
+        Assert.False(result);
+        Assert.Equal(0, bytesWritten);
     }
 
     [Fact]
@@ -270,9 +270,9 @@ public sealed class TagTests
 
         var result = idSpan.TryFormat(utf8Destination, out var bytesWritten);
 
-        result.Should().BeTrue();
-        bytesWritten.Should().Be(idSpan.AsSpan().Length);
-        utf8Destination[..bytesWritten].SequenceEqual(expected).Should().BeTrue();
+        Assert.True(result);
+        Assert.Equal(idSpan.AsSpan().Length, bytesWritten);
+        Assert.True(utf8Destination[..bytesWritten].SequenceEqual(expected));
     }
 
     [Fact]
@@ -282,7 +282,7 @@ public sealed class TagTests
 
         var result = Tag.FromString("Some text idSpan");
 
-        result.Should().BeEquivalentTo(expected);
+        Assert.Equal(expected, result);
     }
 
     [Fact]
@@ -292,7 +292,7 @@ public sealed class TagTests
 
         var result = Tag.FromIdSpan(new IdSpan("Some text idSpan"));
 
-        result.Should().BeEquivalentTo(expected);
+        Assert.Equal(expected, result);
     }
 
     [Fact]
@@ -302,6 +302,6 @@ public sealed class TagTests
 
         var result = Tag.ToIdSpan(new Tag("Some text idSpan"));
 
-        result.Should().BeEquivalentTo(expected);
+        Assert.Equal(expected, result);
     }
 }
