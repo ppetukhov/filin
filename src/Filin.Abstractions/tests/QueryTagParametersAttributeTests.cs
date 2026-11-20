@@ -72,7 +72,7 @@ public sealed class QueryTagParametersAttributeTests
         var orderedKey = string.Join('&', exactTags.Order());
         var expected = new ProjectionId(new ProjectorId("projector-with-query-tag-parameters"), orderedKey);
 
-        result.Should().Be(expected);
+        Assert.Equal(expected, result);
     }
 
     [Fact]
@@ -91,7 +91,7 @@ public sealed class QueryTagParametersAttributeTests
         var orderedKey = string.Join('&', exactTags.Order());
         var expected = new ProjectionId(new ProjectorId("projector-with-query-tag-parameters@1"), orderedKey);
 
-        result.Should().Be(expected);
+        Assert.Equal(expected, result);
     }
 
     [Fact]
@@ -110,7 +110,7 @@ public sealed class QueryTagParametersAttributeTests
         var orderedKey = string.Join('&', exactTags.Order());
         var expected = new ProjectionId(new ProjectorId("nested-projector-with-query-tag-parameters"), orderedKey);
 
-        result.Should().Be(expected);
+        Assert.Equal(expected, result);
     }
 
     [Fact]
@@ -131,12 +131,11 @@ public sealed class QueryTagParametersAttributeTests
         var expected3 = new DcbQueryItem(["CoursesPaused", "CoursesResumed"], []);
         var expected4 = new DcbQueryItem(["CourseStarted", "StudentSubscribed", "CourseFinished"], [tagCourse, tagStudent1, tagStudent2]);
 
-        result.Count.Should().Be(4);
-
-        result.Contains(expected1).Should().BeTrue();
-        result.Contains(expected2).Should().BeTrue();
-        result.Contains(expected3).Should().BeTrue();
-        result.Contains(expected4).Should().BeTrue();
+        Assert.Equal(4, result.Count);
+        Assert.True(result.Contains(expected1));
+        Assert.True(result.Contains(expected2));
+        Assert.True(result.Contains(expected3));
+        Assert.True(result.Contains(expected4));
     }
 
     [Fact]
@@ -156,12 +155,11 @@ public sealed class QueryTagParametersAttributeTests
         var expected3 = new DcbQueryItem(["CoursesPaused", "CoursesResumed"], []);
         var expected4 = new DcbQueryItem(["CourseStarted", "StudentSubscribed", "CourseFinished"], [tagCourse, tagStudent1, tagStudent2]);
 
-        result.Count.Should().Be(4);
-
-        result.Contains(expected1).Should().BeTrue();
-        result.Contains(expected2).Should().BeTrue();
-        result.Contains(expected3).Should().BeTrue();
-        result.Contains(expected4).Should().BeTrue();
+        Assert.Equal(4, result.Count);
+        Assert.True(result.Contains(expected1));
+        Assert.True(result.Contains(expected2));
+        Assert.True(result.Contains(expected3));
+        Assert.True(result.Contains(expected4));
     }
 
     [Fact]
@@ -181,12 +179,11 @@ public sealed class QueryTagParametersAttributeTests
         var expected3 = new DcbQueryItem(["CoursesPaused", "CoursesResumed"], []);
         var expected4 = new DcbQueryItem(["CourseStarted", "StudentSubscribed", "CourseFinished"], [tagCourse, tagStudent1, tagStudent2]);
 
-        result.Count.Should().Be(4);
-
-        result.Contains(expected1).Should().BeTrue();
-        result.Contains(expected2).Should().BeTrue();
-        result.Contains(expected3).Should().BeTrue();
-        result.Contains(expected4).Should().BeTrue();
+        Assert.Equal(4, result.Count);
+        Assert.True(result.Contains(expected1));
+        Assert.True(result.Contains(expected2));
+        Assert.True(result.Contains(expected3));
+        Assert.True(result.Contains(expected4));
     }
 
     [Fact]
@@ -194,14 +191,17 @@ public sealed class QueryTagParametersAttributeTests
     {
         Tags tags = ["course:5555", "teacher:584456", "other-entity:846123", "owner:4123"];
 
+#pragma warning disable IDE0039 // Use local function
         Action act = () => ProjectorWithQueryTagParameters.GetProjectionId(tags);
+#pragma warning restore IDE0039 // Use local function
 
-
-        act.Should().Throw<ArgumentException>()
-            .WithMessage("Required tag started with student: *")
-            .WithParameterName("tags")
-            .Where(x => x.Data.Contains("TagParameter") && x.Data["TagParameter"]!.Equals("student:"))
-            .Where(x => x.Data.Contains("Tags") && x.Data["Tags"]!.Equals(tags.ToString()));
+        var ex = Assert.Throws<ArgumentException>(act);
+        Assert.StartsWith("Required tag started with student:", ex.Message, StringComparison.Ordinal);
+        Assert.Equal("tags", ex.ParamName);
+        Assert.True(ex.Data.Contains("TagParameter"));
+        Assert.Equal("student:", ex.Data["TagParameter"]);
+        Assert.True(ex.Data.Contains("Tags"));
+        Assert.Equal(tags.ToString(), ex.Data["Tags"]);
     }
 
     [Fact]
@@ -209,13 +209,17 @@ public sealed class QueryTagParametersAttributeTests
     {
         Tags tags = ["course:5555", "teacher:584456", "other-entity:846123", "owner:4123"];
 
+#pragma warning disable IDE0039 // Use local function
         Action act = () => ProjectorWithQueryTagParametersV1.GetProjectionId(tags);
+#pragma warning restore IDE0039 // Use local function
 
-        act.Should().Throw<ArgumentException>()
-            .WithMessage("Required tag started with student: *")
-            .WithParameterName("tags")
-            .Where(x => x.Data.Contains("TagParameter") && x.Data["TagParameter"]!.Equals("student:"))
-            .Where(x => x.Data.Contains("Tags") && x.Data["Tags"]!.Equals(tags.ToString()));
+        var ex = Assert.Throws<ArgumentException>(act);
+        Assert.StartsWith("Required tag started with student:", ex.Message, StringComparison.Ordinal);
+        Assert.Equal("tags", ex.ParamName);
+        Assert.True(ex.Data.Contains("TagParameter"));
+        Assert.Equal("student:", ex.Data["TagParameter"]);
+        Assert.True(ex.Data.Contains("Tags"));
+        Assert.Equal(tags.ToString(), ex.Data["Tags"]);
     }
 
     [Fact]
@@ -223,13 +227,17 @@ public sealed class QueryTagParametersAttributeTests
     {
         Tags tags = ["course:5555", "teacher:584456", "other-entity:846123", "owner:4123"];
 
+#pragma warning disable IDE0039 // Use local function
         Action act = () => TestDomainProjectors.V0.NestedProjectorWithQueryTagParameters.GetProjectionId(tags);
+#pragma warning restore IDE0039 // Use local function
 
-        act.Should().Throw<ArgumentException>()
-            .WithMessage("Required tag started with student: *")
-            .WithParameterName("tags")
-            .Where(x => x.Data.Contains("TagParameter") && x.Data["TagParameter"]!.Equals("student:"))
-            .Where(x => x.Data.Contains("Tags") && x.Data["Tags"]!.Equals(tags.ToString()));
+        var ex = Assert.Throws<ArgumentException>(act);
+        Assert.StartsWith("Required tag started with student:", ex.Message, StringComparison.Ordinal);
+        Assert.Equal("tags", ex.ParamName);
+        Assert.True(ex.Data.Contains("TagParameter"));
+        Assert.Equal("student:", ex.Data["TagParameter"]);
+        Assert.True(ex.Data.Contains("Tags"));
+        Assert.Equal(tags.ToString(), ex.Data["Tags"]);
     }
 
     [Fact]
@@ -240,9 +248,9 @@ public sealed class QueryTagParametersAttributeTests
 
         provider.Configure(options);
 
-        options.ProjectorTypes.Should().ContainEquivalentOf<KeyValuePair<Type, Type>>(new(typeof(ProjParamsState), typeof(ProjectorWithQueryTagParameters)));
-        options.ProjectorTypes.Should().ContainEquivalentOf<KeyValuePair<Type, Type>>(new(typeof(ProjParamsV1State), typeof(ProjectorWithQueryTagParametersV1)));
-        options.ProjectorTypes.Should().ContainEquivalentOf<KeyValuePair<Type, Type>>(new(typeof(ProjNestedParamsState), typeof(TestDomainProjectors.V0.NestedProjectorWithQueryTagParameters)));
+        Assert.Contains(new KeyValuePair<Type, Type>(typeof(ProjParamsState), typeof(ProjectorWithQueryTagParameters)), options.ProjectorTypes);
+        Assert.Contains(new KeyValuePair<Type, Type>(typeof(ProjParamsV1State), typeof(ProjectorWithQueryTagParametersV1)), options.ProjectorTypes);
+        Assert.Contains(new KeyValuePair<Type, Type>(typeof(ProjNestedParamsState), typeof(TestDomainProjectors.V0.NestedProjectorWithQueryTagParameters)), options.ProjectorTypes);
     }
 
     [Fact]
@@ -253,8 +261,8 @@ public sealed class QueryTagParametersAttributeTests
 
         provider.Configure(options);
 
-        options.ProjectionTypes.Should().ContainEquivalentOf<KeyValuePair<ProjectorId, Type>>(new("projector-with-query-tag-parameters", typeof(ProjParamsState)));
-        options.ProjectionTypes.Should().ContainEquivalentOf<KeyValuePair<ProjectorId, Type>>(new("projector-with-query-tag-parameters@1", typeof(ProjParamsV1State)));
-        options.ProjectionTypes.Should().ContainEquivalentOf<KeyValuePair<ProjectorId, Type>>(new("nested-projector-with-query-tag-parameters", typeof(ProjNestedParamsState)));
+        Assert.Contains(new KeyValuePair<ProjectorId, Type>(new ProjectorId("projector-with-query-tag-parameters"), typeof(ProjParamsState)), options.ProjectionTypes);
+        Assert.Contains(new KeyValuePair<ProjectorId, Type>(new ProjectorId("projector-with-query-tag-parameters@1"), typeof(ProjParamsV1State)), options.ProjectionTypes);
+        Assert.Contains(new KeyValuePair<ProjectorId, Type>(new ProjectorId("nested-projector-with-query-tag-parameters"), typeof(ProjNestedParamsState)), options.ProjectionTypes);
     }
 }

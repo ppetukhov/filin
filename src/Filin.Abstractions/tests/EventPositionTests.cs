@@ -10,9 +10,9 @@ public sealed class EventPositionTests
     {
         var result = new EventPosition(0L);
 
-        result.IsDefault.Should().BeTrue();
-        result.Value.Should().Be(0L);
-        result.GetHashCode().Should().Be(0L.GetHashCode());
+        Assert.True(result.IsDefault);
+        Assert.Equal(0UL, result.Value);
+        Assert.Equal(0L.GetHashCode(), result.GetHashCode());
     }
 
     [Fact]
@@ -20,9 +20,9 @@ public sealed class EventPositionTests
     {
         EventPosition result = default;
 
-        result.IsDefault.Should().BeTrue();
-        result.Value.Should().Be(0L);
-        result.GetHashCode().Should().Be(0L.GetHashCode());
+        Assert.True(result.IsDefault);
+        Assert.Equal(0UL, result.Value);
+        Assert.Equal(0L.GetHashCode(), result.GetHashCode());
     }
 
     [Theory]
@@ -36,9 +36,9 @@ public sealed class EventPositionTests
 
         var isDefault = value == ulong.MinValue;
 
-        result.IsDefault.Should().Be(isDefault);
-        result.Value.Should().Be(value);
-        result.GetHashCode().Should().Be(value.GetHashCode());
+        Assert.Equal(isDefault, result.IsDefault);
+        Assert.Equal(value, result.Value);
+        Assert.Equal(value.GetHashCode(), result.GetHashCode());
     }
 
     [Theory]
@@ -53,7 +53,7 @@ public sealed class EventPositionTests
 
         var result = positionX.Equals(positionY);
 
-        result.Should().BeTrue();
+        Assert.True(result);
     }
 
     [Theory]
@@ -68,7 +68,7 @@ public sealed class EventPositionTests
 
         var result = positionX.Equals(positionY);
 
-        result.Should().BeFalse();
+        Assert.False(result);
     }
 
     [Theory]
@@ -83,7 +83,7 @@ public sealed class EventPositionTests
 
         var result = positionX.CompareTo(positionY);
 
-        result.Should().Be(expectedValue);
+        Assert.Equal(expectedValue, result);
     }
 
     [Fact]
@@ -91,7 +91,7 @@ public sealed class EventPositionTests
     {
         EventPosition position = default;
 
-        position.ToString().Should().Be("0", because: "EventPosition is default");
+        Assert.Equal("0", position.ToString());
     }
 
     [Fact]
@@ -101,7 +101,7 @@ public sealed class EventPositionTests
 
         var position = new EventPosition(1000000);
 
-        position.ToString().Should().Be(expectedString);
+        Assert.Equal(expectedString, position.ToString());
     }
 
     [Theory]
@@ -115,7 +115,7 @@ public sealed class EventPositionTests
     {
         var position = new EventPosition(value);
 
-        position.ToString(format: format, formatProvider: CultureInfo.InvariantCulture).Should().Be(expectedString);
+        Assert.Equal(expectedString, position.ToString(format: format, formatProvider: CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -127,8 +127,8 @@ public sealed class EventPositionTests
 
         var result = position.TryFormat(destination, out var charsWritten);
 
-        result.Should().BeFalse();
-        charsWritten.Should().Be(0);
+        Assert.False(result);
+        Assert.Equal(0, charsWritten);
     }
 
     [Fact]
@@ -141,9 +141,9 @@ public sealed class EventPositionTests
 
         var result = position.TryFormat(destination, out var charsWritten);
 
-        result.Should().BeTrue();
-        charsWritten.Should().Be(identityText.Length);
-        destination[..charsWritten].SequenceEqual(identityText).Should().BeTrue();
+        Assert.True(result);
+        Assert.Equal(identityText.Length, charsWritten);
+        Assert.True(destination[..charsWritten].SequenceEqual(identityText));
     }
 
     [Theory]
@@ -161,9 +161,9 @@ public sealed class EventPositionTests
 
         var result = position.TryFormat(destination, out var charsWritten, format: format, provider: CultureInfo.InvariantCulture);
 
-        result.Should().BeTrue();
-        charsWritten.Should().Be(expectedString.Length);
-        destination[..charsWritten].SequenceEqual(expectedString).Should().BeTrue();
+        Assert.True(result);
+        Assert.Equal(expectedString.Length, charsWritten);
+        Assert.True(destination[..charsWritten].SequenceEqual(expectedString));
     }
 
     [Theory]
@@ -181,8 +181,8 @@ public sealed class EventPositionTests
 
         var result = position.TryFormat(destination, out var charsWritten, format: format, provider: CultureInfo.InvariantCulture);
 
-        result.Should().BeFalse();
-        charsWritten.Should().Be(0);
+        Assert.False(result);
+        Assert.Equal(0, charsWritten);
     }
 
     [Theory]
@@ -201,9 +201,9 @@ public sealed class EventPositionTests
 
         var result = position.TryFormat(utf8Destination, out var bytesWritten, format: format, provider: CultureInfo.InvariantCulture);
 
-        result.Should().BeTrue();
-        bytesWritten.Should().Be(expectedBytes.Length);
-        utf8Destination[..bytesWritten].SequenceEqual(expectedBytes).Should().BeTrue();
+        Assert.True(result);
+        Assert.Equal(expectedBytes.Length, bytesWritten);
+        Assert.True(utf8Destination[..bytesWritten].SequenceEqual(expectedBytes));
     }
 
     [Fact]
@@ -215,8 +215,8 @@ public sealed class EventPositionTests
 
         var result = position.TryFormat(utf8Destination, out var bytesWritten);
 
-        result.Should().BeFalse();
-        bytesWritten.Should().Be(0);
+        Assert.False(result);
+        Assert.Equal(0, bytesWritten);
     }
 
     [Fact]
@@ -229,8 +229,8 @@ public sealed class EventPositionTests
 
         var result = position.TryFormat(utf8Destination, out var bytesWritten);
 
-        result.Should().BeTrue();
-        bytesWritten.Should().Be(expected.AsSpan().Length);
-        utf8Destination[..bytesWritten].SequenceEqual(expected.AsSpan()).Should().BeTrue();
+        Assert.True(result);
+        Assert.Equal(expected.AsSpan().Length, bytesWritten);
+        Assert.True(utf8Destination[..bytesWritten].SequenceEqual(expected.AsSpan()));
     }
 }

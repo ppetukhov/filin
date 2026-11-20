@@ -11,9 +11,9 @@ public class DcbQueryTests
         var query = new DcbQuery();
 
         // Assert
-        query.IsEmpty.Should().BeTrue();
-        query.Count.Should().Be(0);
-        query.AsSpan().IsEmpty.Should().BeTrue();
+        Assert.True(query.IsEmpty);
+        Assert.Equal(0, query.Count);
+        Assert.True(query.AsSpan().IsEmpty);
     }
 
     [Fact]
@@ -27,9 +27,9 @@ public class DcbQueryTests
         DcbQuery query = [q1, q2];
 
         // Assert
-        query.Count.Should().Be(2, "items with unique tags must remain independent within the query");
-        query[0].Should().Be(q2, "ordered by IComparable specification ('tag:a' precedes 'tag:b')");
-        query[1].Should().Be(q1);
+        Assert.Equal(2, query.Count); // items with unique tags must remain independent within the query
+        Assert.Equal(q2, query[0]); // ordered by IComparable specification ('tag:a' precedes 'tag:b')
+        Assert.Equal(q1, query[1]);
     }
 
     [Fact]
@@ -45,13 +45,13 @@ public class DcbQueryTests
         DcbQuery query = [q1, q2];
 
         // Assert
-        query.Count.Should().Be(1, "items with identical tags must be merged into a single optimized boundary item inside the query");
+        Assert.Equal(1, query.Count);
 
         var mergedItem = query[0];
-        mergedItem.Tags.Should().Be(sharedTags);
-        mergedItem.EventTypes.Count.Should().Be(2);
-        mergedItem.EventTypes[0].Should().Be(new EventType("Created"));
-        mergedItem.EventTypes[1].Should().Be(new EventType("Updated"));
+        Assert.Equal(sharedTags, mergedItem.Tags);
+        Assert.Equal(2, mergedItem.EventTypes.Count);
+        Assert.Equal(new EventType("Created"), mergedItem.EventTypes[0]);
+        Assert.Equal(new EventType("Updated"), mergedItem.EventTypes[1]);
     }
 
     #endregion
@@ -66,7 +66,7 @@ public class DcbQueryTests
         var target = new DcbQueryItem([new EventType("Any")]);
 
         // Act & Assert
-        query.Contains(target).Should().BeFalse();
+        Assert.False(query.Contains(target));
     }
 
     [Fact]
@@ -78,8 +78,8 @@ public class DcbQueryTests
         DcbQuery query = [q2, q1];
 
         // Act & Assert
-        query.Contains(q1).Should().BeTrue();
-        query.Contains(q2).Should().BeTrue();
+        Assert.True(query.Contains(q1));
+        Assert.True(query.Contains(q2));
     }
 
     #endregion
@@ -97,9 +97,9 @@ public class DcbQueryTests
         DcbQuery c2 = [q2, q1];
 
         // Act & Assert
-        c1.Equals(c2).Should().BeTrue();
-        (c1 == c2).Should().BeTrue();
-        c1.GetHashCode().Should().Be(c2.GetHashCode());
+        Assert.True(c1.Equals(c2));
+        Assert.True(c1 == c2);
+        Assert.Equal(c2.GetHashCode(), c1.GetHashCode());
     }
 
     [Fact]
@@ -114,12 +114,12 @@ public class DcbQueryTests
         DcbQuery c3 = [q1];
 
         // Act & Assert
-        (c1 == c3).Should().BeTrue();
-        (c1 != c2).Should().BeTrue();
-        (c1 < c2).Should().BeTrue();
-        (c1 <= c3).Should().BeTrue();
-        (c2 > c1).Should().BeTrue();
-        (c3 >= c1).Should().BeTrue();
+        Assert.True(c1 == c3);
+        Assert.True(c1 != c2);
+        Assert.True(c1 < c2);
+        Assert.True(c1 <= c3);
+        Assert.True(c2 > c1);
+        Assert.True(c3 >= c1);
     }
 
     #endregion
@@ -146,9 +146,9 @@ public class DcbQueryTests
         }
         finally
         {
-            ex.Should().NotBeNull();
-            ex.Should().BeOfType<InvalidOperationException>();
-            ex.Message.Should().Be("DcbQueryEnumerator.Current value has not been set.");
+            Assert.NotNull(ex);
+            Assert.IsType<InvalidOperationException>(ex);
+            Assert.Equal("DcbQueryEnumerator.Current value has not been set.", ex.Message);
         }
     }
 
@@ -169,7 +169,7 @@ public class DcbQueryTests
         };
 
         // Act & Assert
-        query.MatchesEvent(evt).Should().BeTrue("an empty query specification implicitly allows any event stream");
+        Assert.True(query.MatchesEvent(evt), "an empty query specification implicitly allows any event stream");
     }
 
     [Fact]
@@ -189,7 +189,7 @@ public class DcbQueryTests
         };
 
         // Assert
-        query.MatchesEvent(evt).Should().BeTrue("the event satisfies the second specification block within the composite query");
+        Assert.True(query.MatchesEvent(evt), "the event satisfies the second specification block within the composite query");
     }
 
     [Fact]
@@ -208,7 +208,7 @@ public class DcbQueryTests
         };
 
         // Assert
-        query.MatchesEvent(evt).Should().BeFalse("the event does not satisfy any active consistency boundaries defined in the query");
+        Assert.False(query.MatchesEvent(evt), "the event does not satisfy any active consistency boundaries defined in the query");
     }
 
     #endregion
@@ -228,10 +228,10 @@ public class DcbQueryTests
         var result = query.Or(extraItem);
 
         // Assert: They must merge because tags are identical
-        result.Count.Should().Be(1, "the extra item shared tags with the initial query structure and must be merged");
-        result[0].EventTypes.Count.Should().Be(2);
-        result[0].EventTypes[0].Should().Be(new EventType("Created"));
-        result[0].EventTypes[1].Should().Be(new EventType("Updated"));
+        Assert.Equal(1, result.Count);
+        Assert.Equal(2, result[0].EventTypes.Count);
+        Assert.Equal(new EventType("Created"), result[0].EventTypes[0]);
+        Assert.Equal(new EventType("Updated"), result[0].EventTypes[1]);
     }
 
     [Fact]
@@ -254,16 +254,16 @@ public class DcbQueryTests
         var result = query1.Or(query2);
 
         // Assert: Inside result, 'tagsB' should collapse into 1 item, 'tagsA' stays independent -> Count 2
-        result.Count.Should().Be(2, "overlapping tag sectors from both queries must collapse cleanly");
+        Assert.Equal(2, result.Count); // overlapping tag sectors from both queries must collapse cleanly
 
         // Due to default IComparable layout, 'course:111' precedes 'course:222'
-        result[0].Tags.Should().Be(tagsA);
-        result[0].EventTypes.Count.Should().Be(1);
+        Assert.Equal(tagsA, result[0].Tags);
+        Assert.Equal(1, result[0].EventTypes.Count);
 
-        result[1].Tags.Should().Be(tagsB);
-        result[1].EventTypes.Count.Should().Be(2);
-        result[1].EventTypes[0].Should().Be(new EventType("Created"));
-        result[1].EventTypes[1].Should().Be(new EventType("Updated"));
+        Assert.Equal(tagsB, result[1].Tags);
+        Assert.Equal(2, result[1].EventTypes.Count);
+        Assert.Equal(new EventType("Created"), result[1].EventTypes[0]);
+        Assert.Equal(new EventType("Updated"), result[1].EventTypes[1]);
     }
 
     #endregion

@@ -36,9 +36,9 @@ public sealed class IdSpanTests
     {
         var result = new IdSpan(id!);
 
-        result.IsDefault.Should().BeTrue();
-        result.AsSpan().Length.Should().Be(0);
-        result.Hash.Should().Be(expectedHash);
+        Assert.True(result.IsDefault);
+        Assert.Equal(0, result.AsSpan().Length);
+        Assert.Equal(expectedHash, result.Hash);
     }
 
     [Theory]
@@ -49,10 +49,10 @@ public sealed class IdSpanTests
 
         var result = new IdSpan(id);
 
-        result.IsDefault.Should().BeFalse();
-        result.Value.Should().Be(id);
-        result.AsSpan().SequenceEqual(expectedSpan).Should().BeTrue();
-        result.Hash.Should().Be(expectedHash);
+        Assert.False(result.IsDefault);
+        Assert.Equal(id, result.Value);
+        Assert.True(result.AsSpan().SequenceEqual(expectedSpan));
+        Assert.Equal(expectedHash, result.Hash);
     }
 
     [Theory]
@@ -62,9 +62,9 @@ public sealed class IdSpanTests
     {
         var result = new IdSpan(id!);
 
-        result.IsDefault.Should().BeTrue();
-        result.AsSpan().Length.Should().Be(0);
-        result.Hash.Should().Be(StableHashTests.HASH64_OF_EMPTY);
+        Assert.True(result.IsDefault);
+        Assert.Equal(0, result.AsSpan().Length);
+        Assert.Equal(StableHashTests.HASH64_OF_EMPTY, result.Hash);
     }
 
     [Theory]
@@ -75,9 +75,9 @@ public sealed class IdSpanTests
 
         var result = new IdSpan(id);
 
-        result.IsDefault.Should().BeFalse();
-        result.AsSpan().SequenceEqual(expectedSpan).Should().BeTrue();
-        result.Hash.Should().Be(expectedHash);
+        Assert.False(result.IsDefault);
+        Assert.True(result.AsSpan().SequenceEqual(expectedSpan));
+        Assert.Equal(expectedHash, result.Hash);
     }
 
     [Theory]
@@ -90,9 +90,9 @@ public sealed class IdSpanTests
         var result = IdSpan.UnsafeCreate(id!, expectedHash);
 #pragma warning restore CS0618 // Type or member is obsolete
 
-        result.IsDefault.Should().Be(isDefault);
-        result.AsSpan().SequenceEqual(id.AsSpan()).Should().BeTrue();
-        result.Hash.Should().Be(expectedHash);
+        Assert.Equal(isDefault, result.IsDefault);
+        Assert.True(result.AsSpan().SequenceEqual(id.AsSpan()));
+        Assert.Equal(expectedHash, result.Hash);
     }
 
     [Theory]
@@ -106,7 +106,7 @@ public sealed class IdSpanTests
 
         var result = idSpanX.Equals(idSpanY);
 
-        result.Should().BeTrue();
+        Assert.True(result);
     }
 
     [Theory]
@@ -123,7 +123,7 @@ public sealed class IdSpanTests
 
         var result = idSpanX.Equals(idSpanY);
 
-        result.Should().BeFalse();
+        Assert.False(result);
     }
 
     [Theory]
@@ -139,7 +139,7 @@ public sealed class IdSpanTests
 
         var result = idSpanX.Equals(idSpanY);
 
-        result.Should().BeTrue();
+        Assert.True(result);
     }
 
     [Theory]
@@ -157,7 +157,7 @@ public sealed class IdSpanTests
 
         var result = idSpanX.CompareTo(idSpanY);
 
-        result.Should().Be(expectedValue);
+        Assert.Equal(expectedValue, result);
     }
 
     [Fact]
@@ -165,7 +165,7 @@ public sealed class IdSpanTests
     {
         var idSpan = (IdSpan)default;
 
-        idSpan.ToString().Should().BeNull(because: "idSpan is default");
+        Assert.Null(idSpan.ToString());
     }
 
     [Fact]
@@ -175,8 +175,8 @@ public sealed class IdSpanTests
 
         var idSpan = new IdSpan(expectedString);
 
-        idSpan.ToString().Should().Be(expectedString);
-        idSpan.Value.Should().BeSameAs(expectedString);
+        Assert.Equal(expectedString, idSpan.ToString());
+        Assert.Same(expectedString, idSpan.Value);
     }
 
     [Theory]
@@ -187,7 +187,7 @@ public sealed class IdSpanTests
     {
         var idSpan = new IdSpan("Some text");
 
-        idSpan.ToString(format: format, formatProvider: formatProvider).Should().Be(expectedString);
+        Assert.Equal(expectedString, idSpan.ToString(format: format, formatProvider: formatProvider));
     }
 
     [Theory]
@@ -198,7 +198,7 @@ public sealed class IdSpanTests
     {
         IdSpan idSpan = default;
 
-        idSpan.ToString(format: format, formatProvider: null).Should().BeEmpty();
+        Assert.Empty(idSpan.ToString(format: format, formatProvider: null));
     }
 
     [Theory]
@@ -212,8 +212,8 @@ public sealed class IdSpanTests
 
         var result = idSpan.TryFormat(destination, out var charsWritten);
 
-        result.Should().BeTrue();
-        charsWritten.Should().Be(0);
+        Assert.True(result);
+        Assert.Equal(0, charsWritten);
     }
 
     [Fact]
@@ -225,8 +225,8 @@ public sealed class IdSpanTests
 
         var result = idSpan.TryFormat(destination, out var charsWritten);
 
-        result.Should().BeFalse();
-        charsWritten.Should().Be(0);
+        Assert.False(result);
+        Assert.Equal(0, charsWritten);
     }
 
     [Fact]
@@ -239,9 +239,9 @@ public sealed class IdSpanTests
 
         var result = idSpan.TryFormat(destination, out var charsWritten);
 
-        result.Should().BeTrue();
-        charsWritten.Should().Be(idSpanText.Length);
-        destination[..charsWritten].SequenceEqual(idSpanText).Should().BeTrue();
+        Assert.True(result);
+        Assert.Equal(idSpanText.Length, charsWritten);
+        Assert.True(destination[..charsWritten].SequenceEqual(idSpanText));
     }
 
     [Theory]
@@ -256,9 +256,9 @@ public sealed class IdSpanTests
 
         var result = idSpan.TryFormat(destination, out var charsWritten, format, formatProvider);
 
-        result.Should().BeTrue();
-        charsWritten.Should().Be(expectedString.Length);
-        destination[..charsWritten].SequenceEqual(expectedString).Should().BeTrue();
+        Assert.True(result);
+        Assert.Equal(expectedString.Length, charsWritten);
+        Assert.True(destination[..charsWritten].SequenceEqual(expectedString));
     }
 
     [Theory]
@@ -274,9 +274,9 @@ public sealed class IdSpanTests
 
         var result = idSpan.TryFormat(destination, out var charsWritten, format: format, provider: null);
 
-        result.Should().BeTrue();
-        charsWritten.Should().Be(idSpanText.Length);
-        destination[..charsWritten].SequenceEqual(idSpanText).Should().BeTrue();
+        Assert.True(result);
+        Assert.Equal(idSpanText.Length, charsWritten);
+        Assert.True(destination[..charsWritten].SequenceEqual(idSpanText));
     }
 
     [Theory]
@@ -291,8 +291,8 @@ public sealed class IdSpanTests
 
         var result = idSpan.TryFormat(destination, out var charsWritten, format: format, provider: formatProvider);
 
-        result.Should().BeFalse();
-        charsWritten.Should().Be(0);
+        Assert.False(result);
+        Assert.Equal(0, charsWritten);
     }
 
     [Theory]
@@ -308,9 +308,9 @@ public sealed class IdSpanTests
 
         var result = idSpan.TryFormat(utf8Destination, out var bytesWritten, format, formatProvider);
 
-        result.Should().BeTrue();
-        bytesWritten.Should().Be(expectedBytes.Length);
-        utf8Destination[..bytesWritten].SequenceEqual(expectedBytes).Should().BeTrue();
+        Assert.True(result);
+        Assert.Equal(expectedBytes.Length, bytesWritten);
+        Assert.True(utf8Destination[..bytesWritten].SequenceEqual(expectedBytes));
     }
 
     [Theory]
@@ -324,8 +324,8 @@ public sealed class IdSpanTests
 
         var result = idSpan.TryFormat(utf8Destination, out var bytesWritten);
 
-        result.Should().BeTrue();
-        bytesWritten.Should().Be(0);
+        Assert.True(result);
+        Assert.Equal(0, bytesWritten);
     }
 
     [Fact]
@@ -337,8 +337,8 @@ public sealed class IdSpanTests
 
         var result = idSpan.TryFormat(utf8Destination, out var bytesWritten);
 
-        result.Should().BeFalse();
-        bytesWritten.Should().Be(0);
+        Assert.False(result);
+        Assert.Equal(0, bytesWritten);
     }
 
     [Fact]
@@ -353,9 +353,9 @@ public sealed class IdSpanTests
 
         var result = idSpan.TryFormat(utf8Destination, out var bytesWritten);
 
-        result.Should().BeTrue();
-        bytesWritten.Should().Be(idSpan.AsSpan().Length);
-        utf8Destination[..bytesWritten].SequenceEqual(expected).Should().BeTrue();
+        Assert.True(result);
+        Assert.Equal(idSpan.AsSpan().Length, bytesWritten);
+        Assert.True(utf8Destination[..bytesWritten].SequenceEqual(expected));
     }
 
     [Fact]
@@ -365,7 +365,7 @@ public sealed class IdSpanTests
 
         var result = IdSpan.FromString("Some text IdSpan");
 
-        result.Should().BeEquivalentTo(expected);
+        Assert.Equal(expected, result);
     }
 
     /// <inheritdoc/>

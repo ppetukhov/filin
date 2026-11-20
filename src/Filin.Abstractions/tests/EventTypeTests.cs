@@ -7,7 +7,7 @@ public sealed class EventTypeTests
     const string Text1 = "Lorem Ipsum is simply dummy text of the printing and typesetting industry";
     const string Text2 = "Contrary to popular belief, Lorem Ipsum is not simply random text.";
     const string Text3 = "b0507063-77f0-48de-b005-88e35651ce30";
-    const string Text4 = @"!""#$%&'()*+,-./:;<=>?@[\]^_`~";
+    const string Text4 = @"!""#$%&'()*+,-./:;<=>?@[]^_`~";
 
     public static readonly TheoryData<string?, uint, bool> StringWithExpectedHashes = new()
     {
@@ -29,9 +29,9 @@ public sealed class EventTypeTests
 
         var result = new EventType(name!);
 
-        result.IsDefault.Should().Be(expectedIsDefault);
-        result.AsSpan().SequenceEqual(expectedSpan).Should().BeTrue();
-        result.Hash.Should().Be(expectedHash);
+        Assert.Equal(expectedIsDefault, result.IsDefault);
+        Assert.True(result.AsSpan().SequenceEqual(expectedSpan));
+        Assert.Equal(expectedHash, result.Hash);
     }
 
     [Theory]
@@ -45,7 +45,7 @@ public sealed class EventTypeTests
 
         var result = identityX.Equals(identityY);
 
-        result.Should().BeTrue();
+        Assert.True(result);
     }
 
     [Theory]
@@ -62,7 +62,7 @@ public sealed class EventTypeTests
 
         var result = identityX.Equals(identityY);
 
-        result.Should().BeFalse();
+        Assert.False(result);
     }
 
     [Theory]
@@ -81,7 +81,7 @@ public sealed class EventTypeTests
 
         var result = identityX.CompareTo(identityY);
 
-        result.Should().Be(expectedValue);
+        Assert.Equal(expectedValue, result);
     }
 
     [Fact]
@@ -89,7 +89,7 @@ public sealed class EventTypeTests
     {
         EventType identity = default;
 
-        identity.Value.Should().NotBeNull(because: "EventType is default");
+        Assert.NotNull(identity.Value);
     }
 
     [Fact]
@@ -99,7 +99,7 @@ public sealed class EventTypeTests
 
         var identity = new EventType(expectedString);
 
-        identity.Value.Should().BeSameAs(expectedString);
+        Assert.Same(expectedString, identity.Value);
     }
 
     [Theory]
@@ -110,7 +110,7 @@ public sealed class EventTypeTests
     {
         var identity = new EventType("Some text");
 
-        identity.ToString(format: format, formatProvider: formatProvider).Should().Be(expectedString);
+        Assert.Equal(expectedString, identity.ToString(format: format, formatProvider: formatProvider));
     }
 
     [Theory]
@@ -121,7 +121,7 @@ public sealed class EventTypeTests
     {
         EventType identity = default;
 
-        identity.ToString(format: format, formatProvider: null).Should().BeEmpty();
+        Assert.Empty(identity.ToString(format: format, formatProvider: null));
     }
 
     [Theory]
@@ -135,8 +135,8 @@ public sealed class EventTypeTests
 
         var result = identity.TryFormat(destination, out var charsWritten);
 
-        result.Should().BeTrue();
-        charsWritten.Should().Be(0);
+        Assert.True(result);
+        Assert.Equal(0, charsWritten);
     }
 
     [Fact]
@@ -148,8 +148,8 @@ public sealed class EventTypeTests
 
         var result = identity.TryFormat(destination, out var charsWritten);
 
-        result.Should().BeFalse();
-        charsWritten.Should().Be(0);
+        Assert.False(result);
+        Assert.Equal(0, charsWritten);
     }
 
     [Fact]
@@ -162,9 +162,9 @@ public sealed class EventTypeTests
 
         var result = identity.TryFormat(destination, out var charsWritten);
 
-        result.Should().BeTrue();
-        charsWritten.Should().Be(identityText.Length);
-        destination[..charsWritten].SequenceEqual(identityText).Should().BeTrue();
+        Assert.True(result);
+        Assert.Equal(identityText.Length, charsWritten);
+        Assert.True(destination[..charsWritten].SequenceEqual(identityText));
     }
 
     [Theory]
@@ -179,9 +179,9 @@ public sealed class EventTypeTests
 
         var result = identity.TryFormat(destination, out var charsWritten, format, formatProvider);
 
-        result.Should().BeTrue();
-        charsWritten.Should().Be(expectedString.Length);
-        destination[..charsWritten].SequenceEqual(expectedString).Should().BeTrue();
+        Assert.True(result);
+        Assert.Equal(expectedString.Length, charsWritten);
+        Assert.True(destination[..charsWritten].SequenceEqual(expectedString));
     }
 
     [Theory]
@@ -197,9 +197,9 @@ public sealed class EventTypeTests
 
         var result = identity.TryFormat(destination, out var charsWritten, format: format, provider: null);
 
-        result.Should().BeTrue();
-        charsWritten.Should().Be(identityText.Length);
-        destination[..charsWritten].SequenceEqual(identityText).Should().BeTrue();
+        Assert.True(result);
+        Assert.Equal(identityText.Length, charsWritten);
+        Assert.True(destination[..charsWritten].SequenceEqual(identityText));
     }
 
     [Theory]
@@ -214,8 +214,8 @@ public sealed class EventTypeTests
 
         var result = identity.TryFormat(destination, out var charsWritten, format: format, provider: formatProvider);
 
-        result.Should().BeFalse();
-        charsWritten.Should().Be(0);
+        Assert.False(result);
+        Assert.Equal(0, charsWritten);
     }
 
     [Theory]
@@ -231,9 +231,9 @@ public sealed class EventTypeTests
 
         var result = identity.TryFormat(utf8Destination, out var bytesWritten, format, formatProvider);
 
-        result.Should().BeTrue();
-        bytesWritten.Should().Be(expectedBytes.Length);
-        utf8Destination[..bytesWritten].SequenceEqual(expectedBytes).Should().BeTrue();
+        Assert.True(result);
+        Assert.Equal(expectedBytes.Length, bytesWritten);
+        Assert.True(utf8Destination[..bytesWritten].SequenceEqual(expectedBytes));
     }
 
     [Theory]
@@ -247,8 +247,8 @@ public sealed class EventTypeTests
 
         var result = identity.TryFormat(utf8Destination, out var bytesWritten);
 
-        result.Should().BeTrue();
-        bytesWritten.Should().Be(0);
+        Assert.True(result);
+        Assert.Equal(0, bytesWritten);
     }
 
     [Fact]
@@ -260,8 +260,8 @@ public sealed class EventTypeTests
 
         var result = identity.TryFormat(utf8Destination, out var bytesWritten);
 
-        result.Should().BeFalse();
-        bytesWritten.Should().Be(0);
+        Assert.False(result);
+        Assert.Equal(0, bytesWritten);
     }
 
     [Fact]
@@ -276,9 +276,9 @@ public sealed class EventTypeTests
 
         var result = eventType.TryFormat(utf8Destination, out var bytesWritten);
 
-        result.Should().BeTrue();
-        bytesWritten.Should().Be(eventType.AsSpan().Length);
-        utf8Destination[..bytesWritten].SequenceEqual(expected[..expBytes]).Should().BeTrue();
+        Assert.True(result);
+        Assert.Equal(eventType.AsSpan().Length, bytesWritten);
+        Assert.True(utf8Destination[..bytesWritten].SequenceEqual(expected[..expBytes]));
     }
 
     [Fact]
@@ -288,6 +288,6 @@ public sealed class EventTypeTests
 
         var result = EventType.FromString("Some text for event type");
 
-        result.Should().BeEquivalentTo(expected);
+        Assert.Equal(expected, result);
     }
 }

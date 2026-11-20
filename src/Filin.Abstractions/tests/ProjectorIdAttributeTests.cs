@@ -64,31 +64,31 @@ public sealed class ProjectorIdAttributeTests
     [Fact]
     public void SomeProjector_Propery_ProjectorId_Equal_Some_Projector()
     {
-        SomeProjector.ProjectorId.Should().Be(new ProjectorId("some-projector"));
+        Assert.Equal(new ProjectorId("some-projector"), SomeProjector.ProjectorId);
     }
 
     [Fact]
     public void SomeNestedProjector_Propery_ProjectorId_Equal_SomeNestedProjector()
     {
-        TestDomainEvents.V0.SomeNestedProjector.ProjectorId.Should().Be(new ProjectorId("some-nested-projector"));
+        Assert.Equal(new ProjectorId("some-nested-projector"), TestDomainEvents.V0.SomeNestedProjector.ProjectorId);
     }
 
     [Fact]
     public void SomeProjectorWithDefaultVersion_Propery_ProjectorId_Without_Version()
     {
-        SomeProjectorWithDefaultVersion.ProjectorId.Should().Be(new ProjectorId("some-projector-with-default-ver"));
+        Assert.Equal(new ProjectorId("some-projector-with-default-ver"), SomeProjectorWithDefaultVersion.ProjectorId);
     }
 
     [Fact]
     public void SomeProjectorV1_Propery_ProjectorId_With_VersionAt1()
     {
-        SomeProjectorV1.ProjectorId.Should().Be(new ProjectorId("some-projector@1"));
+        Assert.Equal(new ProjectorId("some-projector@1"), SomeProjectorV1.ProjectorId);
     }
 
     [Fact]
     public void SomeProjectorV2025_05_Propery_ProjectorId_With_VersionAt202505()
     {
-        SomeProjectorV2025_05.ProjectorId.Should().Be(new ProjectorId("some-projector@202505"));
+        Assert.Equal(new ProjectorId("some-projector@202505"), SomeProjectorV2025_05.ProjectorId);
     }
 
     [Fact]
@@ -99,7 +99,7 @@ public sealed class ProjectorIdAttributeTests
 
         provider.Configure(options);
 
-        options.ProjectorTypes.Should().HaveCount(11);
+        Assert.Equal(11, options.ProjectorTypes.Count);
     }
 
     [Fact]
@@ -110,7 +110,7 @@ public sealed class ProjectorIdAttributeTests
 
         provider.Configure(options);
 
-        options.ProjectionTypes.Should().HaveCount(11);
+        Assert.Equal(11, options.ProjectionTypes.Count);
     }
 
     [Fact]
@@ -121,11 +121,11 @@ public sealed class ProjectorIdAttributeTests
 
         provider.Configure(options);
 
-        options.ProjectorTypes.Should().ContainEquivalentOf<KeyValuePair<Type, Type>>(new(typeof(SomeProjState), typeof(SomeProjector)));
-        options.ProjectorTypes.Should().ContainEquivalentOf<KeyValuePair<Type, Type>>(new(typeof(SomeProjDefVerState), typeof(SomeProjectorWithDefaultVersion)));
-        options.ProjectorTypes.Should().ContainEquivalentOf<KeyValuePair<Type, Type>>(new(typeof(SomeProjV1State), typeof(SomeProjectorV1)));
-        options.ProjectorTypes.Should().ContainEquivalentOf<KeyValuePair<Type, Type>>(new(typeof(SomeProjV2025_05State), typeof(SomeProjectorV2025_05)));
-        options.ProjectorTypes.Should().ContainEquivalentOf<KeyValuePair<Type, Type>>(new(typeof(SomeProjNestedState), typeof(TestDomainEvents.V0.SomeNestedProjector)));
+        Assert.Contains(new KeyValuePair<Type, Type>(typeof(SomeProjState), typeof(SomeProjector)), options.ProjectorTypes);
+        Assert.Contains(new KeyValuePair<Type, Type>(typeof(SomeProjDefVerState), typeof(SomeProjectorWithDefaultVersion)), options.ProjectorTypes);
+        Assert.Contains(new KeyValuePair<Type, Type>(typeof(SomeProjV1State), typeof(SomeProjectorV1)), options.ProjectorTypes);
+        Assert.Contains(new KeyValuePair<Type, Type>(typeof(SomeProjV2025_05State), typeof(SomeProjectorV2025_05)), options.ProjectorTypes);
+        Assert.Contains(new KeyValuePair<Type, Type>(typeof(SomeProjNestedState), typeof(TestDomainEvents.V0.SomeNestedProjector)), options.ProjectorTypes);
     }
 
     [Fact]
@@ -136,10 +136,10 @@ public sealed class ProjectorIdAttributeTests
 
         provider.Configure(options);
 
-        options.ProjectionTypes.Should().ContainEquivalentOf<KeyValuePair<ProjectorId, Type>>(new("some-projector", typeof(SomeProjState)));
-        options.ProjectionTypes.Should().ContainEquivalentOf<KeyValuePair<ProjectorId, Type>>(new("some-projector-with-default-ver", typeof(SomeProjDefVerState)));
-        options.ProjectionTypes.Should().ContainEquivalentOf<KeyValuePair<ProjectorId, Type>>(new("some-projector@1", typeof(SomeProjV1State)));
-        options.ProjectionTypes.Should().ContainEquivalentOf<KeyValuePair<ProjectorId, Type>>(new("some-projector@202505", typeof(SomeProjV2025_05State)));
-        options.ProjectionTypes.Should().ContainEquivalentOf<KeyValuePair<ProjectorId, Type>>(new("some-nested-projector", typeof(SomeProjNestedState)));
+        Assert.Contains(new KeyValuePair<ProjectorId, Type>(new ProjectorId("some-projector"), typeof(SomeProjState)), options.ProjectionTypes);
+        Assert.Contains(new KeyValuePair<ProjectorId, Type>(new ProjectorId("some-projector-with-default-ver"), typeof(SomeProjDefVerState)), options.ProjectionTypes);
+        Assert.Contains(new KeyValuePair<ProjectorId, Type>(new ProjectorId("some-projector@1"), typeof(SomeProjV1State)), options.ProjectionTypes);
+        Assert.Contains(new KeyValuePair<ProjectorId, Type>(new ProjectorId("some-projector@202505"), typeof(SomeProjV2025_05State)), options.ProjectionTypes);
+        Assert.Contains(new KeyValuePair<ProjectorId, Type>(new ProjectorId("some-nested-projector"), typeof(SomeProjNestedState)), options.ProjectionTypes);
     }
 }

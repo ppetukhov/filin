@@ -27,7 +27,7 @@ public sealed class DeciderAttributeTests
 
         provider.Configure(options);
 
-        options.DeciderTypes.Should().ContainSingle();
+        Assert.Single(options.DeciderTypes);
     }
 
     [Fact]
@@ -38,6 +38,6 @@ public sealed class DeciderAttributeTests
 
         provider.Configure(options);
 
-        options.DeciderTypes.Should().ContainEquivalentOf<KeyValuePair<(Type, Type), Type>>(new((typeof(CreateCourse), typeof(ActiveCourses)), typeof(CreateCourseDecider)));
+        Assert.Contains(new KeyValuePair<(Type, Type), Type>((typeof(CreateCourse), typeof(ActiveCourses)), typeof(CreateCourseDecider)), options.DeciderTypes);
     }
 }

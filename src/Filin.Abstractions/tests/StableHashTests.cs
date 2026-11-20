@@ -24,6 +24,6 @@ public sealed class StableHashTests
     {
         var result = StableHash.Hash64(value);
 
-        result.Should().Be(expectedHash);
+        Assert.Equal(expectedHash, result);
     }
 }

@@ -27,9 +27,9 @@ public sealed class EventTagAttributeTests
 
         var tags = evt.GetTags();
 
-        tags.Count.Should().Be(2);
-        tags.Contains(new Tag($"course:{courseId}")).Should().BeTrue();
-        tags.Contains(new Tag($"course-name:{name}")).Should().BeTrue();
+        Assert.Equal(2, tags.Count);
+        Assert.True(tags.Contains(new Tag($"course:{courseId}")));
+        Assert.True(tags.Contains(new Tag($"course-name:{name}")));
     }
 
     [Fact]
@@ -41,6 +41,6 @@ public sealed class EventTagAttributeTests
 
         var tag = evt.GetTag();
 
-        tag.Should().Be(new Tag($"student:{studentId}"));
+        Assert.Equal(new Tag($"student:{studentId}"), tag);
     }
 }
