@@ -69,6 +69,9 @@
   <Folder Name="/src/Filin.ProjectionStore.AdoNet/src/">
     <Project Path="src/Filin.ProjectionStore.AdoNet/src/Filin.ProjectionStore.AdoNet.csproj" Id="eb354ac5-8c05-4759-b971-90ef55dfb599" />
   </Folder>
+  <Folder Name="/src/Filin.ProjectionStore.AdoNet/tests/">
+    <Project Path="src/Filin.ProjectionStore.AdoNet/tests/Filin.ProjectionStore.AdoNet.Tests.csproj" />
+  </Folder>
   <Folder Name="/src/Filin/" />
   <Folder Name="/src/Filin/src/">
     <Project Path="src/Filin/src/Filin.csproj" Id="92eef5fd-5217-4fba-a2c6-0172833d0b49" />
