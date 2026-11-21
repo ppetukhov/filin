@@ -25,12 +25,8 @@ updates:
       test-packages:
         patterns:
           - "xunit*"
-          - "FluentAssertions*"
           - "Microsoft.NET.Test.Sdk"
           - "Moq"
-    ignore:
-      - dependency-name: "FluentAssertions"
-        versions: [">= 8.0.0"]
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
