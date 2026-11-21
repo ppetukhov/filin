@@ -8,6 +8,8 @@ sealed partial class Mediator(HandlersFactory handlersFactory) : IMediator
         where TCommand : notnull, ICommand<TState>
         where TState : notnull
     {
+        ArgumentNullException.ThrowIfNull(command);
+
         var handler = handlersFactory.CreateCommandHandler<TCommand, TState>();
 
         return handler.ExecuteAsync(command, cancellationToken);
@@ -18,6 +20,8 @@ sealed partial class Mediator(HandlersFactory handlersFactory) : IMediator
         where TQuery : notnull, IQuery<TProjection>
         where TProjection : notnull
     {
+        ArgumentNullException.ThrowIfNull(query);
+
         var handler = handlersFactory.CreateQueryHandler<TQuery, TProjection>();
 
         return handler.QueryAsync(query, cancellationToken);
