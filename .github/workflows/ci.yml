@@ -23,9 +23,9 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Verify Code Formatting
-      run: dotnet format --verify-no-changes --no-restore --exclude src/Filin.Abstractions/tests/ playground/
+      run: dotnet format --verify-no-changes --no-restore --exclude src/Filin/tests/ src/Filin.Abstractions/tests/ playground/
     - name: Verify Code Formatting - codegen
-      run: dotnet format --verify-no-changes --no-restore --include src/Filin.Abstractions/tests/ playground/ --exclude-diagnostics CS0246 CS0535
+      run: dotnet format --verify-no-changes --no-restore --include src/Filin/tests/ src/Filin.Abstractions/tests/ playground/ --exclude-diagnostics CS0246 CS0535
     - name: Build
       run: dotnet build --no-restore -c Release
     - name: Test

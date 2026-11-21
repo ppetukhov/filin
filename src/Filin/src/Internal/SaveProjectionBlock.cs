@@ -3,6 +3,7 @@ using System.Threading.Tasks.Dataflow;
 using Filin.Storage;
 
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Filin.Internal;
 
@@ -17,11 +18,11 @@ sealed partial class SaveProjectionBlock : ITargetBlock<Projection>, IDisposable
     Task IDataflowBlock.Completion => _batchBufferBlock.Completion;
 
     public SaveProjectionBlock(
-        ILoggerFactory loggerFactory,
-        IProjectionStore? projectionStore,
-        TimeProvider? timeProvider)
+        ILoggerFactory? loggerFactory = null,
+        IProjectionStore? projectionStore = null,
+        TimeProvider? timeProvider = null)
     {
-        _logger = loggerFactory.CreateLogger("Filin.SaveProjectionBlock");
+        _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger("Filin.SaveProjectionBlock");
         _projectionStore = projectionStore;
 
         const int batchSize = 10;
