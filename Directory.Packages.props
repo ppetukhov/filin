@@ -22,7 +22,7 @@
     <PackageVersion Include="Moq" Version="4.21.0" />
     <PackageVersion Include="Nuke.Common" Version="10.1.0" />
     <PackageVersion Include="System.IO.Hashing" Version="10.0.15" />
-    <PackageVersion Include="Npgsql" Version="10.0.3" />
+    <PackageVersion Include="Npgsql" Version="11.0.0" />
     <PackageVersion Include="System.Security.Cryptography.Xml" Version="9.0.23" />
     <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="9.0.23" />
     <PackageVersion Include="System.Text.Json" Version="10.0.12" />
